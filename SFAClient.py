@@ -1,26 +1,58 @@
-import traceback
-from typing import Any, Optional
-import Utils
-import sys
-
 import asyncio
-
-from CommonClient import get_base_parser, logger, server_loop, ClientCommandProcessor, gui_enabled, ClientStatus
+import sys
+import traceback
+from typing import ClassVar
 
 import dolphin_memory_engine as dme
+import Utils
+from CommonClient import (
+    ClientStatus,
+    get_base_parser,
+    gui_enabled,
+    logger,
+    server_loop,
+)
+from CommonClient import (
+    CommonContext as SuperContext,
+)
 
-from .bit_helper import bit_flagger, extract_bitflag_list, extract_bits_value, get_bit_address, read_value_bytes, set_flag_bit, set_on_or_bytes, set_value_bytes, swap_endian
-from .items import ALL_ITEMS_TABLE, FILLER_ITEMS, INVENTORY_ITEMS, SHOP_ITEMS, STAFF_ITEMS, TRICKY_ITEMS, USEFUL_ITEMS, SFACountItemData, SFAItemData, SFAItemType, SFAProgressiveItemData
-from .locations import LOCATION_FUEL_CELL, LOCATION_SHOP, LOCATION_UPGRADE, NORMAL_TABLES, SFACountLocationData, SFALocation, SFALocationData, SFALocationType, SFAShopLocationData, SFAUpgradeLocationData
-from .addresses import *
+from .addresses import *  # noqa: F403
+from .bit_helper import (
+    extract_bitflag_list,
+    extract_bits_value,
+    get_bit_address,
+    read_value_bytes,
+    set_flag_bit,
+    set_on_or_bytes,
+    set_value_bytes,
+    swap_endian,
+    update_bits,
+)
+from .items import (
+    FILLER_ITEMS,
+    ITEM_INVENTORY,
+    USEFUL_ITEMS,
+    SFACountItemData,
+    SFAItemData,
+    SFAItemType,
+    SFAProgressiveItemData,
+)
+from .locations import (
+    LOCATION_SHOP,
+    LOCATION_UPGRADE,
+    NORMAL_TABLES,
+    SFACountLocationData,
+    SFALocationData,
+    SFALocationType,
+    SFAShopLocationData,
+    SFAUpgradeLocationData,
+)
 
 TRACKER_LOADED = False
 # try:
 #     from worlds.tracker.TrackerClient import TrackerGameContext as SuperContext
 #     TRACKER_LOADED = True
 # except ModuleNotFoundError:
-from CommonClient import CommonContext as SuperContext
-
 
 CONNECTION_REFUSED_GAME_STATUS = (
     "Dolphin failed to connect. Please load a randomized ROM for Super Mario Sunshine. Trying again in 5 seconds..."
@@ -35,53 +67,72 @@ CONNECTION_CONNECTED_STATUS = "Dolphin connected successfully."
 CONNECTION_INITIAL_STATUS = "Dolphin connection has not been initiated."
 
 
-
 class SFAContext(SuperContext):
+    """
+    The context for Star Fox Adventures client.
+
+    This class manages all interactions with the Dolphin emulator and the Archipelago server for Star Fox Adventures.
+    """
+
     game = "Star Fox Adventure"
-    tags = {"AP"}
     items_handling = 0b111  # full remote
 
     #: Temp should save in memory
-    expected_idx=0
-    received_items_id = []
+    expected_idx = 0
+    received_items_id: ClassVar[list[int]] = []
 
-    victory=False
+    victory = False
 
     #: Player state (probably change to server)
-    fuel_cell_count=156
+    fuel_cell_count = 156
 
     #: Suppose the player starts in main menu
-    stored_map=0x3F
+    stored_map = 0x3F
 
     def __init__(self, server_address, password):
-        super(SFAContext, self).__init__(server_address, password)
+        """
+        Initialize the Star Fox Adventures context.
+
+        :param server_address: Address of the Archipelago server
+        :param password: Password for server authentication
+        """
+        super().__init__(server_address, password)
         self.send_index: int = 0
         self.syncing = False
         self.awaiting_bridge = False
-        self.dolphin_sync_task: Optional[asyncio.Task[None]] = None
+        self.dolphin_sync_task: asyncio.Task[None] | None = None
         self.dolphin_status: str = CONNECTION_INITIAL_STATUS
         self.awaiting_rom: bool = False
+        self.tags = {"AP"}
 
     async def server_auth(self, password_requested: bool = False):
+        """
+        Authenticate with the Archipelago server.
+
+        :param password_requested: Indicates if the server has requested a password
+        """
         if password_requested and not self.password:
-            await super(SFAContext, self).server_auth(password_requested)
+            await super().server_auth(password_requested)
         await self.get_username()
         await self.send_connect()
 
-    @property
-    def endpoints(self):
-        if self.server:
-            return [self.server]
-        else:
-            return []
-        
     def make_gui(self):
+        """
+        Create the GUI for the Star Fox Adventures client.
+
+        :return: The GUI instance
+        """
         ui = super().make_gui()
         ui.base_title = "Star Fox Adventure Client"
         return ui
 
 
 async def dolphin_sync_task(ctx: SFAContext) -> None:
+    """
+    Task to manage the connection and synchronization with the Dolphin emulator.
+
+    :param ctx: The Star Fox Adventures context
+    """
     logger.info("Starting Dolphin connector. Use /dolphin for status information.")
     while not ctx.exit_event.is_set():
         try:
@@ -124,21 +175,39 @@ async def dolphin_sync_task(ctx: SFAContext) -> None:
 
 
 def sync_player_state(ctx: SFAContext):
+    """
+    Synchronize the player's state with the current game data.
+
+    :param ctx: The Star Fox Adventures context
+    """
     _give_item_in_game(ctx, FILLER_ITEMS["Fuel Cell"])
-    _give_item_in_game(ctx, INVENTORY_ITEMS["Alpine Root"])
-    _give_item_in_game(ctx, INVENTORY_ITEMS["Scarab Bag (Progressive)"])
+    _give_item_in_game(ctx, ITEM_INVENTORY["Alpine Root"])
+    _give_item_in_game(ctx, ITEM_INVENTORY["Scarab Bag (Progressive)"])
     _give_item_in_game(ctx, USEFUL_ITEMS["HP Upgrade"])
     _give_item_in_game(ctx, USEFUL_ITEMS["MP Upgrade"])
 
 
 async def _wait_cutscene_end():
+    """Wait until a cutscene is over."""
     seq = dme.read_byte(0x803DD08C)
     while seq != 0:
         seq = dme.read_byte(0x803DD08C)
         await asyncio.sleep(0.1)
 
+
 async def locations_watcher(ctx):
+    """
+    Watch for location checks in the game and notify the server.
+
+    :param ctx: The Star Fox Adventures context
+    """
     def _check_location_flag(ctx: SFAContext, location: SFALocationData) -> None:
+        """
+        Check if a location has been checked based on its flag.
+
+        :param ctx: The Star Fox Adventures context
+        :param location: The location data to check
+        """
         if location.id not in ctx.server_locations:
             return
         address, bit_position = get_bit_address(location.table_address, location.bit_offset)
@@ -147,14 +216,19 @@ async def locations_watcher(ctx):
             ctx.locations_checked.add(location.id)
 
     def _check_location_value(ctx: SFAContext, location: SFACountLocationData) -> None:
+        """
+        Check if a location has been checked based on its value.
+
+        :param ctx: The Star Fox Adventures context
+        :param location: The location data to check
+        """
         if location.id not in ctx.server_locations:
             return
         value = read_value_bytes(location.table_address, location.bit_offset, location.bit_size)
         if value >= location.count:
             ctx.locations_checked.add(location.id)
-        
 
-    for cell_name, cell_data  in NORMAL_TABLES.items():
+    for cell_data in NORMAL_TABLES.values():
         if isinstance(cell_data, SFACountLocationData):
             _check_location_value(ctx, cell_data)
             await _wait_cutscene_end()
@@ -163,20 +237,20 @@ async def locations_watcher(ctx):
 
     map_value = dme.read_byte(MAP_ID_ADDRESS)
     if map_value == MAP_MAGIC_CAVE_NO and ctx.stored_map == MAP_MAGIC_CAVE_NO:
-        for loc_name, loc_data in LOCATION_UPGRADE.items():
+        for loc_data in LOCATION_UPGRADE.values():
             mc_act_byte = dme.read_byte(MAGIC_CAVE_ACT_ADDRESS)
             mc_act = extract_bits_value(mc_act_byte, offset=2, size=4)
             mc_flags_raw = dme.read_word(MAGIC_CAVE_FLAG_ADDRESS)
             mc_flags = extract_bitflag_list(swap_endian(mc_flags_raw))
-            if \
-                (mc_act == MAGIC_CAVE_UPGRADE_ACT and loc_data.mc_bitflag in mc_flags) \
-                or (mc_act == MAGIC_CAVE_MANA_ACT and loc_data.mc_bitflag is None) :
+            if (mc_act == MAGIC_CAVE_UPGRADE_ACT and loc_data.mc_bitflag in mc_flags) or (
+                mc_act == MAGIC_CAVE_MANA_ACT and loc_data.mc_bitflag is None
+            ):
                 _check_location_flag(ctx, loc_data)
                 # Wait for anim end
                 await _wait_cutscene_end()
-    
+
     if map_value == MAP_SHOP_NO and ctx.stored_map == MAP_SHOP_NO:
-        for loc_name, loc_data in LOCATION_SHOP.items():
+        for loc_data in LOCATION_SHOP.values():
             _check_location_flag(ctx, loc_data)
 
     # TODO Failsafe if sending a location that doesn't exist?
@@ -187,9 +261,11 @@ async def locations_watcher(ctx):
 
 
 async def give_items(ctx: SFAContext):
-    #: Read the expected index of the player, which is the index of the next item they're expecting to receive.
-    #: The expected index starts at 0 for a fresh save file.
-    #: TODO save value in memory 
+    """
+    Give items to the player in the game.
+
+    :param ctx: The Star Fox Adventures context
+    """
     expected_idx = ctx.expected_idx
 
     # Check if there are new items.
@@ -208,8 +284,18 @@ async def give_items(ctx: SFAContext):
             await asyncio.sleep(0.01)
         ctx.expected_idx = idx + 1
 
+
 def _give_item_in_game(ctx: SFAContext, item: SFAItemData):
-    if ctx.stored_map == MAP_SHOP_NO and (item.type == SFAItemType.SHOP_PROGRESSION or item.type == SFAItemType.SHOP_USEFUL):
+    """
+    Give an item to the player in the game.
+
+    :param ctx: The Star Fox Adventures context
+    :param item: The item data to give
+    :return: True if the item was given successfully, False otherwise
+    """
+    if ctx.stored_map == MAP_SHOP_NO and (
+        item.type == SFAItemType.SHOP_PROGRESSION or item.type == SFAItemType.SHOP_USEFUL
+    ):
         # Don't send shop items if inside shop
         return True
     if isinstance(item, SFAProgressiveItemData):
@@ -219,7 +305,7 @@ def _give_item_in_game(ctx: SFAContext, item: SFAItemData):
             set_flag_bit(progress[1], progress[0], count > id)
         logger.debug(f"Received {count} of progressive object: {item}")
         return True
-    
+
     if isinstance(item, SFACountItemData):
         count = ctx.received_items_id.count(item.id)
         if count > item.max_count:
@@ -228,14 +314,19 @@ def _give_item_in_game(ctx: SFAContext, item: SFAItemData):
         logger.debug(f"Received {count} of count object: {item}")
         set_value_bytes(item.table_address, item.bit_offset, value, item.bit_size)
         return True
-        
+
     if item.type != SFAItemType.FILLER:
         set_flag_bit(item.table_address, item.bit_offset, True)
         return True
     return True
 
 
-async def force_gameflags(ctx):
+async def force_gameflags(ctx: SFAContext) -> None:
+    """
+    Force game flags when starting a save.
+
+    :param ctx: The Star Fox Adventures context
+    """
     # Set bitflags when starting save
     map_value = dme.read_byte(MAP_ID_ADDRESS)
     if ctx.stored_map != map_value and ctx.stored_map == 0x3F:
@@ -255,12 +346,30 @@ async def force_gameflags(ctx):
     # Force Bomb_spore to 1 for testing
     address, position = get_bit_address(T2_ADDRESS, 0x77)
     cache_byte = dme.read_byte(address)
-    updated_byte = bit_flagger(cache_byte, position, True)
+    updated_byte = update_bits(cache_byte, position, True)
     dme.write_byte(address, updated_byte)
 
 
-async def special_map_flags(ctx: SFAContext):
-    def _special_location_item_toggle(ctx: SFAContext, location: SFAUpgradeLocationData | SFAShopLocationData, map_entered: int, map_expected: int):
+async def special_map_flags(ctx: SFAContext) -> None:
+    """
+    Handle special map flags for certain locations.
+
+    :param ctx: The Star Fox Adventures context
+    """
+    def _special_location_item_toggle(
+        ctx: SFAContext,
+        location: SFAUpgradeLocationData | SFAShopLocationData,
+        map_entered: int,
+        map_expected: int,
+    ):
+        """
+        Toggle special location items based on the map entered.
+
+        :param ctx: The Star Fox Adventures context
+        :param location: The location data to toggle
+        :param map_entered: The map that was entered
+        :param map_expected: The expected map for the location
+        """
         if map_entered == map_expected:
             if location.id in ctx.checked_locations or location.id not in ctx.server_locations:
                 # Checked location (or does not exist), force item ON
@@ -285,27 +394,23 @@ async def special_map_flags(ctx: SFAContext):
         mc_act = extract_bits_value(mc_act_byte, offset=2, size=4)
         mc_flags_bytes = dme.read_word(MAGIC_CAVE_FLAG_ADDRESS)
         mc_flags = extract_bitflag_list(swap_endian(mc_flags_bytes))
-        for loc_name, loc_data in LOCATION_UPGRADE.items():
+        for loc_data in LOCATION_UPGRADE.values():
             if mc_act == MAGIC_CAVE_UPGRADE_ACT and loc_data.mc_bitflag in mc_flags:
                 _special_location_item_toggle(ctx, loc_data, map_value, MAP_MAGIC_CAVE_NO)
 
         #: Check Shop locations
-        for loc_name, loc_data in LOCATION_SHOP.items():
-            ctx.server_locations
+        for loc_data in LOCATION_SHOP.values():
             _special_location_item_toggle(ctx, loc_data, map_value, MAP_SHOP_NO)
-
-        #: Check Ice Mountain Act
-        # tricky = TRICKY_ITEMS["Tricky"]
-        # root = INVENTORY_ITEMS["Alpine Root"]
-        # if tricky.id in ctx.received_items_id and ctx.received_items_id.count(root.id) == 2:
-        #     set_value_bytes(ICE_MOUNTAIN_ACT_ADDRESS, 2, 2, 4)
-        # else:
-        #     set_value_bytes(ICE_MOUNTAIN_ACT_ADDRESS, 2, 1, 4)
 
         ctx.stored_map = map_value
 
 
 async def game_watcher(ctx: SFAContext):
+    """
+    Main game watcher loop.
+
+    :param ctx: The Star Fox Adventures context
+    """
     while not ctx.exit_event.is_set():
         try:
             if not dme.is_hooked() or ctx.slot is None:
@@ -334,12 +439,21 @@ async def game_watcher(ctx: SFAContext):
 
 
 def main(*launch_args: str):
-    server_address: str = ""
+    """
+    Main entry point for the Star Fox Adventures client.
 
+    :param launch_args: Command-line arguments for the client
+    """
     parser = get_base_parser()
     args = parser.parse_args(launch_args)
 
     async def _main(connect, password):
+        """
+        Main asynchronous function for the Star Fox Adventures client.
+
+        :param connect: The server address to connect to
+        :param password: The password for server authentication
+        """
         ctx = SFAContext(connect, password)
         ctx.server_task = asyncio.create_task(server_loop(ctx), name="ServerLoop")
 
@@ -355,14 +469,15 @@ def main(*launch_args: str):
         ctx.server_address = None
 
         await ctx.shutdown()
-        
+
         if ctx.dolphin_sync_task:
-                await ctx.dolphin_sync_task
+            await ctx.dolphin_sync_task
 
         if progression_watcher:
-                await progression_watcher
-    
+            await progression_watcher
+
     asyncio.run(_main(args.connect, args.password))
+
 
 if __name__ == "__main__":
     Utils.init_logging("SFAClient", exception_logger="Client")
