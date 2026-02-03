@@ -1,6 +1,6 @@
 {
-	"game": "Star Fox Adventure",
-	"minimum_ap_version": "0.6.5",
+	"game": "Star Fox Adventures",
+	"minimum_ap_version": "0.6.6",
 	"world_version": "0.0.1",
 	"authors": ["MichelFenouil"]
 }

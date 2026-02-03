@@ -14,7 +14,7 @@ components.append(
     Component(
         "SFA Client",
         func=run_client,
-        game_name="Star Fox Adventure",
+        game_name="Star Fox Adventures",
         component_type=Type.CLIENT,
         supports_uri=True,
     )

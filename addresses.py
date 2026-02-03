@@ -9,7 +9,7 @@ MAP_ID_ADDRESS = 0x803DCECB
 MAP_SHOP_NO = 0x33
 
 MAP_ICE_MOUNTAIN = 0x17
-ICE_MOUNTAIN_ACT_ADDRESS = 0x803A386B
+ICE_MOUNTAIN_ACT_OFFSET = 0x02FA
 
 MAP_MAGIC_CAVE_NO = 0x36
 MAGIC_CAVE_ACT_ADDRESS = 0x803A3871
@@ -64,10 +64,24 @@ SAW_ITEM_FLAGS: list[GameFlag] = [
     GameFlag("GrubTub Tutorial 2", 0x0346, T2_ADDRESS),
     GameFlag("GrubTub Tutorial 3", 0x0347, T2_ADDRESS),
     GameFlag("Slippy Cold Water", 0x001C, T2_ADDRESS),
+    GameFlag("Saw Firefly", 0x0021, T2_ADDRESS),
+    GameFlag("Saw White GrubTubs", 0x0850, T2_ADDRESS),
+]
+
+SH_STATE_FLAGS: list[GameFlag] = [
+    GameFlag("SH WarpStone Open", 0x00D5, T2_ADDRESS),
+]
+
+IM_OPENED_FLAGS: list[GameFlag] = [
+    GameFlag("IM Dig Pressure Plate", 0x033C, T2_ADDRESS),
+    GameFlag("IM Dig Tunnel to Waterspout", 0x0344, T2_ADDRESS),
+    GameFlag("SW Block Placed", 0x0037, T2_ADDRESS),
+    GameFlag("SW Bribed Guard", 0x0039, T2_ADDRESS),
 ]
 
 CUTSCENE_SKIP_FLAGS: list[GameFlag] = [
     GameFlag("SH Warpstone explanation", 0x0106, T2_ADDRESS),
+    GameFlag("SH Entered Well", 0x00096, T2_ADDRESS),
     GameFlag("IM Skip Tricky captured", 0x0310, T2_ADDRESS),
     GameFlag("IM Skip Hut bullying", 0x0312, T2_ADDRESS),
     GameFlag("IM Skip Starting first race", 0x0314, T2_ADDRESS),
@@ -78,6 +92,8 @@ CUTSCENE_SKIP_FLAGS: list[GameFlag] = [
 STARTING_ON_FLAGS: list[GameFlag] = [
     *SAW_ITEM_FLAGS,
     *CUTSCENE_SKIP_FLAGS,
+    *SH_STATE_FLAGS,
+    *IM_OPENED_FLAGS,
 ]
 
 CONSTANT_ON_FLAGS: list[GameFlag] = [

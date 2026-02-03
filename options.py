@@ -23,7 +23,7 @@ class ShopLocations(Choice):
 
 @dataclass
 class SFAOptions(PerGameCommonOptions):
-    """Star Fox Adventure options class."""
+    """Star Fox Adventures options class."""
 
     shop_locations: ShopLocations
 

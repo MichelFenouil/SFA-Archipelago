@@ -13,9 +13,9 @@ if TYPE_CHECKING:
 
 
 class SFAItem(Item):
-    """Item class for Star Fox Adventure."""
+    """Item class for Star Fox Adventures."""
 
-    game: str = "Star Fox Adventure"
+    game: str = "Star Fox Adventures"
 
 
 class SFAItemType(Enum):
@@ -34,7 +34,7 @@ class SFAItemType(Enum):
 
 @dataclass
 class SFAItemData:
-    """Data class for items in Star Fox Adventure."""
+    """Data class for items in Star Fox Adventures."""
 
     id: int
     bit_offset: int
@@ -84,7 +84,7 @@ class SFACountItemData(SFAItemData):
 
 
 def items_name_to_id_dict() -> dict[str, int]:
-    """Name to id dict for Star Fox Adventure items."""
+    """Name to id dict for Star Fox Adventures items."""
     return {name: data.id for name, data in ALL_ITEMS_TABLE.items()}
 
 
@@ -112,11 +112,10 @@ def create_all_items(world: SFAWorld) -> None:
             continue
         if isinstance(data, SFACountItemData):
             itempool.extend([world.create_item(name) for _ in range(data.max_count)])
+        elif isinstance(data, SFAProgressiveItemData):
+            itempool.extend([world.create_item(name) for _ in range(len(data.progressive_data))])
         else:
             itempool.append(world.create_item(name))
-    # Add 2 more Scarab Bags
-    itempool.append(world.create_item("Scarab Bag (Progressive)"))
-    itempool.append(world.create_item("Scarab Bag (Progressive)"))
 
     # Add a few player upgrades
     itempool.append(world.create_item("MP Upgrade"))
@@ -129,7 +128,7 @@ def create_all_items(world: SFAWorld) -> None:
 
     itempool += [world.create_filler() for _ in range(needed_number_of_filler_items)]
 
-    print(f"Added items: {itempool}") # noqa: T201
+    print(f"Added items: {itempool}")  # noqa: T201
 
     world.multiworld.itempool += itempool
 
@@ -167,6 +166,16 @@ ITEM_INVENTORY: dict[str, SFAItemData] = {
         max_count=2,
         bit_size=3,
     ),
+    "White GrubTub": SFACountItemData(
+        103,
+        0x00A9,
+        T2_ADDRESS,
+        SFAItemType.INVENTORY,
+        ItemClassification.progression,
+        max_count=6,
+        bit_size=3,
+    ),
+    "Gate Key": SFAItemData(104, 0x00B0, T2_ADDRESS, SFAItemType.INVENTORY, ItemClassification.progression),
 }
 
 ITEM_SHOP: dict[str, SFAItemData] = {
@@ -187,13 +196,14 @@ ITEM_SHOP: dict[str, SFAItemData] = {
         SFAItemType.SHOP_PROGRESSION,
         ItemClassification.progression,
     ),
-    "Snowhorn Artifact": SFAItemData(
-        205,
-        0x0060,
-        T2_ADDRESS,
-        SFAItemType.SHOP_PROGRESSION,
-        ItemClassification.progression,
-    ),
+    # Gives access to unimplemented area
+    # "Snowhorn Artifact": SFAItemData(
+    #     205,
+    #     0x0060,
+    #     T2_ADDRESS,
+    #     SFAItemType.SHOP_PROGRESSION,
+    #     ItemClassification.progression,
+    # ),
 }
 
 PROGRESSION_ITEMS: dict[str, SFAItemData] = {
@@ -247,6 +257,3 @@ ALL_ITEMS_TABLE: dict[str, SFAItemData] = {
     **USEFUL_ITEMS,
     **FILLER_ITEMS,
 }
-
-
-

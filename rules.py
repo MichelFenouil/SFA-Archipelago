@@ -37,29 +37,51 @@ def set_all_location_rules(world: SFAWorld) -> None:
 
     # ThornTail Hollow
     set_rule_if_exists("Fireblaster Upgrade", lambda state: True)
-    set_rule_if_exists("SH Pillar Fuel Cell Left", lambda state: True)
-    set_rule_if_exists("SH Pillar Fuel Cell Right", lambda state: True)
-    set_rule_if_exists("SH Queen Cave Fuel Cell", lambda state: mc.has_blaster(state, world.player))
+    set_rule_if_exists("TH Pillar Fuel Cell Left", lambda state: True)
+    set_rule_if_exists("TH Pillar Fuel Cell Right", lambda state: True)
+    set_rule_if_exists("TH Queen Cave Fuel Cell", lambda state: mc.has_blaster(state, world.player))
     set_rule_if_exists(
-        "SH Beside Warpstone Left",
+        "TH Beside Warpstone Left",
         lambda state: mc.can_explode_bomb_plant(state, world.player),
     )
     set_rule_if_exists(
-        "SH Beside Warpstone Right",
+        "TH Beside Warpstone Right",
         lambda state: mc.can_explode_bomb_plant(state, world.player),
     )
-    set_rule_if_exists("SH Waterfall Cave 1", lambda state: mc.can_explode_bomb_plant(state, world.player))
-    set_rule_if_exists("SH Waterfall Cave 2", lambda state: mc.can_explode_bomb_plant(state, world.player))
-    set_rule_if_exists("SH Waterfall Cave 3", lambda state: mc.can_explode_bomb_plant(state, world.player))
+    set_rule_if_exists("TH Waterfall Cave 1", lambda state: mc.can_explode_bomb_plant(state, world.player))
+    set_rule_if_exists("TH Waterfall Cave 2", lambda state: mc.can_explode_bomb_plant(state, world.player))
+    set_rule_if_exists("TH Waterfall Cave 3", lambda state: mc.can_explode_bomb_plant(state, world.player))
     set_rule_if_exists(
-        "SH Waterfall Cave Back",
+        "TH Waterfall Cave Back",
         lambda state: mc.can_explode_bomb_plant(state, world.player),
     )
-    set_rule_if_exists("SH South Cave 1", lambda state: mc.can_explode_bomb_plant(state, world.player))
-    set_rule_if_exists("SH South Cave 2", lambda state: mc.can_explode_bomb_plant(state, world.player))
-    set_rule_if_exists("SH South Cave 3", lambda state: mc.can_explode_bomb_plant(state, world.player))
-    set_rule_if_exists("SH Booster Ledge Left", lambda state: mc.has_staff_booster(state, world.player))
-    set_rule_if_exists("SH Booster Ledge Right", lambda state: mc.has_staff_booster(state, world.player))
+    set_rule_if_exists("TH South Cave 1", lambda state: mc.can_explode_bomb_plant(state, world.player))
+    set_rule_if_exists("TH South Cave 2", lambda state: mc.can_explode_bomb_plant(state, world.player))
+    set_rule_if_exists("TH South Cave 3", lambda state: mc.can_explode_bomb_plant(state, world.player))
+    set_rule_if_exists("TH Shop Booster Ledge 1", lambda state: mc.has_staff_booster(state, world.player))
+    set_rule_if_exists("TH Shop Booster Ledge 2", lambda state: mc.has_staff_booster(state, world.player))
+    set_rule_if_exists(
+        "TH Above Shop Magic Upgrade",
+        lambda state: mc.has_staff_booster(state, world.player)
+        and mc.has_blaster(state, world.player)
+        and mc.can_explode_bomb_plant(state, world.player),
+    )
+
+    # TH Well
+    set_rule_if_exists("TH Well Booster Ledge 1", lambda state: mc.has_staff_booster(state, world.player))
+    set_rule_if_exists("TH Well Booster Ledge 2", lambda state: mc.has_staff_booster(state, world.player))
+    set_rule_if_exists("TH Dark Well Shroom 1", lambda state: True)
+    set_rule_if_exists("TH Dark Well Shroom 2", lambda state: True)
+    set_rule_if_exists("TH Dark Well Shroom 3", lambda state: mc.can_explode_bomb_plant(state, world.player))
+    set_rule_if_exists("TH Dark Well Shroom 4", lambda state: mc.has_staff_booster(state, world.player))
+    set_rule_if_exists(
+        "TH Dark Well Shroom 5",
+        lambda state: mc.has_staff_booster(state, world.player) and mc.can_explode_bomb_plant(state, world.player),
+    )
+    set_rule_if_exists(
+        "TH Dark Well Shroom 6",
+        lambda state: mc.has_staff_booster(state, world.player) and mc.can_explode_bomb_plant(state, world.player),
+    )
 
     # Ice Mountain
     set_rule_if_exists("IM Cheat Well Cave", lambda state: mc.can_explode_bomb_plant(state, world.player))
@@ -68,6 +90,8 @@ def set_all_location_rules(world: SFAWorld) -> None:
 
     # SnowHorn Wastes
     set_rule_if_exists("SW Magic Upgrade", lambda state: state.has("Tricky", world.player))
+    set_rule_if_exists("SW Give Alpine Root 1", lambda state: state.has("Alpine Root", world.player, 1))
+    set_rule_if_exists("SW Give Alpine Root 2", lambda state: state.has("Alpine Root", world.player, 2))
     set_rule_if_exists("SW Ice Block Left", lambda state: state.has("Alpine Root", world.player, 2))
     set_rule_if_exists("SW Ice Block Right", lambda state: state.has("Alpine Root", world.player, 2))
     set_rule_if_exists("SW Cold Water Left", lambda state: state.has("Staff", world.player))
@@ -77,6 +101,24 @@ def set_all_location_rules(world: SFAWorld) -> None:
         "SW Transition Booster Left",
         lambda state: mc.has_blaster(state, world.player) and mc.has_staff_booster(state, world.player),
     )
+    set_rule_if_exists("SW Rescue Gate Keeper", lambda state: True)
+    set_rule_if_exists("SW Gate After Tree 1", lambda state: mc.has_blaster(state, world.player))
+    set_rule_if_exists("SW Gate After Tree 2", lambda state: mc.has_blaster(state, world.player))
+    set_rule_if_exists("SW Gate River Cheat Well", lambda state: True)
+    set_rule_if_exists("SW Gate River Ledge 1", lambda state: True)
+    set_rule_if_exists("SW Gate River Ledge 2", lambda state: mc.has_blaster(state, world.player))
+    set_rule_if_exists("SW Gate River Ledge 3", lambda state: mc.has_blaster(state, world.player))
+
+    # LightFoot Village
+    set_rule_if_exists("TH Cape Claw Entrance 1", lambda state: state.has("Staff", world.player))
+    set_rule_if_exists("TH Cape Claw Entrance 2", lambda state: state.has("Staff", world.player))
+    set_rule_if_exists("LFV Entrance Booster Ledge 1", lambda state: mc.has_staff_booster(state, world.player))
+    set_rule_if_exists("LFV Entrance Booster Ledge 2", lambda state: mc.has_staff_booster(state, world.player))
+
+    # Moon Mountain Pass
+    set_rule_if_exists("MMP Windy Path In", lambda state: True)
+    set_rule_if_exists("MMP Windy Path Out", lambda state: True)
+    set_rule_if_exists("MMP Barrel Hill", lambda state: True)
 
 
 def set_completion_condition(world: SFAWorld) -> None:

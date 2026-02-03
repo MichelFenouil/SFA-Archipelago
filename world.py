@@ -34,7 +34,7 @@ class SFAWorld(World):
 
     origin_region_name = "World Map"
 
-    progress_locations: set[str] = set() # noqa: RUF012
+    progress_locations: set[str] = set()  # noqa: RUF012
 
     def create_regions(self) -> None:
         """Create regions and entrances for this world player."""

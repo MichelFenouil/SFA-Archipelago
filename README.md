@@ -1,2 +1,2 @@
 # SFA-Archipelago
-Archipelago client for Star Fox Adventure
+Archipelago client for Star Fox Adventures

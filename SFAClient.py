@@ -31,6 +31,7 @@ from .bit_helper import (
 from .items import (
     FILLER_ITEMS,
     ITEM_INVENTORY,
+    ITEM_STAFF,
     USEFUL_ITEMS,
     SFACountItemData,
     SFAItemData,
@@ -74,7 +75,7 @@ class SFAContext(SuperContext):
     This class manages all interactions with the Dolphin emulator and the Archipelago server for Star Fox Adventures.
     """
 
-    game = "Star Fox Adventure"
+    game = "Star Fox Adventures"
     items_handling = 0b111  # full remote
 
     #: Temp should save in memory
@@ -123,7 +124,7 @@ class SFAContext(SuperContext):
         :return: The GUI instance
         """
         ui = super().make_gui()
-        ui.base_title = "Star Fox Adventure Client"
+        ui.base_title = "Star Fox Adventures Client"
         return ui
 
 
@@ -201,6 +202,7 @@ async def locations_watcher(ctx):
 
     :param ctx: The Star Fox Adventures context
     """
+
     def _check_location_flag(ctx: SFAContext, location: SFALocationData) -> None:
         """
         Check if a location has been checked based on its flag.
@@ -356,6 +358,7 @@ async def special_map_flags(ctx: SFAContext) -> None:
 
     :param ctx: The Star Fox Adventures context
     """
+
     def _special_location_item_toggle(
         ctx: SFAContext,
         location: SFAUpgradeLocationData | SFAShopLocationData,
@@ -401,6 +404,24 @@ async def special_map_flags(ctx: SFAContext) -> None:
         #: Check Shop locations
         for loc_data in LOCATION_SHOP.values():
             _special_location_item_toggle(ctx, loc_data, map_value, MAP_SHOP_NO)
+
+        # Force SH act2
+        if map_value == 0x7:  # SH
+            address, offset = get_bit_address(T2_ADDRESS, 0x0722)
+            im_act_byte = dme.read_byte(address)
+            im_act = extract_bits_value(im_act_byte, offset=offset, size=4)
+            logger.info(f"SH act: {im_act}")
+            set_value_bytes(address, offset, 0x2, 4)
+
+        # Remove fireblaster in world map
+        if map_value == 0x29:
+            item = ITEM_STAFF["Fire Blaster"]
+            address, offset = get_bit_address(item.table_address, item.bit_offset)
+            set_flag_bit(address, offset, False)
+        if ctx.stored_map == 0x29:
+            item = ITEM_STAFF["Fire Blaster"]
+            address, offset = get_bit_address(item.table_address, item.bit_offset)
+            set_flag_bit(address, offset, item.id in ctx.received_items_id)
 
         ctx.stored_map = map_value
 
