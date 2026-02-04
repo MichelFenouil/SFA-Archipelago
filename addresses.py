@@ -66,6 +66,7 @@ SAW_ITEM_FLAGS: list[GameFlag] = [
     GameFlag("Slippy Cold Water", 0x001C, T2_ADDRESS),
     GameFlag("Saw Firefly", 0x0021, T2_ADDRESS),
     GameFlag("Saw White GrubTubs", 0x0850, T2_ADDRESS),
+    GameFlag("Saw Last Tutorial Message", 0x0104, T2_ADDRESS),  # Also spawns Queen Cave correctly
 ]
 
 SH_STATE_FLAGS: list[GameFlag] = [
@@ -73,15 +74,17 @@ SH_STATE_FLAGS: list[GameFlag] = [
 ]
 
 IM_OPENED_FLAGS: list[GameFlag] = [
-    GameFlag("IM Dig Pressure Plate", 0x033C, T2_ADDRESS),
+    GameFlag("IM Lava Path Open", 0x0341, T2_ADDRESS),
     GameFlag("IM Dig Tunnel to Waterspout", 0x0344, T2_ADDRESS),
-    GameFlag("SW Block Placed", 0x0037, T2_ADDRESS),
+    GameFlag("SW Geyser Stop", 0x0036, T2_ADDRESS),
+    GameFlag("SW Ice Block Spawn", 0x0067, T2_ADDRESS),
     GameFlag("SW Bribed Guard", 0x0039, T2_ADDRESS),
 ]
 
 CUTSCENE_SKIP_FLAGS: list[GameFlag] = [
     GameFlag("SH Warpstone explanation", 0x0106, T2_ADDRESS),
-    GameFlag("SH Entered Well", 0x00096, T2_ADDRESS),
+    GameFlag("SH Entered Well", 0x0096, T2_ADDRESS),
+    GameFlag("SH Returned with Tricky", 0x0093, T2_ADDRESS),
     GameFlag("IM Skip Tricky captured", 0x0310, T2_ADDRESS),
     GameFlag("IM Skip Hut bullying", 0x0312, T2_ADDRESS),
     GameFlag("IM Skip Starting first race", 0x0314, T2_ADDRESS),

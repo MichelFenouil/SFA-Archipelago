@@ -6,7 +6,7 @@ from typing import TYPE_CHECKING
 
 from BaseClasses import Item, ItemClassification
 
-from .addresses import PLAYER_MAX_HP, PLAYER_MAX_MP, T2_ADDRESS
+from .addresses import PLAYER_CUR_HP, PLAYER_CUR_MP, PLAYER_MAX_HP, PLAYER_MAX_MP, T2_ADDRESS
 
 if TYPE_CHECKING:
     from .world import SFAWorld
@@ -83,6 +83,24 @@ class SFACountItemData(SFAItemData):
     start_amount: int = 0
 
 
+@dataclass
+class SFAQuestItemData(SFACountItemData):
+    """Data class for quest items."""
+
+    item_used_flag_offset: int = 0x0
+    item_used_bit_size: int = 1
+
+
+@dataclass
+class SFAConsumableItemData(SFAItemData):
+    """Data class for consumable items."""
+
+    add_value: int
+    bit_size: int
+    max_read_address: int
+    max_read_bit_size: int
+
+
 def items_name_to_id_dict() -> dict[str, int]:
     """Name to id dict for Star Fox Adventures items."""
     return {name: data.id for name, data in ALL_ITEMS_TABLE.items()}
@@ -90,11 +108,11 @@ def items_name_to_id_dict() -> dict[str, int]:
 
 def get_random_filler_item_name(world: SFAWorld) -> str:
     """Generate filler items."""
-    if world.random.randint(0, 99) < 50:
-        return "Fuel Cell"
-    # if world.random.randint(0, 99) < 50:
-    #     return "Scarab 10"
-    return "Junk"
+    if world.random.randint(0, 99) < 20:
+        return "Health Refill"
+    if world.random.randint(0, 99) < 20:
+        return "Magic Refill"
+    return "Fuel Cell"
 
 
 def create_item_classification(world: SFAWorld, name: str) -> SFAItem:
@@ -157,7 +175,7 @@ ITEM_INVENTORY: dict[str, SFAItemData] = {
         [(0x035B, T2_ADDRESS, 1), (0x035C, T2_ADDRESS, 1), (0x035D, T2_ADDRESS, 1)],
     ),
     "Bomb Plant": SFAItemData(101, 0x0, T2_ADDRESS, SFAItemType.INVENTORY, ItemClassification.progression),
-    "Alpine Root": SFACountItemData(
+    "Alpine Root": SFAQuestItemData(
         102,
         0x0030,
         T2_ADDRESS,
@@ -165,8 +183,10 @@ ITEM_INVENTORY: dict[str, SFAItemData] = {
         ItemClassification.progression,
         max_count=2,
         bit_size=3,
+        item_used_flag_offset=0x0033,
+        item_used_bit_size=3,
     ),
-    "White GrubTub": SFACountItemData(
+    "White GrubTub": SFAQuestItemData(
         103,
         0x00A9,
         T2_ADDRESS,
@@ -174,6 +194,8 @@ ITEM_INVENTORY: dict[str, SFAItemData] = {
         ItemClassification.progression,
         max_count=6,
         bit_size=3,
+        item_used_flag_offset=0x00AD,
+        item_used_bit_size=3,
     ),
     "Gate Key": SFAItemData(104, 0x00B0, T2_ADDRESS, SFAItemType.INVENTORY, ItemClassification.progression),
 }
@@ -239,7 +261,6 @@ USEFUL_ITEMS: dict[str, SFAItemData] = {
 }
 
 FILLER_ITEMS: dict[str, SFAItemData] = {
-    "Junk": SFAItemData(1000, 0x0, 0, SFAItemType.FILLER, ItemClassification.filler),
     "Fuel Cell": SFACountItemData(
         1001,
         0x0935,
@@ -249,7 +270,28 @@ FILLER_ITEMS: dict[str, SFAItemData] = {
         max_count=255,
         bit_size=8,
     ),
-    "Scarab 10": SFAItemData(1002, 0x0, T2_ADDRESS, SFAItemType.FILLER, ItemClassification.filler),
+    "Health Refill": SFAConsumableItemData(
+        1002,
+        0x0,
+        PLAYER_CUR_HP,
+        SFAItemType.FILLER,
+        ItemClassification.filler,
+        add_value=4,
+        bit_size=8,
+        max_read_address=PLAYER_MAX_HP,
+        max_read_bit_size=8,
+    ),
+    "Magic Refill": SFAConsumableItemData(
+        1003,
+        0x0,
+        PLAYER_CUR_MP,
+        SFAItemType.FILLER,
+        ItemClassification.filler,
+        add_value=25,
+        bit_size=8,
+        max_read_address=PLAYER_MAX_MP,
+        max_read_bit_size=8,
+    ),
 }
 
 ALL_ITEMS_TABLE: dict[str, SFAItemData] = {

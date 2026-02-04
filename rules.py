@@ -66,6 +66,7 @@ def set_all_location_rules(world: SFAWorld) -> None:
         and mc.has_blaster(state, world.player)
         and mc.can_explode_bomb_plant(state, world.player),
     )
+    set_rule_if_exists("TH Queen Gave White GrubTubs", lambda state: state.has("White GrubTub", world.player, 6))
 
     # TH Well
     set_rule_if_exists("TH Well Booster Ledge 1", lambda state: mc.has_staff_booster(state, world.player))
@@ -92,8 +93,8 @@ def set_all_location_rules(world: SFAWorld) -> None:
     set_rule_if_exists("SW Magic Upgrade", lambda state: state.has("Tricky", world.player))
     set_rule_if_exists("SW Give Alpine Root 1", lambda state: state.has("Alpine Root", world.player, 1))
     set_rule_if_exists("SW Give Alpine Root 2", lambda state: state.has("Alpine Root", world.player, 2))
-    set_rule_if_exists("SW Ice Block Left", lambda state: state.has("Alpine Root", world.player, 2))
-    set_rule_if_exists("SW Ice Block Right", lambda state: state.has("Alpine Root", world.player, 2))
+    set_rule_if_exists("SW Ice Block Left", lambda state: True)  # Requires 2 Alpine Roots without open SW
+    set_rule_if_exists("SW Ice Block Right", lambda state: True)  # Requires 2 Alpine Roots without open SW
     set_rule_if_exists("SW Cold Water Left", lambda state: state.has("Staff", world.player))
     set_rule_if_exists("SW Cold Water Right", lambda state: state.has("Staff", world.player))
     set_rule_if_exists("SW Dig Cave Left", lambda state: state.has("Tricky", world.player))

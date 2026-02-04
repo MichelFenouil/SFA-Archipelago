@@ -33,10 +33,12 @@ from .items import (
     ITEM_INVENTORY,
     ITEM_STAFF,
     USEFUL_ITEMS,
+    SFAConsumableItemData,
     SFACountItemData,
     SFAItemData,
     SFAItemType,
     SFAProgressiveItemData,
+    SFAQuestItemData,
 )
 from .locations import (
     LOCATION_SHOP,
@@ -186,6 +188,18 @@ def sync_player_state(ctx: SFAContext):
     _give_item_in_game(ctx, ITEM_INVENTORY["Scarab Bag (Progressive)"])
     _give_item_in_game(ctx, USEFUL_ITEMS["HP Upgrade"])
     _give_item_in_game(ctx, USEFUL_ITEMS["MP Upgrade"])
+    _give_item_in_game(ctx, ITEM_INVENTORY["White GrubTub"])
+    _give_item_in_game(ctx, ITEM_INVENTORY["Gate Key"])
+
+
+async def sync_full_player_state(ctx: SFAContext):
+    """
+    Fully synchronize the player's state with the current game data.
+
+    :param ctx: The Star Fox Adventures context
+    """
+    ctx.expected_idx = 0
+    await give_items(ctx)  # type: ignore
 
 
 async def _wait_cutscene_end():
@@ -300,12 +314,26 @@ def _give_item_in_game(ctx: SFAContext, item: SFAItemData):
     ):
         # Don't send shop items if inside shop
         return True
+
     if isinstance(item, SFAProgressiveItemData):
         count = ctx.received_items_id.count(item.id)
         for id, progress in enumerate(item.progressive_data):
             # Set True until count and False for the rest
             set_flag_bit(progress[1], progress[0], count > id)
         logger.debug(f"Received {count} of progressive object: {item}")
+        return True
+
+    if isinstance(item, SFAQuestItemData):
+        count = ctx.received_items_id.count(item.id)
+        if count > item.max_count:
+            count = item.max_count
+            # Could read location count instead
+        used_count = read_value_bytes(item.table_address, item.item_used_flag_offset, item.item_used_bit_size)
+        value = item.start_amount + (count - used_count) * item.count_increment
+        if value < 0:
+            value = 0
+        logger.debug(f"Received {count} of quest object: {item}")
+        set_value_bytes(item.table_address, item.bit_offset, value, item.bit_size)
         return True
 
     if isinstance(item, SFACountItemData):
@@ -317,9 +345,17 @@ def _give_item_in_game(ctx: SFAContext, item: SFAItemData):
         set_value_bytes(item.table_address, item.bit_offset, value, item.bit_size)
         return True
 
-    if item.type != SFAItemType.FILLER:
-        set_flag_bit(item.table_address, item.bit_offset, True)
+    if isinstance(item, SFAConsumableItemData):
+        current_value = read_value_bytes(item.table_address, item.bit_offset, item.bit_size)
+        value = current_value + item.add_value
+        max_value = read_value_bytes(item.max_read_address, 0x0, item.max_read_bit_size)
+        if value > max_value:
+            value = max_value
+        set_value_bytes(item.table_address, item.bit_offset, value, item.bit_size)
         return True
+
+    # All other items
+    set_flag_bit(item.table_address, item.bit_offset, item.id in ctx.received_items_id)
     return True
 
 
@@ -337,6 +373,7 @@ async def force_gameflags(ctx: SFAContext) -> None:
         set_on_or_bytes(SKIP_TUTO_ADDRESS, SKIP_TUTO_VALUE, 2)
         for item in STARTING_ON_FLAGS:
             set_flag_bit(item.table_address, item.bit_offset, True)
+        await sync_full_player_state(ctx)
 
     for item in CONSTANT_ON_FLAGS:
         set_flag_bit(item.table_address, item.bit_offset, True)

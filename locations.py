@@ -145,10 +145,10 @@ LOCATION_SHOP: dict[str, SFAShopLocationData] = {
 LOCATION_ANY: dict[str, SFALocationData] = {
     "SW Magic Upgrade": SFALocationData(20, 0x0010, T2_ADDRESS, SFALocationType.FLAG, SFARegion.SW_WATERSPOUT),
     "SW Give Alpine Root 1": SFACountLocationData(
-        21, 0x033, T2_ADDRESS, SFALocationType.COUNT, SFARegion.SW_WATERSPOUT, 1, 3
+        21, 0x0033, T2_ADDRESS, SFALocationType.COUNT, SFARegion.SW_WATERSPOUT, 1, 3
     ),
     "SW Give Alpine Root 2": SFACountLocationData(
-        22, 0x033, T2_ADDRESS, SFALocationType.COUNT, SFARegion.SW_WATERSPOUT, 2, 3
+        22, 0x0033, T2_ADDRESS, SFALocationType.COUNT, SFARegion.SW_WATERSPOUT, 2, 3
     ),
     "SW Rescue Gate Keeper": SFALocationData(23, 0x0058, T2_ADDRESS, SFALocationType.FLAG, SFARegion.SW_ENTRANCE),
     "TH Dark Well Shroom 1": SFALocationData(24, 0x00A8, T2_ADDRESS, SFALocationType.FLAG, SFARegion.TH_WELL_BOTTOM),
@@ -157,14 +157,16 @@ LOCATION_ANY: dict[str, SFALocationData] = {
     "TH Dark Well Shroom 4": SFALocationData(27, 0x00A3, T2_ADDRESS, SFALocationType.FLAG, SFARegion.TH_WELL_BOTTOM),
     "TH Dark Well Shroom 5": SFALocationData(28, 0x00A4, T2_ADDRESS, SFALocationType.FLAG, SFARegion.TH_WELL_BOTTOM),
     "TH Dark Well Shroom 6": SFALocationData(29, 0x00A6, T2_ADDRESS, SFALocationType.FLAG, SFARegion.TH_WELL_BOTTOM),
-    "TH Above Shop Magic Upgrade": SFALocationData(30, 0x00B1, T2_ADDRESS, SFALocationType.FLAG, SFARegion.TH),
+    "TH Above Shop Magic Upgrade": SFALocationData(30, 0x0011, T2_ADDRESS, SFALocationType.FLAG, SFARegion.TH),
+    "TH Queen Gave White GrubTubs": SFACountLocationData(
+        31, 0x00AD, T2_ADDRESS, SFALocationType.COUNT, SFARegion.TH, 6, 3
+    ),
 }
 
 # Last id = 138
 LOCATION_FUEL_CELL: dict[str, SFALocationData] = {
     # ThornTail Hollow
-    # Queen Cave Fuel Cell disapear on Act 2
-    # "TH Queen Cave Fuel Cell": SFALocationData(100, 0x0945, T2_ADDRESS, SFALocationType.FUELCELL, SFARegion.SH),
+    "TH Queen Cave Fuel Cell": SFALocationData(100, 0x0945, T2_ADDRESS, SFALocationType.FUELCELL, SFARegion.TH),
     "TH Pillar Fuel Cell Left": SFALocationData(101, 0x0946, T2_ADDRESS, SFALocationType.FUELCELL, SFARegion.TH),
     "TH Pillar Fuel Cell Right": SFALocationData(102, 0x0943, T2_ADDRESS, SFALocationType.FUELCELL, SFARegion.TH),
     "TH Beside Warpstone Left": SFALocationData(103, 0x0947, T2_ADDRESS, SFALocationType.FUELCELL, SFARegion.TH),
@@ -229,12 +231,6 @@ LOCATION_DIG_SPOT: dict[str, SFALocationData] = {
     "TH Dig Near Shop": SFALocationData(304, 0x0857, T2_ADDRESS, SFALocationType.DIGSPOT, SFARegion.TH),
     "TH Dig Near Queen Cave": SFALocationData(305, 0x0856, T2_ADDRESS, SFALocationType.DIGSPOT, SFARegion.TH),
     "TH Dig Cape Claw Entrance": SFALocationData(306, 0x0858, T2_ADDRESS, SFALocationType.DIGSPOT, SFARegion.LFV),
-}
-
-LOCATION_EVENTS: dict[str, SFALocationData] = {
-    "EVENT - Opened SnowHorn Wastes": SFALocationData(
-        1000, 0x008E, T2_ADDRESS, SFALocationType.EVENT, SFARegion.SW_ENTRANCE
-    ),
 }
 
 NORMAL_TABLES: dict[str, SFALocationData] = {
