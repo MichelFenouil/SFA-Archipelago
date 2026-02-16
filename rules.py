@@ -39,7 +39,7 @@ def set_all_location_rules(world: SFAWorld) -> None:
     set_rule_if_exists("Fireblaster Upgrade", lambda state: True)
     set_rule_if_exists("TH Pillar Fuel Cell Left", lambda state: True)
     set_rule_if_exists("TH Pillar Fuel Cell Right", lambda state: True)
-    set_rule_if_exists("TH Queen Cave Fuel Cell", lambda state: mc.has_blaster(state, world.player))
+    set_rule_if_exists("TH Queen Cave Fuel Cell", lambda state: True)
     set_rule_if_exists(
         "TH Beside Warpstone Left",
         lambda state: mc.can_explode_bomb_plant(state, world.player),
@@ -83,6 +83,7 @@ def set_all_location_rules(world: SFAWorld) -> None:
         "TH Dark Well Shroom 6",
         lambda state: mc.has_staff_booster(state, world.player) and mc.can_explode_bomb_plant(state, world.player),
     )
+    set_rule_if_exists("Staff Booster Upgrade", lambda state: mc.can_explode_bomb_plant(state, world.player))
 
     # Ice Mountain
     set_rule_if_exists("IM Cheat Well Cave", lambda state: mc.can_explode_bomb_plant(state, world.player))
