@@ -91,6 +91,7 @@ class SFAContext(SuperContext):
 
     #: Suppose the player starts in main menu
     stored_map = 0x3F
+    stored_dim = 0
 
     def __init__(self, server_address, password):
         """
@@ -461,6 +462,18 @@ async def special_map_flags(ctx: SFAContext) -> None:
             set_flag_bit(address, offset, item.id in ctx.received_items_id)
 
         ctx.stored_map = map_value
+    
+    # dim_obj_value = read_value_bytes(0x803A3895, 0, 8, 4)
+    # dim_obj_value = read_value_bytes(T3_ADDRESS, 0x40)
+    # if dim_obj_value != ctx.stored_dim:
+    #     logger.info(f"Entering cave {dim_obj_value:x}")
+    #     if dim_obj_value == 1: 
+    #         set_flag_bit(T2_ADDRESS, 0x0365, False)
+    #     if dim_obj_value == 0:
+    #         set_flag_bit(T2_ADDRESS, 0x0365, True)
+
+    #     ctx.stored_dim = dim_obj_value
+
 
 
 async def game_watcher(ctx: SFAContext):

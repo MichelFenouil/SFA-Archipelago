@@ -3,6 +3,7 @@ from dataclasses import dataclass
 T0_ADDRESS = 0x803A4198
 T1_ADDRESS = 0x803A380C
 T2_ADDRESS = 0x803A32CC
+T3_ADDRESS = 0x803A3880
 
 MAP_ID_ADDRESS = 0x803DCECB
 
@@ -67,6 +68,7 @@ SAW_ITEM_FLAGS: list[GameFlag] = [
     GameFlag("Saw Firefly", 0x0021, T2_ADDRESS),
     GameFlag("Saw White GrubTubs", 0x0850, T2_ADDRESS),
     GameFlag("Saw Last Tutorial Message", 0x0104, T2_ADDRESS),  # Also spawns Queen Cave correctly
+    GameFlag("Learned To Speak", 0x001A, T2_ADDRESS),
 ]
 
 SH_STATE_FLAGS: list[GameFlag] = [
@@ -79,6 +81,18 @@ IM_OPENED_FLAGS: list[GameFlag] = [
     GameFlag("SW Geyser Stop", 0x0036, T2_ADDRESS),
     GameFlag("SW Ice Block Spawn", 0x0067, T2_ADDRESS),
     GameFlag("SW Bribed Guard", 0x0039, T2_ADDRESS),
+]
+
+INTRO_OPENED_FLAGS: list[GameFlag] = [
+    GameFlag("Enable C Menu", 0x0356, T1_ADDRESS),
+    GameFlag("Gold Key Got", 0x01DC, T1_ADDRESS),
+    GameFlag("Gold Key Used", 0x4FB, T2_ADDRESS),
+    GameFlag("Skip landing cutscene", 0x04FA, T2_ADDRESS),
+    GameFlag("Destroyed Wall 1", 0x0502, T2_ADDRESS),
+    GameFlag("Destroyed Wall 2", 0x0504, T2_ADDRESS),
+    GameFlag("Switch Door Open", 0x050D, T2_ADDRESS),
+    GameFlag("Dino Talked After Test", 0x0508, T2_ADDRESS),
+    GameFlag("Spirit Got", 0x053C, T2_ADDRESS),
 ]
 
 CUTSCENE_SKIP_FLAGS: list[GameFlag] = [
@@ -97,6 +111,7 @@ STARTING_ON_FLAGS: list[GameFlag] = [
     *CUTSCENE_SKIP_FLAGS,
     *SH_STATE_FLAGS,
     *IM_OPENED_FLAGS,
+    *INTRO_OPENED_FLAGS,
 ]
 
 CONSTANT_ON_FLAGS: list[GameFlag] = [
