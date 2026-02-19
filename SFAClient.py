@@ -446,7 +446,16 @@ async def special_map_flags(ctx: SFAContext) -> None:
 
     map_value = dme.read_byte(MAP_ID_ADDRESS)
     if ctx.stored_map != map_value:
-        logger.info(f"Entering map {map_value:x}")
+        logger.debug(f"Entering map {map_value:x}")
+        await ctx.send_msgs([{
+            "cmd": "Set",
+            "key": f"SFA_current_map_{ctx.team}_{ctx.slot}",
+            "default": {},
+            "operations": [{
+                "operation": "replace",
+                "value": map_value,
+            }],
+        }])
 
         #: Check Magic Cave locations
         mc_act_byte = dme.read_byte(MAGIC_CAVE_ACT_ADDRESS)
@@ -490,7 +499,7 @@ async def special_map_flags(ctx: SFAContext) -> None:
     # flags = 448380 inside cog room
     dim_obj_value = read_value_bytes(0x803A3895, 0, 32, 4)
     if dim_obj_value != ctx.stored_dim:
-        logger.info(f"Entering dim zone {dim_obj_value:x}")
+        logger.debug(f"Entering dim zone {dim_obj_value:x}")
         _give_item_in_game(ctx, ITEM_INVENTORY["Dinosaur Horn"])
         if dim_obj_value == 0x448380:
             item = ITEM_INVENTORY.get("Cog 2/3/4")
@@ -521,7 +530,7 @@ async def special_map_flags(ctx: SFAContext) -> None:
 
     dim2_obj_value = read_value_bytes(0x803A3891, 0, 32, 4)
     if dim2_obj_value != ctx.stored_dim2:
-        logger.info(f"Entering dim 2 zone {dim2_obj_value:x}")
+        logger.debug(f"Entering dim 2 zone {dim2_obj_value:x}")
         location = LOCATION_ANY["DIM: Get Silver Key"]
         assert isinstance(location, SFALinkedLocationData)
         if dim2_obj_value == 0x40003 or dim2_obj_value == 0x40042:
