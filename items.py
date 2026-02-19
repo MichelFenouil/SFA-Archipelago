@@ -30,6 +30,7 @@ class SFAItemType(Enum):
     SHOP_USEFUL = auto()
     USEFUL = auto()
     FILLER = auto()
+    PLANET = auto()
 
 
 @dataclass
@@ -126,7 +127,7 @@ def create_all_items(world: SFAWorld) -> None:
     itempool: list[Item] = []
 
     for name, data in PROGRESSION_ITEMS.items():
-        if name == "Staff" or name == "Bomb Plant":
+        if name == "Staff" or name == "Bomb Plant" or name == "Dinosaur Planet" or name == "Victory":
             continue
         if isinstance(data, SFACountItemData):
             itempool.extend([world.create_item(name) for _ in range(data.max_count)])
@@ -153,6 +154,7 @@ def create_all_items(world: SFAWorld) -> None:
     # Start with Staff and Bomb Plant for logic (might shuffle later)
     world.push_precollected(world.create_item("Staff"))
     world.push_precollected(world.create_item("Bomb Plant"))
+    world.push_precollected(world.create_item("Dinosaur Planet"))
 
 
 ITEM_STAFF: dict[str, SFAStaffItemData] = {
@@ -162,7 +164,22 @@ ITEM_STAFF: dict[str, SFAStaffItemData] = {
 }
 
 ITEM_TRICKY: dict[str, SFAItemData] = {
-    "Tricky": SFAItemData(10, 0x0846, T2_ADDRESS, SFAItemType.TRICKY, ItemClassification.progression)
+    "Tricky (Progressive)": SFAProgressiveItemData(
+        10,
+        0x0,
+        T2_ADDRESS,
+        SFAItemType.TRICKY,
+        ItemClassification.progression,
+        [(0x0846, T2_ADDRESS, 1), (0x084B, T2_ADDRESS, 1)],
+    ),
+}
+
+ITEM_PLANET: dict[str, SFAItemData] = {
+    "Dinosaur Planet": SFAItemData(50, 0x0930, T2_ADDRESS, SFAItemType.PLANET, ItemClassification.progression),
+    "DarkIce Mines": SFAItemData(51, 0x093D, T2_ADDRESS, SFAItemType.PLANET, ItemClassification.progression),
+    # "CloudRunner Fortress": SFAItemData(52, 0x093E, T2_ADDRESS, SFAItemType.PLANET, ItemClassification.progression),
+    # "Walled City": SFAItemData(53, 0x093F, T2_ADDRESS, SFAItemType.PLANET, ItemClassification.progression),
+    # "Dragon Rock": SFAItemData(54, 0x0940, T2_ADDRESS, SFAItemType.PLANET, ItemClassification.progression),
 }
 
 ITEM_INVENTORY: dict[str, SFAItemData] = {
@@ -198,6 +215,28 @@ ITEM_INVENTORY: dict[str, SFAItemData] = {
         item_used_bit_size=3,
     ),
     "Gate Key": SFAItemData(104, 0x00B0, T2_ADDRESS, SFAItemType.INVENTORY, ItemClassification.progression),
+    "Cog 1": SFAItemData(105, 0x036E, T2_ADDRESS, SFAItemType.INVENTORY, ItemClassification.progression),
+    "DIM Alpine Root": SFAQuestItemData(
+        106,
+        0x037E,
+        T2_ADDRESS,
+        SFAItemType.INVENTORY,
+        ItemClassification.progression,
+        max_count=2,
+        bit_size=3,
+        item_used_flag_offset=0x036C,
+    ),  # Problem if given 1, you will receive 1 again
+    "Cog 2/3/4": SFAProgressiveItemData(
+        107,
+        0x0371,
+        T2_ADDRESS,
+        SFAItemType.INVENTORY,
+        ItemClassification.progression,
+        [(0x0371, T2_ADDRESS, 1), (0x0373, T2_ADDRESS, 1), (0x0375, T2_ADDRESS, 1)],
+    ),
+    "Dinosaur Horn": SFAItemData(110, 0x03A0, T2_ADDRESS, SFAItemType.INVENTORY, ItemClassification.progression),
+    "Cell Silver Key": SFAItemData(111, 0x03DC, T2_ADDRESS, SFAItemType.INVENTORY, ItemClassification.progression),
+    # "Fire Spellstone 1": SFAItemData(112, 0x039E, T2_ADDRESS, SFAItemType.INVENTORY, ItemClassification.progression),
 }
 
 ITEM_SHOP: dict[str, SFAItemData] = {
@@ -233,6 +272,8 @@ PROGRESSION_ITEMS: dict[str, SFAItemData] = {
     **ITEM_INVENTORY,
     **ITEM_SHOP,
     **ITEM_TRICKY,
+    **ITEM_PLANET,
+    "Victory": SFAItemData(2000, 0x0, 0x0, SFAItemType.FILLER, ItemClassification.progression),
 }
 
 USEFUL_ITEMS: dict[str, SFAItemData] = {

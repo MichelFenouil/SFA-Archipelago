@@ -37,6 +37,7 @@ class GameFlag:
     flag_name: str
     bit_offset: int
     table_address: int
+    state: bool = True
 
 
 FORCE_TRICKY = GameFlag("Spawn Tricky", 0x0847, T2_ADDRESS)
@@ -92,7 +93,10 @@ INTRO_OPENED_FLAGS: list[GameFlag] = [
     GameFlag("Destroyed Wall 2", 0x0504, T2_ADDRESS),
     GameFlag("Switch Door Open", 0x050D, T2_ADDRESS),
     GameFlag("Dino Talked After Test", 0x0508, T2_ADDRESS),
-    GameFlag("Spirit Got", 0x053C, T2_ADDRESS),
+]
+
+DIM_STATE_FLAGS: list[GameFlag] = [
+    GameFlag("Belina Te at Bottom", 0x03ED, T2_ADDRESS, True),
 ]
 
 CUTSCENE_SKIP_FLAGS: list[GameFlag] = [
@@ -106,20 +110,19 @@ CUTSCENE_SKIP_FLAGS: list[GameFlag] = [
     GameFlag("IM Open Hut Door", 0x0323, T2_ADDRESS),
 ]
 
-STARTING_ON_FLAGS: list[GameFlag] = [
+STARTING_FLAGS: list[GameFlag] = [
     *SAW_ITEM_FLAGS,
     *CUTSCENE_SKIP_FLAGS,
     *SH_STATE_FLAGS,
     *IM_OPENED_FLAGS,
     *INTRO_OPENED_FLAGS,
+    *DIM_STATE_FLAGS,
 ]
 
-CONSTANT_ON_FLAGS: list[GameFlag] = [
+CONSTANT_FLAGS: list[GameFlag] = [
     FORCE_TRICKY,
     FORCE_TRICKY_CALL,
-]
-
-OFF_FLAGS: list[GameFlag] = [
-    GameFlag("MagicCaveDoorOpen", 0x0008, T2_ADDRESS),
-    GameFlag("MagicCaveDoorRelated", 0x0009, T2_ADDRESS),
+    GameFlag("MagicCaveDoorOpen", 0x0008, T2_ADDRESS, False),
+    GameFlag("MagicCaveDoorRelated", 0x0009, T2_ADDRESS, False),
+    GameFlag("DIM Landing Pad Gate Open", 0x0138, T1_ADDRESS, False),
 ]

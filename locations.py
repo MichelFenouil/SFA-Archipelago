@@ -4,9 +4,9 @@ from dataclasses import dataclass
 from enum import Enum, auto
 from typing import TYPE_CHECKING
 
-from BaseClasses import Location
+from BaseClasses import ItemClassification, Location
 
-from .addresses import T2_ADDRESS
+from .addresses import T0_ADDRESS, T2_ADDRESS
 from .items import SFAItem
 from .regions import SFARegion
 
@@ -61,6 +61,17 @@ class SFAShopLocationData(SFALocationData):
 
 
 @dataclass
+class SFALinkedLocationData(SFALocationData):
+    """Data class for magic cave upgrade locations."""
+
+    linked_item: int
+    map_address: int
+    map_bit_size: int
+    map_value: int
+    state: bool = True
+
+
+@dataclass
 class SFACountLocationData(SFALocationData):
     """Data class for count locations."""
 
@@ -83,6 +94,8 @@ def create_regular_locations(world: SFAWorld) -> None:
 
         region = world.get_region(loc_data.region.value)
         sfa_location = SFALocation(world.player, loc_name, loc_data.id, region)
+        if loc_name == "DIM: Defeat Boss Galdon":
+            sfa_location.place_locked_item(SFAItem("Victory", ItemClassification.progression, 2000, world.player))
         region.locations.append(sfa_location)
         world.progress_locations.add(loc_name)
     print(f"Added locations: {[list(world.get_locations())]}")  # noqa: T201
@@ -90,14 +103,14 @@ def create_regular_locations(world: SFAWorld) -> None:
 
 def create_events(world: SFAWorld) -> None:
     """Create events for AP world."""
-    sw_entrance = world.get_region(SFARegion.SW_ENTRANCE.value)
-    sw_entrance.add_event(
-        "EVENT - Opened SnowHorn Wastes",
-        "EVENT - Opened SnowHorn Wastes",
-        location_type=SFALocation,
-        item_type=SFAItem,
-        rule=lambda state: state.has("Tricky", world.player),
-    )
+    # darkice_mines = world.get_region(SFARegion.DIM_BOTTOM.value)
+    # darkice_mines.add_event(
+    #     "Defeated Boss Galdon",
+    #     "Victory",
+    #     location_type=SFALocation,
+    #     item_type=SFAItem,
+    #     rule=lambda state: has_blaster(state, world.player) and state.has("Tricky (Progressive)", world.player, 2)
+    # )
 
 
 def create_all_locations(world: SFAWorld) -> None:
@@ -161,6 +174,28 @@ LOCATION_ANY: dict[str, SFALocationData] = {
     "TH Queen Gave White GrubTubs": SFACountLocationData(
         31, 0x00AD, T2_ADDRESS, SFALocationType.COUNT, SFARegion.TH, 6, 3
     ),
+    "DIM: Release SnowHorn": SFALocationData(
+        32, 0x0366, T2_ADDRESS, SFALocationType.FLAG, SFARegion.DIM_ENTRANCE
+    ),  # Gives cog 1
+    "DIM: Find Injured SnowHorn": SFALocationData(33, 0x036B, T2_ADDRESS, SFALocationType.FLAG, SFARegion.DIM_ENTRANCE),
+    "DIM: Feed Injured SnowHorn": SFALocationData(34, 0x036D, T2_ADDRESS, SFALocationType.FLAG, SFARegion.DIM_ENTRANCE),
+    "DIM: Cog 2 Chest": SFALocationData(35, 0x0370, T2_ADDRESS, SFALocationType.FLAG, SFARegion.DIM_FORT),
+    "DIM: Get Cog 3": SFALocationData(36, 0x0372, T2_ADDRESS, SFALocationType.FLAG, SFARegion.DIM_FORT),
+    "DIM: Get Cog 4": SFALocationData(37, 0x0374, T2_ADDRESS, SFALocationType.FLAG, SFARegion.DIM_FORT),
+    "DIM: Dinosaur Horn": SFALocationData(38, 0x03BC, T2_ADDRESS, SFALocationType.FLAG, SFARegion.DIM_FORT),
+    "DIM: Get Silver Key": SFALinkedLocationData(
+        39,
+        0x03DC,
+        T2_ADDRESS,
+        SFALocationType.FLAG,
+        SFARegion.DIM_BOTTOM,
+        linked_item=111,
+        map_address=0x803A3891,
+        map_bit_size=4,
+        map_value=0x40042,
+        state=True,
+    ),
+    "DIM: Defeat Boss Galdon": SFALocationData(40, 0x0120, T0_ADDRESS, SFALocationType.EVENT, SFARegion.DIM_BOTTOM),
 }
 
 # Last id = 138
@@ -231,6 +266,8 @@ LOCATION_DIG_SPOT: dict[str, SFALocationData] = {
     "TH Dig Near Shop": SFALocationData(304, 0x0857, T2_ADDRESS, SFALocationType.DIGSPOT, SFARegion.TH),
     "TH Dig Near Queen Cave": SFALocationData(305, 0x0856, T2_ADDRESS, SFALocationType.DIGSPOT, SFARegion.TH),
     "TH Dig Cape Claw Entrance": SFALocationData(306, 0x0858, T2_ADDRESS, SFALocationType.DIGSPOT, SFARegion.LFV),
+    "DIM: Dig Alpine Root 1": SFALocationData(308, 0x037C, T2_ADDRESS, SFALocationType.DIGSPOT, SFARegion.DIM_ENTRANCE),
+    "DIM: Dig Alpine Root 2": SFALocationData(309, 0x037D, T2_ADDRESS, SFALocationType.DIGSPOT, SFARegion.DIM_ENTRANCE),
 }
 
 NORMAL_TABLES: dict[str, SFALocationData] = {

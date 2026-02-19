@@ -32,6 +32,7 @@ from .items import (
     FILLER_ITEMS,
     ITEM_INVENTORY,
     ITEM_STAFF,
+    ITEM_TRICKY,
     USEFUL_ITEMS,
     SFAConsumableItemData,
     SFACountItemData,
@@ -41,10 +42,12 @@ from .items import (
     SFAQuestItemData,
 )
 from .locations import (
+    LOCATION_ANY,
     LOCATION_SHOP,
     LOCATION_UPGRADE,
     NORMAL_TABLES,
     SFACountLocationData,
+    SFALinkedLocationData,
     SFALocationData,
     SFALocationType,
     SFAShopLocationData,
@@ -92,6 +95,7 @@ class SFAContext(SuperContext):
     #: Suppose the player starts in main menu
     stored_map = 0x3F
     stored_dim = 0
+    stored_dim2 = 0
 
     def __init__(self, server_address, password):
         """
@@ -191,6 +195,9 @@ def sync_player_state(ctx: SFAContext):
     _give_item_in_game(ctx, USEFUL_ITEMS["MP Upgrade"])
     _give_item_in_game(ctx, ITEM_INVENTORY["White GrubTub"])
     _give_item_in_game(ctx, ITEM_INVENTORY["Gate Key"])
+    _give_item_in_game(ctx, ITEM_INVENTORY["Cog 1"])
+    _give_item_in_game(ctx, ITEM_INVENTORY["DIM Alpine Root"])
+    _give_item_in_game(ctx, ITEM_TRICKY["Tricky (Progressive)"])
 
 
 async def sync_full_player_state(ctx: SFAContext):
@@ -245,12 +252,18 @@ async def locations_watcher(ctx):
         if value >= location.count:
             ctx.locations_checked.add(location.id)
 
-    for cell_data in NORMAL_TABLES.values():
-        if isinstance(cell_data, SFACountLocationData):
-            _check_location_value(ctx, cell_data)
+    for location_data in NORMAL_TABLES.values():
+        if isinstance(location_data, SFALinkedLocationData):
+            map_value = read_value_bytes(
+                location_data.map_address, 0, location_data.map_bit_size * 8, location_data.map_bit_size
+            )
+            if map_value == location_data.map_value:
+                _check_location_flag(ctx, location_data)
+        elif isinstance(location_data, SFACountLocationData):
+            _check_location_value(ctx, location_data)
             await _wait_cutscene_end()
         else:
-            _check_location_flag(ctx, cell_data)
+            _check_location_flag(ctx, location_data)
 
     map_value = dme.read_byte(MAP_ID_ADDRESS)
     if map_value == MAP_MAGIC_CAVE_NO and ctx.stored_map == MAP_MAGIC_CAVE_NO:
@@ -270,11 +283,14 @@ async def locations_watcher(ctx):
         for loc_data in LOCATION_SHOP.values():
             _check_location_flag(ctx, loc_data)
 
-    # TODO Failsafe if sending a location that doesn't exist?
     locations_checked = ctx.locations_checked.difference(ctx.checked_locations)
     if locations_checked:
         sync_player_state(ctx)
         await ctx.send_msgs([{"cmd": "LocationChecks", "locations": locations_checked}])
+
+    if ctx.victory and not ctx.finished_game:
+        await ctx.send_msgs([{"cmd": "StatusUpdate", "status": ClientStatus.CLIENT_GOAL}])
+        ctx.finished_game = True
 
 
 async def give_items(ctx: SFAContext):
@@ -310,6 +326,10 @@ def _give_item_in_game(ctx: SFAContext, item: SFAItemData):
     :param item: The item data to give
     :return: True if the item was given successfully, False otherwise
     """
+    if item.id == 2000:  # Victory
+        ctx.victory = True
+        return True
+
     if ctx.stored_map == MAP_SHOP_NO and (
         item.type == SFAItemType.SHOP_PROGRESSION or item.type == SFAItemType.SHOP_USEFUL
     ):
@@ -356,6 +376,8 @@ def _give_item_in_game(ctx: SFAContext, item: SFAItemData):
         return True
 
     # All other items
+    if item.id == 105:
+        logger.debug(f"Cog 1 received: {item.id in ctx.received_items_id}")
     set_flag_bit(item.table_address, item.bit_offset, item.id in ctx.received_items_id)
     return True
 
@@ -372,16 +394,12 @@ async def force_gameflags(ctx: SFAContext) -> None:
         logger.info("Set starting flags ON")
         set_on_or_bytes(ITEM_MAP_ADDRESS, ITEM_MAP_INIT_VALUE, 3)
         set_on_or_bytes(SKIP_TUTO_ADDRESS, SKIP_TUTO_VALUE, 2)
-        for item in STARTING_ON_FLAGS:
-            set_flag_bit(item.table_address, item.bit_offset, True)
+        for item in STARTING_FLAGS:
+            set_flag_bit(item.table_address, item.bit_offset, item.state)
         await sync_full_player_state(ctx)
 
-    for item in CONSTANT_ON_FLAGS:
-        set_flag_bit(item.table_address, item.bit_offset, True)
-
-    # Force magic cave gate open
-    for item in OFF_FLAGS:
-        set_flag_bit(item.table_address, item.bit_offset, False)
+    for item in CONSTANT_FLAGS:
+        set_flag_bit(item.table_address, item.bit_offset, item.state)
 
     # Force Bomb_spore to 1 for testing
     address, position = get_bit_address(T2_ADDRESS, 0x77)
@@ -461,19 +479,57 @@ async def special_map_flags(ctx: SFAContext) -> None:
             address, offset = get_bit_address(item.table_address, item.bit_offset)
             set_flag_bit(address, offset, item.id in ctx.received_items_id)
 
+        # Give Krystal Spirit 1
+        if map_value == 0x0B:
+            address, offset = get_bit_address(T2_ADDRESS, 0x053C)
+            set_flag_bit(address, offset, True)
+
         ctx.stored_map = map_value
-    
-    # dim_obj_value = read_value_bytes(0x803A3895, 0, 8, 4)
-    # dim_obj_value = read_value_bytes(T3_ADDRESS, 0x40)
-    # if dim_obj_value != ctx.stored_dim:
-    #     logger.info(f"Entering cave {dim_obj_value:x}")
-    #     if dim_obj_value == 1: 
-    #         set_flag_bit(T2_ADDRESS, 0x0365, False)
-    #     if dim_obj_value == 0:
-    #         set_flag_bit(T2_ADDRESS, 0x0365, True)
 
-    #     ctx.stored_dim = dim_obj_value
+    # Shakle key is annoying but cogs are fine, only give cogs while inside cog room
+    # flags = 448380 inside cog room
+    dim_obj_value = read_value_bytes(0x803A3895, 0, 32, 4)
+    if dim_obj_value != ctx.stored_dim:
+        logger.info(f"Entering dim zone {dim_obj_value:x}")
+        _give_item_in_game(ctx, ITEM_INVENTORY["Dinosaur Horn"])
+        if dim_obj_value == 0x448380:
+            item = ITEM_INVENTORY.get("Cog 2/3/4")
+            assert isinstance(item, SFAProgressiveItemData)
+            count = ctx.received_items_id.count(item.id)
+            for id, progress in enumerate(item.progressive_data):
+                # Set True until count and False for the rest
+                set_flag_bit(progress[1], progress[0], count > id)
+                set_flag_bit(progress[1], progress[0] - 1, False)
+        else:
+            item = ITEM_INVENTORY.get("Cog 2/3/4")
+            location = [
+                LOCATION_ANY["DIM: Cog 2 Chest"],
+                LOCATION_ANY["DIM: Get Cog 3"],
+                LOCATION_ANY["DIM: Get Cog 4"],
+            ]
+            assert isinstance(item, SFAProgressiveItemData)
+            for _id, progress in enumerate(item.progressive_data):
+                # True to hide all cogs
+                set_flag_bit(progress[1], progress[0], True)
+            for loc in location:
+                if loc.id in ctx.checked_locations:
+                    set_flag_bit(loc.table_address, loc.bit_offset, True)
+                else:
+                    set_flag_bit(loc.table_address, loc.bit_offset, False)
 
+        ctx.stored_dim = dim_obj_value
+
+    dim2_obj_value = read_value_bytes(0x803A3891, 0, 32, 4)
+    if dim2_obj_value != ctx.stored_dim2:
+        logger.info(f"Entering dim 2 zone {dim2_obj_value:x}")
+        location = LOCATION_ANY["DIM: Get Silver Key"]
+        assert isinstance(location, SFALinkedLocationData)
+        if dim2_obj_value == 0x40003 or dim2_obj_value == 0x40042:
+            set_flag_bit(location.table_address, location.bit_offset, location.id in ctx.checked_locations)
+        else:
+            set_flag_bit(location.table_address, location.bit_offset, location.linked_item in ctx.received_items_id)
+
+        ctx.stored_dim2 = dim2_obj_value
 
 
 async def game_watcher(ctx: SFAContext):
