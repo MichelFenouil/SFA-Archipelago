@@ -78,4 +78,6 @@ class SFAWorld(World):
         :return: A dictionary to be sent to the client when it connects to the server.
         """
         # If you need access to the player's chosen options on the client side, there is a helper for that.
-        return {}
+        return self.options.as_dict(
+            "shop_locations",
+        )
