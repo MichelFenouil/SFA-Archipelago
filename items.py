@@ -102,6 +102,14 @@ class SFAConsumableItemData(SFAItemData):
     max_read_bit_size: int
 
 
+@dataclass
+class SFAPlanetItemData(SFAItemData):
+    """Data class for planet items."""
+
+    gate_table_address: int
+    gate_bit_offset: int
+
+
 def items_name_to_id_dict() -> dict[str, int]:
     """Name to id dict for Star Fox Adventures items."""
     return {name: data.id for name, data in ALL_ITEMS_TABLE.items()}
@@ -176,7 +184,15 @@ ITEM_TRICKY: dict[str, SFAItemData] = {
 
 ITEM_PLANET: dict[str, SFAItemData] = {
     "Dinosaur Planet": SFAItemData(50, 0x0930, T2_ADDRESS, SFAItemType.PLANET, ItemClassification.progression),
-    "DarkIce Mines": SFAItemData(51, 0x093D, T2_ADDRESS, SFAItemType.PLANET, ItemClassification.progression),
+    "DarkIce Mines": SFAPlanetItemData(
+        51,
+        0x093D,
+        T2_ADDRESS,
+        SFAItemType.PLANET,
+        ItemClassification.progression,
+        gate_table_address=T2_ADDRESS,
+        gate_bit_offset=0x0931,
+    ),
     # "CloudRunner Fortress": SFAItemData(52, 0x093E, T2_ADDRESS, SFAItemType.PLANET, ItemClassification.progression),
     # "Walled City": SFAItemData(53, 0x093F, T2_ADDRESS, SFAItemType.PLANET, ItemClassification.progression),
     # "Dragon Rock": SFAItemData(54, 0x0940, T2_ADDRESS, SFAItemType.PLANET, ItemClassification.progression),

@@ -38,6 +38,7 @@ from .items import (
     SFACountItemData,
     SFAItemData,
     SFAItemType,
+    SFAPlanetItemData,
     SFAProgressiveItemData,
     SFAQuestItemData,
 )
@@ -90,7 +91,8 @@ class SFAContext(SuperContext):
     victory = False
 
     #: Player state (probably change to server)
-    fuel_cell_count = 156
+    fuel_cell_count = 0
+    shop_visited = False
 
     #: Suppose the player starts in main menu
     stored_map = 0x3F
@@ -133,6 +135,10 @@ class SFAContext(SuperContext):
         ui = super().make_gui()
         ui.base_title = "Star Fox Adventures Client"
         return ui
+
+    def on_package(self, cmd: str, args: dict):
+        """Handle incoming packages from the server."""
+        return super().on_package(cmd, args)
 
 
 async def dolphin_sync_task(ctx: SFAContext) -> None:
@@ -375,9 +381,12 @@ def _give_item_in_game(ctx: SFAContext, item: SFAItemData):
         set_value_bytes(item.table_address, item.bit_offset, value, item.bit_size)
         return True
 
+    if isinstance(item, SFAPlanetItemData):
+        set_flag_bit(item.table_address, item.bit_offset, item.id in ctx.received_items_id)
+        set_flag_bit(item.gate_table_address, item.gate_bit_offset, item.id in ctx.received_items_id)
+        return True
+
     # All other items
-    if item.id == 105:
-        logger.debug(f"Cog 1 received: {item.id in ctx.received_items_id}")
     set_flag_bit(item.table_address, item.bit_offset, item.id in ctx.received_items_id)
     return True
 
@@ -467,6 +476,17 @@ async def special_map_flags(ctx: SFAContext) -> None:
                 _special_location_item_toggle(ctx, loc_data, map_value, MAP_MAGIC_CAVE_NO)
 
         #: Check Shop locations
+        if map_value == MAP_SHOP_NO and not ctx.shop_visited:
+            await ctx.send_msgs(
+                [
+                    {
+                        "cmd": "LocationScouts",
+                        "locations": [loc.id for loc in LOCATION_SHOP.values() if loc.id in ctx.server_locations],
+                        "create_as_hint": 2,
+                    }
+                ]
+            )
+            ctx.shop_visited = True
         for loc_data in LOCATION_SHOP.values():
             _special_location_item_toggle(ctx, loc_data, map_value, MAP_SHOP_NO)
 

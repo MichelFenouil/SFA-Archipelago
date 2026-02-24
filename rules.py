@@ -145,7 +145,10 @@ def set_all_location_rules(world: SFAWorld) -> None:
         lambda state: mc.has_blaster(state, world.player)
         and state.has_all_counts({"Cog 2/3/4": 3, "Tricky (Progressive)": 2}, world.player),
     )
-    set_rule_if_exists("DIM: Get Silver Key", lambda state: mc.has_staff_booster(state, world.player) and mc.has_blaster(state, world.player))
+    set_rule_if_exists(
+        "DIM: Get Silver Key",
+        lambda state: mc.has_staff_booster(state, world.player) and mc.has_blaster(state, world.player),
+    )
     set_rule_if_exists(
         "DIM: Defeat Boss Galdon",
         lambda state: mc.has_blaster(state, world.player)
