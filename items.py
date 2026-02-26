@@ -57,6 +57,17 @@ class SFAItemData:
                 return item
         return None
 
+    @classmethod
+    def get_by_name(cls, name: str) -> SFAItemData | None:
+        """
+        Return item for given name.
+
+        :param cls: SFAItemData class
+        :param name: Item name to search
+        :return: SFAItemData for given name
+        """
+        return ALL_ITEMS_TABLE.get(name)
+
 
 @dataclass
 class SFAStaffItemData(SFAItemData):
