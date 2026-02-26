@@ -520,13 +520,11 @@ async def special_map_flags(ctx: SFAContext) -> None:
 
         ctx.stored_map = map_value
 
-    # Shakle key is annoying but cogs are fine, only give cogs while inside cog room
-    # flags = 448380 inside cog room
-    dim_obj_value = read_value_bytes(0x803A3895, 0, 32, 4)
+    # Place bridge cogs when entering the room
+    dim_obj_value = read_value_bytes(DIM_OBJECTS_ADDRESS, 0, 32, 4)
     if dim_obj_value != ctx.stored_dim:
         logger.debug(f"Entering dim zone {dim_obj_value:x}")
-        _give_item_in_game(ctx, ITEM_INVENTORY["Dinosaur Horn"])
-        if dim_obj_value == 0x448380:
+        if dim_obj_value == DIM_COGS_ZONE_VALUE:
             item = ITEM_INVENTORY.get("Cog 2/3/4")
             assert isinstance(item, SFAProgressiveItemData)
             count = ctx.received_items_id.count(item.id)
@@ -546,24 +544,9 @@ async def special_map_flags(ctx: SFAContext) -> None:
                 # True to hide all cogs
                 set_flag_bit(progress[1], progress[0], True)
             for loc in location:
-                if loc.id in ctx.checked_locations:
-                    set_flag_bit(loc.table_address, loc.bit_offset, True)
-                else:
-                    set_flag_bit(loc.table_address, loc.bit_offset, False)
+                set_flag_bit(loc.table_address, loc.bit_offset, loc.id in ctx.checked_locations)
 
         ctx.stored_dim = dim_obj_value
-
-    dim2_obj_value = read_value_bytes(0x803A3891, 0, 32, 4)
-    if dim2_obj_value != ctx.stored_dim2:
-        logger.debug(f"Entering dim 2 zone {dim2_obj_value:x}")
-        location = LOCATION_ANY["DIM: Get Silver Key"]
-        assert isinstance(location, SFALinkedLocationData)
-        if dim2_obj_value == 0x40003 or dim2_obj_value == 0x40042:
-            set_flag_bit(location.table_address, location.bit_offset, location.id in ctx.checked_locations)
-        else:
-            set_flag_bit(location.table_address, location.bit_offset, location.linked_item in ctx.received_items_id)
-
-        ctx.stored_dim2 = dim2_obj_value
 
 
 async def game_watcher(ctx: SFAContext):

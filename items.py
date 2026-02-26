@@ -251,7 +251,7 @@ ITEM_INVENTORY: dict[str, SFAItemData] = {
         [(0x0371, T2_ADDRESS, 1), (0x0373, T2_ADDRESS, 1), (0x0375, T2_ADDRESS, 1)],
     ),
     "Dinosaur Horn": SFAItemData(110, 0x03A0, T2_ADDRESS, SFAItemType.INVENTORY, ItemClassification.progression),
-    "Cell Silver Key": SFAItemData(111, 0x03DC, T2_ADDRESS, SFAItemType.INVENTORY, ItemClassification.progression),
+    # "Cell Silver Key": SFAItemData(111, 0x03DC, T2_ADDRESS, SFAItemType.INVENTORY, ItemClassification.progression),
     # "Fire Spellstone 1": SFAItemData(112, 0x039E, T2_ADDRESS, SFAItemType.INVENTORY, ItemClassification.progression),
 }
 
