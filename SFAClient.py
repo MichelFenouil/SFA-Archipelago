@@ -212,6 +212,7 @@ async def sync_full_player_state(ctx: SFAContext):
 
     :param ctx: The Star Fox Adventures context
     """
+    logger.debug("Syncing full player state")
     ctx.expected_idx = 0
     await give_items(ctx)  # type: ignore
 
@@ -231,32 +232,36 @@ async def locations_watcher(ctx):
     :param ctx: The Star Fox Adventures context
     """
 
-    def _check_location_flag(ctx: SFAContext, location: SFALocationData) -> None:
+    def _check_location_flag(ctx: SFAContext, location: SFALocationData) -> bool:
         """
         Check if a location has been checked based on its flag.
 
         :param ctx: The Star Fox Adventures context
         :param location: The location data to check
         """
-        if location.id not in ctx.server_locations:
-            return
+        if location.id not in ctx.server_locations or location.id in ctx.locations_checked:
+            return False
         address, bit_position = get_bit_address(location.table_address, location.bit_offset)
         byte = dme.read_byte(address)
         if bit_position in extract_bitflag_list(byte):
             ctx.locations_checked.add(location.id)
+            return True
+        return False
 
-    def _check_location_value(ctx: SFAContext, location: SFACountLocationData) -> None:
+    def _check_location_value(ctx: SFAContext, location: SFACountLocationData) -> bool:
         """
         Check if a location has been checked based on its value.
 
         :param ctx: The Star Fox Adventures context
         :param location: The location data to check
         """
-        if location.id not in ctx.server_locations:
-            return
+        if location.id not in ctx.server_locations or location.id in ctx.locations_checked:
+            return False
         value = read_value_bytes(location.table_address, location.bit_offset, location.bit_size)
         if value >= location.count:
             ctx.locations_checked.add(location.id)
+            return True
+        return False
 
     for location_data in NORMAL_TABLES.values():
         if isinstance(location_data, SFALinkedLocationData):
@@ -266,8 +271,8 @@ async def locations_watcher(ctx):
             if map_value == location_data.map_value:
                 _check_location_flag(ctx, location_data)
         elif isinstance(location_data, SFACountLocationData):
-            _check_location_value(ctx, location_data)
-            await _wait_cutscene_end()
+            if _check_location_value(ctx, location_data):
+                await _wait_cutscene_end()
         else:
             _check_location_flag(ctx, location_data)
 
@@ -400,7 +405,7 @@ async def force_gameflags(ctx: SFAContext) -> None:
     # Set bitflags when starting save
     map_value = dme.read_byte(MAP_ID_ADDRESS)
     if ctx.stored_map != map_value and ctx.stored_map == 0x3F:
-        logger.info("Set starting flags ON")
+        logger.debug("Set starting flags")
         set_on_or_bytes(ITEM_MAP_ADDRESS, ITEM_MAP_INIT_VALUE, 3)
         set_on_or_bytes(SKIP_TUTO_ADDRESS, SKIP_TUTO_VALUE, 2)
         for item in STARTING_FLAGS:
