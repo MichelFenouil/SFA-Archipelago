@@ -226,13 +226,13 @@ def sync_player_state(ctx: SFAContext):
     :param ctx: The Star Fox Adventures context
     """
     _give_item_in_game(ctx, FILLER_ITEMS["Fuel Cell"])
-    _give_item_in_game(ctx, ITEM_INVENTORY["Alpine Root"])
+    _give_item_in_game(ctx, ITEM_INVENTORY["SHW Alpine Root"])
     _give_item_in_game(ctx, ITEM_INVENTORY["Scarab Bag (Progressive)"])
     _give_item_in_game(ctx, USEFUL_ITEMS["HP Upgrade"])
     _give_item_in_game(ctx, USEFUL_ITEMS["MP Upgrade"])
     _give_item_in_game(ctx, ITEM_INVENTORY["White GrubTub"])
     _give_item_in_game(ctx, ITEM_INVENTORY["Gate Key"])
-    _give_item_in_game(ctx, ITEM_INVENTORY["Cog 1"])
+    _give_item_in_game(ctx, ITEM_INVENTORY["Entrance Bridge Cog"])
     _give_item_in_game(ctx, ITEM_INVENTORY["DIM Alpine Root"])
     _give_item_in_game(ctx, ITEM_TRICKY["Tricky (Progressive)"])
 
@@ -560,7 +560,7 @@ async def special_map_flags(ctx: SFAContext) -> None:
     if dim_obj_value != ctx.stored_dim:
         logger.debug(f"Entering dim zone {dim_obj_value:x}")
         if dim_obj_value == DIM_COGS_ZONE_VALUE:
-            item = ITEM_INVENTORY.get("Cog 2/3/4")
+            item = ITEM_INVENTORY.get("SharpClaw Fort Bridge Cogs")
             assert isinstance(item, SFAProgressiveItemData)
             count = ctx.received_items_id.count(item.id)
             for id, progress in enumerate(item.progressive_data):
@@ -579,11 +579,11 @@ async def special_map_flags(ctx: SFAContext) -> None:
             for flag in DIM_OPEN_BIKE:
                 set_flag_bit(flag.table_address, flag.bit_offset, False)
         else:
-            item = ITEM_INVENTORY.get("Cog 2/3/4")
+            item = ITEM_INVENTORY.get("SharpClaw Fort Bridge Cogs")
             location = [
-                LOCATION_ANY["DIM: Cog 2 Chest"],
-                LOCATION_ANY["DIM: Get Cog 3"],
-                LOCATION_ANY["DIM: Get Cog 4"],
+                LOCATION_ANY["DIM: Ennemy Gate Cog Chest"],
+                LOCATION_ANY["DIM: Hut Cog Chest"],
+                LOCATION_ANY["DIM: Ice Cog Chest"],
             ]
             assert isinstance(item, SFAProgressiveItemData)
             for _id, progress in enumerate(item.progressive_data):

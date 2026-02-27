@@ -146,7 +146,7 @@ def create_all_items(world: SFAWorld) -> None:
     itempool: list[Item] = []
 
     for name, data in PROGRESSION_ITEMS.items():
-        if name == "Staff" or name == "Bomb Plant" or name == "Dinosaur Planet" or name == "Victory":
+        if name == "Staff" or name == "Bomb Plant" or name == "Dinosaur Planet Access" or name == "Victory":
             continue
         if isinstance(data, SFACountItemData):
             itempool.extend([world.create_item(name) for _ in range(data.max_count)])
@@ -173,7 +173,7 @@ def create_all_items(world: SFAWorld) -> None:
     # Start with Staff and Bomb Plant for logic (might shuffle later)
     world.push_precollected(world.create_item("Staff"))
     world.push_precollected(world.create_item("Bomb Plant"))
-    world.push_precollected(world.create_item("Dinosaur Planet"))
+    world.push_precollected(world.create_item("Dinosaur Planet Access"))
 
 
 ITEM_STAFF: dict[str, SFAStaffItemData] = {
@@ -194,8 +194,8 @@ ITEM_TRICKY: dict[str, SFAItemData] = {
 }
 
 ITEM_PLANET: dict[str, SFAItemData] = {
-    "Dinosaur Planet": SFAItemData(50, 0x0930, T2_ADDRESS, SFAItemType.PLANET, ItemClassification.progression),
-    "DarkIce Mines": SFAPlanetItemData(
+    "Dinosaur Planet Access": SFAItemData(50, 0x0930, T2_ADDRESS, SFAItemType.PLANET, ItemClassification.progression),
+    "DarkIce Mines Access": SFAPlanetItemData(
         51,
         0x093D,
         T2_ADDRESS,
@@ -219,7 +219,7 @@ ITEM_INVENTORY: dict[str, SFAItemData] = {
         [(0x035B, T2_ADDRESS, 1), (0x035C, T2_ADDRESS, 1), (0x035D, T2_ADDRESS, 1)],
     ),
     "Bomb Plant": SFAItemData(101, 0x0, T2_ADDRESS, SFAItemType.INVENTORY, ItemClassification.progression),
-    "Alpine Root": SFAQuestItemData(
+    "SHW Alpine Root": SFAQuestItemData(
         102,
         0x0030,
         T2_ADDRESS,
@@ -242,7 +242,7 @@ ITEM_INVENTORY: dict[str, SFAItemData] = {
         item_used_bit_size=3,
     ),
     "Gate Key": SFAItemData(104, 0x00B0, T2_ADDRESS, SFAItemType.INVENTORY, ItemClassification.progression),
-    "Cog 1": SFAItemData(105, 0x036E, T2_ADDRESS, SFAItemType.INVENTORY, ItemClassification.progression),
+    "Entrance Bridge Cog": SFAItemData(105, 0x036E, T2_ADDRESS, SFAItemType.INVENTORY, ItemClassification.progression),
     "DIM Alpine Root": SFAQuestItemData(
         106,
         0x037E,
@@ -253,7 +253,7 @@ ITEM_INVENTORY: dict[str, SFAItemData] = {
         bit_size=3,
         item_used_flag_offset=0x036C,
     ),  # Problem if given 1, you will receive 1 again
-    "Cog 2/3/4": SFAProgressiveItemData(
+    "SharpClaw Fort Bridge Cogs": SFAProgressiveItemData(
         107,
         0x0371,
         T2_ADDRESS,
