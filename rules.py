@@ -142,7 +142,7 @@ def set_all_location_rules(world: SFAWorld) -> None:
         "DIM: Feed Injured SnowHorn",
         lambda state: state.has_all_counts({"Entrance Bridge Cog": 1, "DIM Alpine Root": 2}, world.player),
     )
-    set_rule_if_exists("DIM: Ennemy Gate Cog Chest", lambda state: mc.has_staff_booster(state, world.player))
+    set_rule_if_exists("DIM: Enemy Gate Cog Chest", lambda state: mc.has_staff_booster(state, world.player))
     set_rule_if_exists("DIM: Hut Cog Chest", lambda state: mc.has_staff_booster(state, world.player))
     set_rule_if_exists(
         "DIM: Ice Cog Chest",

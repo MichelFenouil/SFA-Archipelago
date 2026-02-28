@@ -21,7 +21,7 @@ class SFALocation(Location):
 
 
 class SFALocationType(Enum):
-    """TTHis class defines constants for various types of locations in Star Fox Adventures."""
+    """This class defines constants for various types of locations in Star Fox Adventures."""
 
     MCUPGRADE = auto()
     FUELCELL = auto()
@@ -129,46 +129,46 @@ LOCATION_UPGRADE: dict[str, SFAUpgradeLocationData] = {
 }
 
 LOCATION_SHOP: dict[str, SFAShopLocationData] = {
-    "TTH Shop: Rock Candy": SFAShopLocationData(200, 0x035F, T2_ADDRESS, SFALocationType.SHOP, SFARegion.TH, 200, 10),
-    "TTH Shop: Hi-Tech Display Device": SFAShopLocationData(
+    "TTH Store: Rock Candy": SFAShopLocationData(200, 0x035F, T2_ADDRESS, SFALocationType.SHOP, SFARegion.TH, 200, 10),
+    "TTH Store: Hi-Tech Display Device": SFAShopLocationData(
         201, 0x035E, T2_ADDRESS, SFALocationType.SHOP, SFARegion.TH, 201, 20
     ),
-    "TTH Shop: Tricky Ball": SFAShopLocationData(202, 0x084C, T2_ADDRESS, SFALocationType.SHOP, SFARegion.TH, 202, 15),
-    "TTH Shop: Bafomdad Holder": SFAShopLocationData(
+    "TTH Store: Tricky Ball": SFAShopLocationData(202, 0x084C, T2_ADDRESS, SFALocationType.SHOP, SFARegion.TH, 202, 15),
+    "TTH Store: Bafomdad Holder": SFAShopLocationData(
         203, 0x09EE, T2_ADDRESS, SFALocationType.SHOP, SFARegion.TH, 203, 20
     ),
-    "TTH Shop: Firefly Lantern": SFAShopLocationData(
+    "TTH Store: Firefly Lantern": SFAShopLocationData(
         204, 0x0717, T2_ADDRESS, SFALocationType.SHOP, SFARegion.TH, 204, 20
     ),
-    "TTH Shop: Snowhorn Artifact": SFAShopLocationData(
+    "TTH Store: Snowhorn Artifact": SFAShopLocationData(
         205, 0x0060, T2_ADDRESS, SFALocationType.SHOP, SFARegion.TH, 205, 130
     ),
-    "TTH Shop: Map Cape Claw": SFAShopLocationData(210, 0x0841, T2_ADDRESS, SFALocationType.MAP, SFARegion.TH, 0, 5),
-    "TTH Shop: Map Ocean Force Point": SFAShopLocationData(
+    "TTH Store: Map Cape Claw": SFAShopLocationData(210, 0x0841, T2_ADDRESS, SFALocationType.MAP, SFARegion.TH, 0, 5),
+    "TTH Store: Map Ocean Force Point": SFAShopLocationData(
         211, 0x083F, T2_ADDRESS, SFALocationType.MAP, SFARegion.TH, 0, 10
     ),
-    "TTH Shop: Map Krazoa Palace": SFAShopLocationData(
+    "TTH Store: Map Krazoa Palace": SFAShopLocationData(
         212, 0x083D, T2_ADDRESS, SFALocationType.MAP, SFARegion.TH, 0, 5
     ),
-    "TTH Shop: Map Dragon Rock": SFAShopLocationData(213, 0x0839, T2_ADDRESS, SFALocationType.MAP, SFARegion.TH, 0, 5),
-    "TTH Shop: Map ThornTail Hollow": SFAShopLocationData(
+    "TTH Store: Map Dragon Rock": SFAShopLocationData(213, 0x0839, T2_ADDRESS, SFALocationType.MAP, SFARegion.TH, 0, 5),
+    "TTH Store: Map ThornTail Hollow": SFAShopLocationData(
         214, 0x0837, T2_ADDRESS, SFALocationType.MAP, SFARegion.TH, 0, 5
     ),
-    "TTH Shop: Map Moon Pass": SFAShopLocationData(215, 0x0845, T2_ADDRESS, SFALocationType.MAP, SFARegion.TH, 0, 5),
-    "TTH Shop: Map LightFoot Village": SFAShopLocationData(
+    "TTH Store: Map Moon Pass": SFAShopLocationData(215, 0x0845, T2_ADDRESS, SFALocationType.MAP, SFARegion.TH, 0, 5),
+    "TTH Store: Map LightFoot Village": SFAShopLocationData(
         216, 0x0836, T2_ADDRESS, SFALocationType.MAP, SFARegion.TH, 0, 5
     ),
-    "TTH Shop: Map DarkIce Mines": SFAShopLocationData(
+    "TTH Store: Map DarkIce Mines": SFAShopLocationData(
         217, 0x0833, T2_ADDRESS, SFALocationType.MAP, SFARegion.TH, 0, 5
     ),
-    "TTH Shop: Map CloudRunner Fortress": SFAShopLocationData(
+    "TTH Store: Map CloudRunner Fortress": SFAShopLocationData(
         218, 0x0835, T2_ADDRESS, SFALocationType.MAP, SFARegion.TH, 0, 5
     ),
-    "TTH Shop: Map Walled City": SFAShopLocationData(219, 0x0840, T2_ADDRESS, SFALocationType.MAP, SFARegion.TH, 0, 5),
-    "TTH Shop: Map SnowHorn Wastes": SFAShopLocationData(
+    "TTH Store: Map Walled City": SFAShopLocationData(219, 0x0840, T2_ADDRESS, SFALocationType.MAP, SFARegion.TH, 0, 5),
+    "TTH Store: Map SnowHorn Wastes": SFAShopLocationData(
         220, 0x0834, T2_ADDRESS, SFALocationType.MAP, SFARegion.TH, 0, 5
     ),
-    "TTH Shop: Map Volcano Force Point": SFAShopLocationData(
+    "TTH Store: Map Volcano Force Point": SFAShopLocationData(
         221, 0x0832, T2_ADDRESS, SFALocationType.MAP, SFARegion.TH, 0, 10
     ),
 }
@@ -211,7 +211,7 @@ LOCATION_ANY: dict[str, SFALocationData] = {
         33, 0x036B, T2_ADDRESS, SFALocationType.FLAG, SFARegion.DIM_ENTRANCE
     ),
     "DIM: Feed Injured SnowHorn": SFALocationData(34, 0x036D, T2_ADDRESS, SFALocationType.FLAG, SFARegion.DIM_ENTRANCE),
-    "DIM: Ennemy Gate Cog Chest": SFALocationData(35, 0x0370, T2_ADDRESS, SFALocationType.FLAG, SFARegion.DIM_FORT),
+    "DIM: Enemy Gate Cog Chest": SFALocationData(35, 0x0370, T2_ADDRESS, SFALocationType.FLAG, SFARegion.DIM_FORT),
     "DIM: Hut Cog Chest": SFALocationData(36, 0x0372, T2_ADDRESS, SFALocationType.FLAG, SFARegion.DIM_FORT),
     "DIM: Ice Cog Chest": SFALocationData(37, 0x0374, T2_ADDRESS, SFALocationType.FLAG, SFARegion.DIM_FORT),
     "DIM: Fire Puzzle Reward": SFALocationData(38, 0x03BC, T2_ADDRESS, SFALocationType.FLAG, SFARegion.DIM_FORT),

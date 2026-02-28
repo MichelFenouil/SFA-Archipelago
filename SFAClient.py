@@ -581,7 +581,7 @@ async def special_map_flags(ctx: SFAContext) -> None:
         else:
             item = ITEM_INVENTORY.get("SharpClaw Fort Bridge Cogs")
             location = [
-                LOCATION_ANY["DIM: Ennemy Gate Cog Chest"],
+                LOCATION_ANY["DIM: Enemy Gate Cog Chest"],
                 LOCATION_ANY["DIM: Hut Cog Chest"],
                 LOCATION_ANY["DIM: Ice Cog Chest"],
             ]
