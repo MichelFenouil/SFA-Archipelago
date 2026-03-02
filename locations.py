@@ -288,22 +288,22 @@ LOCATION_FUEL_CELL: dict[str, SFALocationData] = {
     "SHW: Path to TTH Booster Fuel Cell Right": SFALocationData(
         123, 0x0960, T2_ADDRESS, SFALocationType.FUELCELL, SFARegion.SW_ENTRANCE
     ),
-    "SHW: GateKeeper Blast Tree Fuel Cell Left": SFALocationData(
+    "SHW: Blast Tree past Gate Fuel Cell Left": SFALocationData(
         133, 0x0967, T2_ADDRESS, SFALocationType.FUELCELL, SFARegion.SW_GATE
     ),
-    "SHW: GateKeeper Blast Tree Fuel Cell Right": SFALocationData(
+    "SHW: Blast Tree past Gate Fuel Cell Right": SFALocationData(
         134, 0x0968, T2_ADDRESS, SFALocationType.FUELCELL, SFARegion.SW_GATE
     ),
-    "SHW: GateKeeper River Cheat Well Fuel Cell": SFALocationData(
+    "SHW: River past Gate Cheat Well Fuel Cell": SFALocationData(
         135, 0x0984, T2_ADDRESS, SFALocationType.FUELCELL, SFARegion.SW_GATE
     ),
-    "SHW: GateKeeper River Ledge Fuel Cell Center": SFALocationData(
+    "SHW: River Ledge past Gate Fuel Cell Center": SFALocationData(
         136, 0x095A, T2_ADDRESS, SFALocationType.FUELCELL, SFARegion.SW_GATE
     ),
-    "SHW: GateKeeper River Ledge Fuel Cell Right": SFALocationData(
+    "SHW: River Ledge past Gate Fuel Cell Right": SFALocationData(
         137, 0x095B, T2_ADDRESS, SFALocationType.FUELCELL, SFARegion.SW_GATE
     ),
-    "SHW: GateKeeper River Ledge Fuel Cell Left": SFALocationData(
+    "SHW: River Ledge past Gate Fuel Cell Left": SFALocationData(
         138, 0x095C, T2_ADDRESS, SFALocationType.FUELCELL, SFARegion.SW_GATE
     ),
     # LightFoot Village
@@ -335,9 +335,9 @@ LOCATION_DIG_SPOT: dict[str, SFALocationData] = {
     "SHW: Dig BafomDad near Entrance": SFALocationData(
         303, 0x086F, T2_ADDRESS, SFALocationType.DIGSPOT, SFARegion.SW_ENTRANCE
     ),
-    "SHW: Dig in GateKeeper Cave": SFALocationData(307, 0x086E, T2_ADDRESS, SFALocationType.DIGSPOT, SFARegion.SW_GATE),
-    "TTH: Dig Near Store": SFALocationData(304, 0x0857, T2_ADDRESS, SFALocationType.DIGSPOT, SFARegion.TH),
-    "TTH: Dig Near Queen Cave": SFALocationData(305, 0x0856, T2_ADDRESS, SFALocationType.DIGSPOT, SFARegion.TH),
+    "SHW: Dig in Cave past Gate": SFALocationData(307, 0x086E, T2_ADDRESS, SFALocationType.DIGSPOT, SFARegion.SW_GATE),
+    "TTH: Dig near Store": SFALocationData(304, 0x0857, T2_ADDRESS, SFALocationType.DIGSPOT, SFARegion.TH),
+    "TTH: Dig near Queen Cave": SFALocationData(305, 0x0856, T2_ADDRESS, SFALocationType.DIGSPOT, SFARegion.TH),
     "TTH: Dig in Entrance to LFV": SFALocationData(306, 0x0858, T2_ADDRESS, SFALocationType.DIGSPOT, SFARegion.LFV),
     "DIM: Dig Alpine Root in Entrance Hut": SFALocationData(
         308, 0x037C, T2_ADDRESS, SFALocationType.DIGSPOT, SFARegion.DIM_ENTRANCE

@@ -117,12 +117,12 @@ def set_all_location_rules(world: SFAWorld) -> None:
         lambda state: mc.has_blaster(state, world.player) and mc.has_staff_booster(state, world.player),
     )
     set_rule_if_exists("SHW: Rescue GateKeeper", lambda state: True)
-    set_rule_if_exists("SHW: GateKeeper Blast Tree Fuel Cell Left", lambda state: mc.has_blaster(state, world.player))
-    set_rule_if_exists("SHW: GateKeeper Blast Tree Fuel Cell Right", lambda state: mc.has_blaster(state, world.player))
-    set_rule_if_exists("SHW: GateKeeper River Cheat Well Fuel Cell", lambda state: True)
-    set_rule_if_exists("SHW: GateKeeper River Ledge Fuel Cell Center", lambda state: True)
-    set_rule_if_exists("SHW: GateKeeper River Ledge Fuel Cell Right", lambda state: mc.has_blaster(state, world.player))
-    set_rule_if_exists("SHW: GateKeeper River Ledge Fuel Cell Left", lambda state: mc.has_blaster(state, world.player))
+    set_rule_if_exists("SHW: Blast Tree past Gate Fuel Cell Left", lambda state: mc.has_blaster(state, world.player))
+    set_rule_if_exists("SHW: Blast Tree past Gate Fuel Cell Right", lambda state: mc.has_blaster(state, world.player))
+    set_rule_if_exists("SHW: River past Gate Cheat Well Fuel Cell", lambda state: True)
+    set_rule_if_exists("SHW: River Ledge past Gate Fuel Cell Center", lambda state: True)
+    set_rule_if_exists("SHW: River Ledge past Gate Fuel Cell Right", lambda state: mc.has_blaster(state, world.player))
+    set_rule_if_exists("SHW: River Ledge past Gate Fuel Cell Left", lambda state: mc.has_blaster(state, world.player))
 
     # LightFoot Village
     set_rule_if_exists("TTH: Entrance to LFV Fuel Cell Right", lambda state: state.has("Staff", world.player))
