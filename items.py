@@ -276,8 +276,8 @@ ITEM_SHOP: dict[str, SFAItemData] = {
     ),
     "Hi-Tech Display Device": SFAItemData(201, 0x035E, T2_ADDRESS, SFAItemType.SHOP_USEFUL, ItemClassification.useful),
     "Tricky Ball": SFAItemData(202, 0x084C, T2_ADDRESS, SFAItemType.SHOP_USEFUL, ItemClassification.useful),
-    "Bafomdad Holder": SFAItemData(203, 0x09EE, T2_ADDRESS, SFAItemType.SHOP_USEFUL, ItemClassification.useful),
-    "Firefly Lantern": SFAItemData(
+    "BafomDad Holder": SFAItemData(203, 0x09EE, T2_ADDRESS, SFAItemType.SHOP_USEFUL, ItemClassification.useful),
+    "FireFly Lantern": SFAItemData(
         204,
         0x0717,
         T2_ADDRESS,

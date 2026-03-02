@@ -134,10 +134,10 @@ LOCATION_SHOP: dict[str, SFAShopLocationData] = {
         201, 0x035E, T2_ADDRESS, SFALocationType.SHOP, SFARegion.TH, 201, 20
     ),
     "TTH Store: Tricky Ball": SFAShopLocationData(202, 0x084C, T2_ADDRESS, SFALocationType.SHOP, SFARegion.TH, 202, 15),
-    "TTH Store: Bafomdad Holder": SFAShopLocationData(
+    "TTH Store: BafomDad Holder": SFAShopLocationData(
         203, 0x09EE, T2_ADDRESS, SFALocationType.SHOP, SFARegion.TH, 203, 20
     ),
-    "TTH Store: Firefly Lantern": SFAShopLocationData(
+    "TTH Store: FireFly Lantern": SFAShopLocationData(
         204, 0x0717, T2_ADDRESS, SFALocationType.SHOP, SFARegion.TH, 204, 20
     ),
     "TTH Store: Snowhorn Artifact": SFAShopLocationData(
@@ -200,7 +200,7 @@ LOCATION_ANY: dict[str, SFALocationData] = {
     "TTH Well: White GrubTub 6": SFALocationData(
         29, 0x00A6, T2_ADDRESS, SFALocationType.FLAG, SFARegion.TH_WELL_BOTTOM
     ),
-    "TTH: Magic Upgrade Above Shop": SFALocationData(30, 0x0011, T2_ADDRESS, SFALocationType.FLAG, SFARegion.TH),
+    "TTH: Magic Upgrade Above Store": SFALocationData(30, 0x0011, T2_ADDRESS, SFALocationType.FLAG, SFARegion.TH),
     "TTH: Feed Queen White GrubTubs": SFACountLocationData(
         31, 0x00AD, T2_ADDRESS, SFALocationType.COUNT, SFARegion.TH, 6, 3
     ),
@@ -235,10 +235,10 @@ LOCATION_FUEL_CELL: dict[str, SFALocationData] = {
     "TTH: Queen Cave Fuel Cell": SFALocationData(100, 0x0945, T2_ADDRESS, SFALocationType.FUELCELL, SFARegion.TH),
     "TTH: Pillar Fuel Cell Left": SFALocationData(101, 0x0946, T2_ADDRESS, SFALocationType.FUELCELL, SFARegion.TH),
     "TTH: Pillar Fuel Cell Right": SFALocationData(102, 0x0943, T2_ADDRESS, SFALocationType.FUELCELL, SFARegion.TH),
-    "TTH: Beside Warpstone Fuel Cell Left": SFALocationData(
+    "TTH: Beside WarpStone Fuel Cell Left": SFALocationData(
         103, 0x0947, T2_ADDRESS, SFALocationType.FUELCELL, SFARegion.TH
     ),
-    "TTH: Beside Warpstone Fuel Cell Right": SFALocationData(
+    "TTH: Beside WarpStone Fuel Cell Right": SFALocationData(
         104, 0x0949, T2_ADDRESS, SFALocationType.FUELCELL, SFARegion.TH
     ),
     "TTH: Waterfall Cave Fuel Cell Center": SFALocationData(
@@ -258,8 +258,8 @@ LOCATION_FUEL_CELL: dict[str, SFALocationData] = {
     ),
     "TTH: South Cave Fuel Cell Right": SFALocationData(110, 0x0942, T2_ADDRESS, SFALocationType.FUELCELL, SFARegion.TH),
     "TTH: South Cave Fuel Cell Left": SFALocationData(111, 0x0941, T2_ADDRESS, SFALocationType.FUELCELL, SFARegion.TH),
-    "TTH: Above Shop Fuel Cell Left": SFALocationData(112, 0x094F, T2_ADDRESS, SFALocationType.FUELCELL, SFARegion.TH),
-    "TTH: Above Shop Fuel Cell Right": SFALocationData(113, 0x094D, T2_ADDRESS, SFALocationType.FUELCELL, SFARegion.TH),
+    "TTH: Above Store Fuel Cell Left": SFALocationData(112, 0x094F, T2_ADDRESS, SFALocationType.FUELCELL, SFARegion.TH),
+    "TTH: Above Store Fuel Cell Right": SFALocationData(113, 0x094D, T2_ADDRESS, SFALocationType.FUELCELL, SFARegion.TH),
     "TTH Well: Fuel Cell Left": SFALocationData(128, 0x095D, T2_ADDRESS, SFALocationType.FUELCELL, SFARegion.TH_WELL),
     "TTH Well: Fuel Cell Right": SFALocationData(129, 0x095E, T2_ADDRESS, SFALocationType.FUELCELL, SFARegion.TH_WELL),
     # Ice Mountain
@@ -332,11 +332,11 @@ LOCATION_DIG_SPOT: dict[str, SFALocationData] = {
     "SHW: Dig Egg near Water Spout": SFALocationData(
         302, 0x003A, T2_ADDRESS, SFALocationType.DIGSPOT, SFARegion.SW_WATERSPOUT
     ),
-    "SHW: Dig Bafomdad near Entrance": SFALocationData(
+    "SHW: Dig BafomDad near Entrance": SFALocationData(
         303, 0x086F, T2_ADDRESS, SFALocationType.DIGSPOT, SFARegion.SW_ENTRANCE
     ),
     "SHW: Dig in GateKeeper Cave": SFALocationData(307, 0x086E, T2_ADDRESS, SFALocationType.DIGSPOT, SFARegion.SW_GATE),
-    "TTH: Dig Near Shop": SFALocationData(304, 0x0857, T2_ADDRESS, SFALocationType.DIGSPOT, SFARegion.TH),
+    "TTH: Dig Near Store": SFALocationData(304, 0x0857, T2_ADDRESS, SFALocationType.DIGSPOT, SFARegion.TH),
     "TTH: Dig Near Queen Cave": SFALocationData(305, 0x0856, T2_ADDRESS, SFALocationType.DIGSPOT, SFARegion.TH),
     "TTH: Dig in Entrance to LFV": SFALocationData(306, 0x0858, T2_ADDRESS, SFALocationType.DIGSPOT, SFARegion.LFV),
     "DIM: Dig Alpine Root in Entrance Hut": SFALocationData(

@@ -42,11 +42,11 @@ def set_all_location_rules(world: SFAWorld) -> None:
     set_rule_if_exists("TTH: Pillar Fuel Cell Right", lambda state: True)
     set_rule_if_exists("TTH: Queen Cave Fuel Cell", lambda state: True)
     set_rule_if_exists(
-        "TTH: Beside Warpstone Fuel Cell Left",
+        "TTH: Beside WarpStone Fuel Cell Left",
         lambda state: mc.can_explode_bomb_plant(state, world.player),
     )
     set_rule_if_exists(
-        "TTH: Beside Warpstone Fuel Cell Left",
+        "TTH: Beside WarpStone Fuel Cell Left",
         lambda state: mc.can_explode_bomb_plant(state, world.player),
     )
     set_rule_if_exists(
@@ -65,10 +65,10 @@ def set_all_location_rules(world: SFAWorld) -> None:
     set_rule_if_exists("TTH: South Cave Fuel Cell Center", lambda state: mc.can_explode_bomb_plant(state, world.player))
     set_rule_if_exists("TTH: South Cave Fuel Cell Right", lambda state: mc.can_explode_bomb_plant(state, world.player))
     set_rule_if_exists("TTH: South Cave Fuel Cell Left", lambda state: mc.can_explode_bomb_plant(state, world.player))
-    set_rule_if_exists("TTH: Above Shop Fuel Cell Left", lambda state: mc.has_staff_booster(state, world.player))
-    set_rule_if_exists("TTH: Above Shop Fuel Cell Right", lambda state: mc.has_staff_booster(state, world.player))
+    set_rule_if_exists("TTH: Above Store Fuel Cell Left", lambda state: mc.has_staff_booster(state, world.player))
+    set_rule_if_exists("TTH: Above Store Fuel Cell Right", lambda state: mc.has_staff_booster(state, world.player))
     set_rule_if_exists(
-        "TTH: Magic Upgrade Above Shop",
+        "TTH: Magic Upgrade Above Store",
         lambda state: mc.has_staff_booster(state, world.player)
         and mc.has_blaster(state, world.player)
         and mc.can_explode_bomb_plant(state, world.player),
@@ -212,7 +212,7 @@ def connect_regions(world: SFAWorld) -> None:
         "Descend to Well Bottom",
         lambda state: mc.has_staff_booster(state, world.player)
         and mc.can_explode_bomb_plant(state, world.player)
-        and state.has("Firefly Lantern", world.player),
+        and state.has("FireFly Lantern", world.player),
     )
     sw_entrance.connect(sw_gate, "Pass SnowHorn Gate", lambda state: state.has("Gate Key", world.player))
     thorntail_hollow.connect(
