@@ -200,7 +200,7 @@ LOCATION_ANY: dict[str, SFALocationData] = {
     "TTH Well: White GrubTub 6": SFALocationData(
         29, 0x00A6, T2_ADDRESS, SFALocationType.FLAG, SFARegion.TH_WELL_BOTTOM
     ),
-    "TTH: Magic Upgrade Above Store": SFALocationData(30, 0x0011, T2_ADDRESS, SFALocationType.FLAG, SFARegion.TH),
+    "TTH: Magic Upgrade above Store": SFALocationData(30, 0x0011, T2_ADDRESS, SFALocationType.FLAG, SFARegion.TH),
     "TTH: Feed Queen White GrubTubs": SFACountLocationData(
         31, 0x00AD, T2_ADDRESS, SFALocationType.COUNT, SFARegion.TH, 6, 3
     ),
@@ -281,7 +281,7 @@ LOCATION_FUEL_CELL: dict[str, SFALocationData] = {
     "SHW: Water Platform Fuel Cell Right": SFALocationData(
         120, 0x0953, T2_ADDRESS, SFALocationType.FUELCELL, SFARegion.SW_ENTRANCE
     ),  # Also Linked to dig cave fuel cell
-    "SHW: Dig Cave Near Entrance Fuel Cell": SFALocationData(
+    "SHW: Dig Cave near Entrance Fuel Cell": SFALocationData(
         121, 0x0954, T2_ADDRESS, SFALocationType.FUELCELL, SFARegion.SW_ENTRANCE
     ),
     "SHW: Path to TTH Booster Fuel Cell Left": SFALocationData(

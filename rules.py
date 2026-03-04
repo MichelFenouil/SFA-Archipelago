@@ -68,7 +68,7 @@ def set_all_location_rules(world: SFAWorld) -> None:
     set_rule_if_exists("TTH: Above Store Fuel Cell Left", lambda state: mc.has_staff_booster(state, world.player))
     set_rule_if_exists("TTH: Above Store Fuel Cell Right", lambda state: mc.has_staff_booster(state, world.player))
     set_rule_if_exists(
-        "TTH: Magic Upgrade Above Store",
+        "TTH: Magic Upgrade above Store",
         lambda state: mc.has_staff_booster(state, world.player)
         and mc.has_blaster(state, world.player)
         and mc.can_explode_bomb_plant(state, world.player),
@@ -106,7 +106,7 @@ def set_all_location_rules(world: SFAWorld) -> None:
     set_rule_if_exists("SHW: Water Platform Fuel Cell Left", lambda state: state.has("Staff", world.player))
     set_rule_if_exists("SHW: Water Platform Fuel Cell Right", lambda state: state.has("Staff", world.player))
     set_rule_if_exists(
-        "SHW: Dig Cave Near Entrance Fuel Cell", lambda state: state.has("Tricky (Progressive)", world.player)
+        "SHW: Dig Cave near Entrance Fuel Cell", lambda state: state.has("Tricky (Progressive)", world.player)
     )
     set_rule_if_exists(
         "SHW: Path to TTH Booster Fuel Cell Left",
