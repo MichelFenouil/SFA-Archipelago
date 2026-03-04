@@ -259,7 +259,9 @@ LOCATION_FUEL_CELL: dict[str, SFALocationData] = {
     "TTH: South Cave Fuel Cell Right": SFALocationData(110, 0x0942, T2_ADDRESS, SFALocationType.FUELCELL, SFARegion.TH),
     "TTH: South Cave Fuel Cell Left": SFALocationData(111, 0x0941, T2_ADDRESS, SFALocationType.FUELCELL, SFARegion.TH),
     "TTH: Above Store Fuel Cell Left": SFALocationData(112, 0x094F, T2_ADDRESS, SFALocationType.FUELCELL, SFARegion.TH),
-    "TTH: Above Store Fuel Cell Right": SFALocationData(113, 0x094D, T2_ADDRESS, SFALocationType.FUELCELL, SFARegion.TH),
+    "TTH: Above Store Fuel Cell Right": SFALocationData(
+        113, 0x094D, T2_ADDRESS, SFALocationType.FUELCELL, SFARegion.TH
+    ),
     "TTH Well: Fuel Cell Left": SFALocationData(128, 0x095D, T2_ADDRESS, SFALocationType.FUELCELL, SFARegion.TH_WELL),
     "TTH Well: Fuel Cell Right": SFALocationData(129, 0x095E, T2_ADDRESS, SFALocationType.FUELCELL, SFARegion.TH_WELL),
     # Ice Mountain

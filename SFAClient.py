@@ -62,13 +62,13 @@ TRACKER_LOADED = False
 # except ModuleNotFoundError:
 
 CONNECTION_REFUSED_GAME_STATUS = (
-    "Dolphin failed to connect. Please load a randomized ROM for Super Mario Sunshine. Trying again in 5 seconds..."
+    "Dolphin failed to connect. Please load a Star Fox Adventures ROM. Trying again in 5 seconds..."
 )
 CONNECTION_REFUSED_SAVE_STATUS = (
     "Dolphin failed to connect. Please load into the save file. Trying again in 5 seconds..."
 )
 CONNECTION_LOST_STATUS = (
-    "Dolphin connection was lost. Please restart your emulator and make sure Super Mario Sunshine is running."
+    "Dolphin connection was lost. Please restart your emulator and make sure Star Fox Adventures is running."
 )
 CONNECTION_CONNECTED_STATUS = "Dolphin connected successfully."
 CONNECTION_INITIAL_STATUS = "Dolphin connection has not been initiated."
@@ -98,6 +98,7 @@ class SFACommandProcessor(ClientCommandProcessor):
         """
         if name == "":
             self.ctx.sync_task = asyncio.create_task(sync_full_player_state(self.ctx))
+            logger.info("Player state synchronized with server state.")
         else:
             return _give_item_in_game(self.ctx, SFAItemData.get_by_name(name))
         return True
@@ -172,53 +173,6 @@ class SFAContext(CommonContext):
         return super().on_package(cmd, args)
 
 
-async def dolphin_sync_task(ctx: SFAContext) -> None:
-    """
-    Task to manage the connection and synchronization with the Dolphin emulator.
-
-    :param ctx: The Star Fox Adventures context
-    """
-    logger.info("Starting Dolphin connector. Use /dolphin for status information.")
-    while not ctx.exit_event.is_set():
-        try:
-            if dme.is_hooked() and ctx.dolphin_status == CONNECTION_CONNECTED_STATUS:
-                if ctx.awaiting_rom:
-                    logger.info("Connected")
-                    await ctx.server_auth()
-                await asyncio.sleep(0.5)
-            else:
-                if ctx.dolphin_status == CONNECTION_CONNECTED_STATUS:
-                    logger.info("Connection to Dolphin lost, reconnecting...")
-                    ctx.dolphin_status = CONNECTION_LOST_STATUS
-                logger.info("Attempting to connect to Dolphin...")
-                dme.hook()
-                if dme.is_hooked():
-                    if dme.read_bytes(0x80000000, 6) != b"GSAE01":
-                        logger.info(CONNECTION_REFUSED_GAME_STATUS)
-                        ctx.dolphin_status = CONNECTION_REFUSED_GAME_STATUS
-                        dme.un_hook()
-                        await asyncio.sleep(5)
-                    else:
-                        logger.info(CONNECTION_CONNECTED_STATUS)
-                        ctx.dolphin_status = CONNECTION_CONNECTED_STATUS
-                        ctx.locations_checked = set()
-                        await asyncio.sleep(5)
-                else:
-                    logger.info("Connection to Dolphin failed, attempting again in 5 seconds...")
-                    dme_status = dme.get_status()
-                    logger.info(dme_status)
-                    ctx.dolphin_status = CONNECTION_LOST_STATUS
-                    await asyncio.sleep(5)
-                    continue
-        except Exception:
-            dme.un_hook()
-            logger.info("Connection to Dolphin failed, attempting again in 5 seconds...")
-            logger.error(traceback.format_exc())
-            ctx.dolphin_status = CONNECTION_LOST_STATUS
-            await asyncio.sleep(5)
-            continue
-
-
 def sync_player_state(ctx: SFAContext):
     """
     Synchronize the player's state with the current game data.
@@ -244,8 +198,11 @@ async def sync_full_player_state(ctx: SFAContext):
     :param ctx: The Star Fox Adventures context
     """
     logger.debug("Syncing full player state")
-    ctx.expected_idx = 0
-    await give_items(ctx)  # type: ignore
+    received_items = ctx.items_received
+    for _, item in enumerate(received_items):
+        while not _give_item_in_game(ctx, SFAItemData.get_by_id(item.item)):
+            await asyncio.sleep(0.01)
+    sync_player_state(ctx)
 
 
 async def _wait_cutscene_end():
@@ -604,9 +561,7 @@ async def game_watcher(ctx: SFAContext):
     while not ctx.exit_event.is_set():
         try:
             if not dme.is_hooked() or ctx.slot is None:
-                logger.info("Not connected to a slot")
-                logger.info(ctx.slot)
-                await asyncio.sleep(5)
+                await asyncio.sleep(1)
                 continue
 
             await force_gameflags(ctx)
@@ -620,11 +575,64 @@ async def game_watcher(ctx: SFAContext):
 
             await asyncio.sleep(0.1)
         except Exception:
+            logger.debug(traceback.format_exc())
+            dme.un_hook()
+            ctx.dolphin_status = CONNECTION_LOST_STATUS
+
+
+async def dolphin_sync_task(ctx: SFAContext) -> None:
+    """
+    Task to manage the connection and synchronization with the Dolphin emulator.
+
+    :param ctx: The Star Fox Adventures context
+    """
+    logger.info("Starting Dolphin connector. Use /dolphin for status information.")
+    sleep_time = 0.0
+    while not ctx.exit_event.is_set():
+        if sleep_time > 0.0:
+            try:
+                # ctx.watcher_event gets set when receiving ReceivedItems or LocationInfo, or when shutting down.
+                await asyncio.wait_for(ctx.watcher_event.wait(), sleep_time)
+            except TimeoutError:
+                pass
+            sleep_time = 0.0
+        ctx.watcher_event.clear()
+
+        try:
+            if dme.is_hooked() and ctx.dolphin_status == CONNECTION_CONNECTED_STATUS:
+                if ctx.awaiting_rom:
+                    logger.info("Connected to Dolphin")
+                    await ctx.server_auth()
+                sleep_time = 0.1
+            else:
+                if ctx.dolphin_status == CONNECTION_CONNECTED_STATUS:
+                    logger.info("Connection to Dolphin lost, reconnecting...")
+                    ctx.dolphin_status = CONNECTION_LOST_STATUS
+                logger.info("Attempting to connect to Dolphin...")
+                dme.hook()
+                if dme.is_hooked():
+                    if dme.read_bytes(0x80000000, 6) != b"GSAE01":
+                        logger.info(CONNECTION_REFUSED_GAME_STATUS)
+                        ctx.dolphin_status = CONNECTION_REFUSED_GAME_STATUS
+                        dme.un_hook()
+                        await asyncio.sleep(5)
+                    else:
+                        logger.info(CONNECTION_CONNECTED_STATUS)
+                        ctx.dolphin_status = CONNECTION_CONNECTED_STATUS
+                        ctx.locations_checked = set()
+                else:
+                    logger.info("Connection to Dolphin failed, attempting again in 5 seconds...")
+                    dme_status = dme.get_status()
+                    logger.info(dme_status)
+                    ctx.dolphin_status = CONNECTION_LOST_STATUS
+                    await asyncio.sleep(5)
+                    continue
+        except Exception:
             dme.un_hook()
             logger.info("Connection to Dolphin failed, attempting again in 5 seconds...")
             logger.error(traceback.format_exc())
             ctx.dolphin_status = CONNECTION_LOST_STATUS
-            await asyncio.sleep(10)
+            await asyncio.sleep(5)
             continue
 
 
