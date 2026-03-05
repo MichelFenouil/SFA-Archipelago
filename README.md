@@ -35,6 +35,7 @@ Archipelago client for Star Fox Adventures.
 ## Important information
 - The game runs on live patching, there is no patch file generated and you can't see what you found in game. Check your client to see what items you find.
 - To reduce crashes, turn off `Dual Core` settings in Dolphin (Config > General).
+- You can enable auto-save in the Amethyst options (`L+Z+B > Game Settings > Autosave`). This is **recomended** as the randomizer is still unstable. 
 - Using the Amethyst debug menu (`L+Z+B > Debug > Map > Warp`) you can warp anywhere but it is unstable. **Save or make a save state** before warping as it can crash the game. It is better to warp to recently visited areas or the planet landing zone. If the objects don't load in, walk through the closest loading zone (it can take a while but it will eventually load the new area).
 - Bind `Controller3 Z button` on your gamepad to speed up the game.
 - The client will give/remove items in some areas (e.g. TTH Store) to spawn location checks. Some items may also appear as colored boxes in C Menu. You can check you items receivved with `/received` command in the client.

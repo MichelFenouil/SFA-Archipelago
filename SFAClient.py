@@ -408,10 +408,10 @@ async def force_gameflags(ctx: SFAContext) -> None:
         set_flag_bit(item.table_address, item.bit_offset, item.state)
 
     # Force Bomb_spore to 1 for testing
-    address, position = get_bit_address(T2_ADDRESS, 0x77)
-    cache_byte = dme.read_byte(address)
-    updated_byte = update_bits(cache_byte, position, True)
-    dme.write_byte(address, updated_byte)
+    # address, position = get_bit_address(T2_ADDRESS, 0x77)
+    # cache_byte = dme.read_byte(address)
+    # updated_byte = update_bits(cache_byte, position, True)
+    # dme.write_byte(address, updated_byte)
 
 
 async def special_map_flags(ctx: SFAContext) -> None:
