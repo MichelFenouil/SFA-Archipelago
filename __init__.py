@@ -1,4 +1,4 @@
-from worlds.LauncherComponents import Component, Type, components, launch, icon_paths
+from worlds.LauncherComponents import Component, Type, components, icon_paths, launch
 
 from .world import SFAWorld as SFAWorld
 

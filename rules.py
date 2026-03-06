@@ -46,7 +46,7 @@ def set_all_location_rules(world: SFAWorld) -> None:
         lambda state: mc.can_explode_bomb_plant(state, world.player),
     )
     set_rule_if_exists(
-        "TTH: Beside WarpStone Fuel Cell Left",
+        "TTH: Beside WarpStone Fuel Cell Right",
         lambda state: mc.can_explode_bomb_plant(state, world.player),
     )
     set_rule_if_exists(
@@ -95,7 +95,7 @@ def set_all_location_rules(world: SFAWorld) -> None:
     # Ice Mountain
     set_rule_if_exists("IM: Cheat Well Fuel Cell", lambda state: mc.can_explode_bomb_plant(state, world.player))
     set_rule_if_exists("IM: Race Cave Fuel Cell Front", lambda state: True)
-    set_rule_if_exists("IM: Race Cave Fuel Cell Front", lambda state: True)
+    set_rule_if_exists("IM: Race Cave Fuel Cell Back", lambda state: True)
 
     # SnowHorn Wastes
     set_rule_if_exists("SHW: Magic Upgrade", lambda state: state.has("Tricky (Progressive)", world.player))

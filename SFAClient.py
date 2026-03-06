@@ -26,7 +26,6 @@ from .bit_helper import (
     set_on_or_bytes,
     set_value_bytes,
     swap_endian,
-    update_bits,
 )
 from .items import (
     FILLER_ITEMS,
@@ -284,6 +283,7 @@ async def locations_watcher(ctx):
 
     locations_checked = ctx.locations_checked.difference(ctx.checked_locations)
     if locations_checked:
+        await _wait_cutscene_end()
         sync_player_state(ctx)
         await ctx.send_msgs([{"cmd": "LocationChecks", "locations": locations_checked}])
 
@@ -516,7 +516,7 @@ async def special_map_flags(ctx: SFAContext) -> None:
     dim_obj_value = read_value_bytes(DIM_OBJECTS_ADDRESS, 0, 32, 4)
     if dim_obj_value != ctx.stored_dim:
         logger.debug(f"Entering dim zone {dim_obj_value:x}")
-        if dim_obj_value == DIM_COGS_ZONE_VALUE:
+        if dim_obj_value == DIM_COGS_ZONE_VALUE or dim_obj_value == DIM_COGS_ZONE_VALUE2:
             item = ITEM_INVENTORY.get("SharpClaw Fort Bridge Cogs")
             assert isinstance(item, SFAProgressiveItemData)
             count = ctx.received_items_id.count(item.id)
