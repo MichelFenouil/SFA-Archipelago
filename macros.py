@@ -16,7 +16,8 @@ def can_explode_bomb_plant(state: CollectionState, player: int) -> bool:
 
 def can_buy(state: CollectionState, player: int, price: int) -> bool:
     if price <= 10:
-        return True
+        # Force a scarab bag in logic for convenience
+        return state.has("Scarab Bag (Progressive)", player, 1)
     if price <= 50:
         return state.has("Scarab Bag (Progressive)", player, 1)
     if price <= 100:
