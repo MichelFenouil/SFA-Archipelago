@@ -407,6 +407,18 @@ async def force_gameflags(ctx: SFAContext) -> None:
     for item in CONSTANT_FLAGS:
         set_flag_bit(item.table_address, item.bit_offset, item.state)
 
+    map_value = dme.read_byte(MAP_ID_ADDRESS)
+    if map_value == 0x38:
+        tricky_item = ITEM_TRICKY["Tricky (Progressive)"]
+        tricky_flag = tricky_item.progressive_data[0]
+        set_flag_bit(tricky_flag[1], tricky_flag[0], tricky_item.id in ctx.received_items_id)
+
+    address, position = get_bit_address(DINO_CAVE.table_address, DINO_CAVE.bit_offset)
+    byte = dme.read_byte(address)
+    if position in extract_bitflag_list(byte):
+        dino_horn = ITEM_INVENTORY["Dinosaur Horn"]
+        set_flag_bit(dino_horn.table_address, dino_horn.bit_offset, dino_horn.id in ctx.received_items_id)
+
     # Force Bomb_spore to 1 for testing
     # address, position = get_bit_address(T2_ADDRESS, 0x77)
     # cache_byte = dme.read_byte(address)

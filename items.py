@@ -182,7 +182,7 @@ ITEM_STAFF: dict[str, SFAStaffItemData] = {
     "Staff Booster": SFAStaffItemData(3, 0x0706, T2_ADDRESS, SFAItemType.STAFF, ItemClassification.progression),
 }
 
-ITEM_TRICKY: dict[str, SFAItemData] = {
+ITEM_TRICKY: dict[str, SFAProgressiveItemData] = {
     "Tricky (Progressive)": SFAProgressiveItemData(
         10,
         0x0,

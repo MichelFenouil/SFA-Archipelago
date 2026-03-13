@@ -70,6 +70,7 @@ DIM_OPEN_BIKE = [
     GameFlag("Prevent Crash 1FB", 0x03E1, T2_ADDRESS),
     GameFlag("Bike 1F0", 0x03D9, T2_ADDRESS),
 ]
+DINO_CAVE = GameFlag("Inside Dino Horn Cave", 0x003E, T3_ADDRESS)
 
 # Global flags #
 
