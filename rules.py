@@ -93,7 +93,7 @@ def set_all_location_rules(world: SFAWorld) -> None:
     set_rule_if_exists("TTH Well: Staff Booster Upgrade", lambda state: mc.can_explode_bomb_plant(state, world.player))
 
     # Ice Mountain
-    set_rule_if_exists("IM: Cheat Well Fuel Cell", lambda state: mc.can_explode_bomb_plant(state, world.player))
+    set_rule_if_exists("IM: Cheat Well Fuel Cell", lambda state: True)
     set_rule_if_exists("IM: Race Cave Fuel Cell Front", lambda state: True)
     set_rule_if_exists("IM: Race Cave Fuel Cell Back", lambda state: True)
 
