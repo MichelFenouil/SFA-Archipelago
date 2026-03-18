@@ -1,5 +1,7 @@
 from dataclasses import dataclass
 
+from worlds.sfa.bit_helper import GameBit
+
 T0_ADDRESS = 0x803A4198
 T1_ADDRESS = 0x803A380C
 T2_ADDRESS = 0x803A32CC
@@ -13,6 +15,7 @@ ICE_MOUNTAIN_ID = 0x17
 WORLD_MAP_ID = 0x29
 SHOP_ID = 0x33
 MAGIC_CAVE_ID = 0x36
+ICE_MOUNTAIN_BOTTOM_ID = 0x38
 MAIN_MENU_ID = 0x3F
 
 ICE_MOUNTAIN_ACT_OFFSET = 0x02FA
@@ -52,8 +55,8 @@ class GameFlag:
     """GameFlag represents flags to set ON/OFF for QoL."""
 
     flag_name: str
-    bit_offset: int
-    table_address: int
+    offset: int
+    address: int
     state: bool = True
 
 
@@ -70,7 +73,7 @@ DIM_OPEN_BIKE = [
     GameFlag("Prevent Crash 1FB", 0x03E1, T2_ADDRESS),
     GameFlag("Bike 1F0", 0x03D9, T2_ADDRESS),
 ]
-DINO_CAVE = GameFlag("Inside Dino Horn Cave", 0x003E, T3_ADDRESS)
+DINO_CAVE = GameBit(0x003E, T3_ADDRESS)
 
 # Global flags #
 

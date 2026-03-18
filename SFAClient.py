@@ -228,9 +228,7 @@ async def locations_watcher(ctx):
         """
         if location.id not in ctx.server_locations or location.id in ctx.locations_checked:
             return False
-        address, bit_position = get_bit_address(location.table_address, location.bit_offset)
-        byte = dme.read_byte(address)
-        if bit_position in extract_bitflag_list(byte):
+        if location.get_bit():
             ctx.locations_checked.add(location.id)
             return True
         return False
@@ -244,7 +242,7 @@ async def locations_watcher(ctx):
         """
         if location.id not in ctx.server_locations or location.id in ctx.locations_checked:
             return False
-        value = read_value_bytes(location.table_address, location.bit_offset, location.bit_size)
+        value = read_value_bytes(location.game_bit.address, location.game_bit.offset, location.bit_size)
         if value >= location.count:
             ctx.locations_checked.add(location.id)
             return True
@@ -325,7 +323,7 @@ def _give_item_in_game(ctx: SFAContext, item: SFAItemData | None) -> bool:
     :param item: The item data to give
     :return: True if the item was given successfully, False otherwise
     """
-    if item is None:
+    if item is None or item.id == 0:
         logger.error("Item not found in data.")
         return False
 
@@ -352,12 +350,12 @@ def _give_item_in_game(ctx: SFAContext, item: SFAItemData | None) -> bool:
         if count > item.max_count:
             count = item.max_count
             # Could read location count instead
-        used_count = read_value_bytes(item.table_address, item.item_used_flag_offset, item.item_used_bit_size)
+        used_count = read_value_bytes(item.game_bit.address, item.item_used_flag_offset, item.item_used_bit_size)
         value = item.start_amount + (count - used_count) * item.count_increment
         if value < 0:
             value = 0
         logger.debug(f"Received {count} of quest object: {item}")
-        set_value_bytes(item.table_address, item.bit_offset, value, item.bit_size)
+        set_value_bytes(item.game_bit.address, item.game_bit.offset, value, item.bit_size)
         return True
 
     if isinstance(item, SFACountItemData):
@@ -366,25 +364,25 @@ def _give_item_in_game(ctx: SFAContext, item: SFAItemData | None) -> bool:
             count = item.max_count
         value = item.start_amount + count * item.count_increment
         logger.debug(f"Received {count} of count object: {item}")
-        set_value_bytes(item.table_address, item.bit_offset, value, item.bit_size)
+        set_value_bytes(item.game_bit.address, item.game_bit.offset, value, item.bit_size)
         return True
 
     if isinstance(item, SFAConsumableItemData):
-        current_value = read_value_bytes(item.table_address, item.bit_offset, item.bit_size)
+        current_value = read_value_bytes(item.game_bit.address, item.game_bit.offset, item.bit_size)
         value = current_value + item.add_value
         max_value = read_value_bytes(item.max_read_address, 0x0, item.max_read_bit_size)
         if value > max_value:
             value = max_value
-        set_value_bytes(item.table_address, item.bit_offset, value, item.bit_size)
+        set_value_bytes(item.game_bit.address, item.game_bit.offset, value, item.bit_size)
         return True
 
     if isinstance(item, SFAPlanetItemData):
-        set_flag_bit(item.table_address, item.bit_offset, item.id in ctx.received_items_id)
+        item.game_bit.set_bit(item.id in ctx.received_items_id)
         set_flag_bit(item.gate_table_address, item.gate_bit_offset, item.id in ctx.received_items_id)
         return True
 
     # All other items
-    set_flag_bit(item.table_address, item.bit_offset, item.id in ctx.received_items_id)
+    item.game_bit.set_bit(item.id in ctx.received_items_id)
     return True
 
 
@@ -401,23 +399,20 @@ async def force_gameflags(ctx: SFAContext) -> None:
         set_on_or_bytes(ITEM_MAP_ADDRESS, ITEM_MAP_INIT_VALUE, 3)
         set_on_or_bytes(SKIP_TUTO_ADDRESS, SKIP_TUTO_VALUE, 2)
         for item in STARTING_FLAGS:
-            set_flag_bit(item.table_address, item.bit_offset, item.state)
+            set_flag_bit(item.address, item.offset, item.state)
         await sync_full_player_state(ctx)
 
     for item in CONSTANT_FLAGS:
-        set_flag_bit(item.table_address, item.bit_offset, item.state)
+        set_flag_bit(item.address, item.offset, item.state)
 
-    map_value = dme.read_byte(MAP_ID_ADDRESS)
-    if map_value == 0x38:
+    if map_value == ICE_MOUNTAIN_BOTTOM_ID:
         tricky_item = ITEM_TRICKY["Tricky (Progressive)"]
         tricky_flag = tricky_item.progressive_data[0]
         set_flag_bit(tricky_flag[1], tricky_flag[0], tricky_item.id in ctx.received_items_id)
 
-    address, position = get_bit_address(DINO_CAVE.table_address, DINO_CAVE.bit_offset)
-    byte = dme.read_byte(address)
-    if position in extract_bitflag_list(byte):
-        dino_horn = ITEM_INVENTORY["Dinosaur Horn"]
-        set_flag_bit(dino_horn.table_address, dino_horn.bit_offset, dino_horn.id in ctx.received_items_id)
+    if DINO_CAVE.get_bit():
+        dino_horn = SFAItemData.get_by_name("Dinosaur Horn")
+        dino_horn.set_bit(dino_horn.id in ctx.received_items_id)
 
     # Force Bomb_spore to 1 for testing
     # address, position = get_bit_address(T2_ADDRESS, 0x77)
@@ -448,23 +443,15 @@ async def special_map_flags(ctx: SFAContext) -> None:
         :param map_expected: The expected map for the location
         """
         if map_entered == map_expected:
-            if location.id in ctx.checked_locations or location.id not in ctx.server_locations:
-                # Checked location (or does not exist), force item ON
-                set_flag_bit(location.table_address, location.bit_offset, True)
-            else:
-                # Unchecked location, force item OFF
-                set_flag_bit(location.table_address, location.bit_offset, False)
+            # Give item inside if location is checked
+            location.set_bit(location.id in ctx.checked_locations or location.id not in ctx.server_locations)
         if ctx.stored_map == map_expected:
-            if location.type == SFALocationType.MAP or location.linked_item in ctx.received_items_id:
-                # Item received, set flag back ON
-                set_flag_bit(location.table_address, location.bit_offset, True)
-            else:
-                # Item not received, set flag back OFF
-                set_flag_bit(location.table_address, location.bit_offset, False)
+            # Retrieve item when leaving map
+            location.set_bit(location.type == SFALocationType.MAP or location.linked_item in ctx.received_items_id)
 
     map_value = dme.read_byte(MAP_ID_ADDRESS)
     if ctx.stored_map != map_value:
-        logger.debug(f"Entering map {map_value:x}")
+        logger.info(f"Entering map {map_value:x}")
         await ctx.send_msgs(
             [
                 {
@@ -511,16 +498,15 @@ async def special_map_flags(ctx: SFAContext) -> None:
 
         # Remove fireblaster in world map
         if map_value == WORLD_MAP_ID:
-            item = ITEM_STAFF["Fire Blaster"]
-            set_flag_bit(item.table_address, item.bit_offset, False)
+            SFAItemData.get_by_name("Fire Blaster").set_bit(False)
         if ctx.stored_map == WORLD_MAP_ID:
-            item = ITEM_STAFF["Fire Blaster"]
-            set_flag_bit(item.table_address, item.bit_offset, item.id in ctx.received_items_id)
+            item = SFAItemData.get_by_name("Fire Blaster")
+            item.set_bit(item.id in ctx.received_items_id)
 
         # Give Krystal Spirit 1
         if map_value == KRAZOA_PALACE_ID:
             flag = KRAZOA_SPIRIT_1
-            set_flag_bit(flag.table_address, flag.bit_offset, True)
+            set_flag_bit(flag.address, flag.offset, True)
 
         ctx.stored_map = map_value
 
@@ -542,11 +528,11 @@ async def special_map_flags(ctx: SFAContext) -> None:
         ):
             logger.debug("Entering Blizzard zone")
             for flag in DIM_OPEN_BLIZZARD:
-                set_flag_bit(flag.table_address, flag.bit_offset, False)
+                set_flag_bit(flag.address, flag.offset, False)
         elif ctx.stored_dim - dim_obj_value == DIM_BIKE_ZONE_TRANSITION:
             logger.debug("Bike zone transition")
             for flag in DIM_OPEN_BIKE:
-                set_flag_bit(flag.table_address, flag.bit_offset, False)
+                set_flag_bit(flag.address, flag.offset, False)
         else:
             item = ITEM_INVENTORY.get("SharpClaw Fort Bridge Cogs")
             location = [
@@ -559,7 +545,7 @@ async def special_map_flags(ctx: SFAContext) -> None:
                 # True to hide all cogs
                 set_flag_bit(progress[1], progress[0], True)
             for loc in location:
-                set_flag_bit(loc.table_address, loc.bit_offset, loc.id in ctx.checked_locations)
+                loc.set_bit(loc.id in ctx.checked_locations)
 
         ctx.stored_dim = dim_obj_value
 

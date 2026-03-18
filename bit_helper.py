@@ -1,8 +1,27 @@
+from dataclasses import dataclass
 from typing import Literal
 
 import dolphin_memory_engine as dme
 from CommonClient import logger
 
+
+class GameBit:
+    """GameFlag represents flags to set ON/OFF for QoL."""
+
+    offset: int
+    address: int
+
+    def __init__(self, offset: int, address: int) -> None:
+        self.offset = offset
+        self.address = address
+
+    def get_bit(self) -> bool:
+        """Read bit value from memory."""
+        return bool(read_value_bytes(self.address, self.offset))
+    
+    def set_bit(self, value: bool | int) -> None:
+        """Write bit value into memory."""
+        set_flag_bit(self.address, self.offset, bool(value))
 
 def extract_bitflag_list(input_bytes: int) -> list[int]:
     """
