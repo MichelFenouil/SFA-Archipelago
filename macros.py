@@ -1,26 +1,22 @@
 from BaseClasses import CollectionState
+from rule_builder.rules import HasAll, HasAllCounts, Rule
 
 
-def has_blaster(state: CollectionState, player: int) -> bool:
-    return state.has_all(["Staff", "Fire Blaster"], player)
 
+has_blaster = HasAll("Staff", "Fire Blaster")
 
-def has_staff_booster(state: CollectionState, player: int) -> bool:
-    return state.has_all(["Staff", "Staff Booster"], player)
+has_staff_booster = HasAll("Staff", "Staff Booster")
 
+# Also explodes with ground quake
+can_explode_bomb_plant = HasAll("Staff", "Fire Blaster", "Bomb Plant")
 
-def can_explode_bomb_plant(state: CollectionState, player: int) -> bool:
-    # Also explodes with ground quake
-    return state.has_all(["Staff", "Fire Blaster", "Bomb Plant"], player)
-
-
-def can_buy(state: CollectionState, player: int, price: int) -> bool:
+def can_buy(price: int) -> Rule:
     if price <= 10:
         # Force a scarab bag in logic for convenience
-        return state.has("Scarab Bag (Progressive)", player, 1)
+        return HasAllCounts({"Scarab Bag (Progressive)": 1})
     if price <= 50:
-        return state.has("Scarab Bag (Progressive)", player, 1)
+        return HasAllCounts({"Scarab Bag (Progressive)": 1})
     if price <= 100:
-        return state.has("Scarab Bag (Progressive)", player, 2)
+        return HasAllCounts({"Scarab Bag (Progressive)": 2})
     # Price <= 200 (max)
-    return state.has("Scarab Bag (Progressive)", player, 3)
+    return HasAllCounts({"Scarab Bag (Progressive)": 3})

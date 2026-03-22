@@ -2,7 +2,7 @@ from dataclasses import dataclass
 from typing import Literal
 
 import dolphin_memory_engine as dme
-from CommonClient import logger
+# from CommonClient import logger
 
 
 class GameBit:
@@ -130,7 +130,7 @@ def read_value_bytes(
     """
     byte_address, bit_position = get_bit_address(address, offset)
     if bit_position + value_size > 8 * nb_bytes:
-        logger.debug("READ BYTE: Size overflowing into next byte")
+        # logger.debug("READ BYTE: Size overflowing into next byte")
         return read_value_bytes(address, offset, value_size, nb_bytes + 1, endian)
     cache_byte = dme.read_bytes(byte_address, nb_bytes)
     cache_byte = int.from_bytes(cache_byte, endian)
@@ -157,13 +157,13 @@ def set_value_bytes(
     """
     byte_address, bit_position = get_bit_address(address, offset)
     if bit_position + value_size > 8 * nb_bytes:
-        logger.debug("WRITE BYTE: Size overflowing into next byte")
+        # logger.debug("WRITE BYTE: Size overflowing into next byte")
         set_value_bytes(address, offset, value, value_size, nb_bytes + 1, endian)
         return
     cache_byte = dme.read_bytes(byte_address, nb_bytes)
     cache_byte = int.from_bytes(cache_byte, byteorder=endian)
     updated_byte = update_bits(cache_byte, bit_position, value, value_size)
-    logger.debug(f"Writing byte: {updated_byte:b}")
+    # logger.debug(f"Writing byte: {updated_byte:b}")
     dme.write_bytes(byte_address, updated_byte.to_bytes(nb_bytes, endian))
 
 
