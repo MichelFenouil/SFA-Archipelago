@@ -5,8 +5,8 @@ from enum import Enum, auto
 from typing import TYPE_CHECKING
 
 from BaseClasses import Item, ItemClassification
-from worlds.sfa.bit_helper import GameBit
 
+from .bit_helper import GameBit
 from .addresses import PLAYER_CUR_HP, PLAYER_CUR_MP, PLAYER_MAX_HP, PLAYER_MAX_MP, T2_ADDRESS
 
 if TYPE_CHECKING:
@@ -19,19 +19,24 @@ class SFAItem(Item):
     game: str = "Star Fox Adventures"
 
 
-class SFAItemType(Enum):
+class SFAItemTags(Enum):
     """This class defines constants for various types of items to know how to handle in game."""
 
-    STAFF = auto()
-    TRICKY = auto()
-    INVENTORY = auto()
-    PROGRESSIVE = auto()
-    CONSUMABLE = auto()
-    SHOP_PROGRESSION = auto()
-    SHOP_USEFUL = auto()
-    USEFUL = auto()
-    FILLER = auto()
+    SHOP = auto()
     PLANET = auto()
+    STARTING_ITEM = auto()
+
+
+    # STAFF = auto()
+    # TRICKY = auto()
+    # INVENTORY = auto()
+    # PROGRESSIVE = auto()
+    # CONSUMABLE = auto()
+    # SHOP_PROGRESSION = auto()
+    # SHOP_USEFUL = auto()
+    # USEFUL = auto()
+    # FILLER = auto()
+    # PLANET = auto()
 
 
 @dataclass
@@ -39,9 +44,10 @@ class SFAItemData:
     """Data class for items in Star Fox Adventures."""
 
     id: int
+    name: str
     game_bit: GameBit
-    type: SFAItemType
     ap_classification: ItemClassification
+    tags: list[SFAItemTags] = []
 
     @classmethod
     def get_by_id(cls, id: int) -> SFAItemData | None:
@@ -66,33 +72,24 @@ class SFAItemData:
         :param name: Item name to search
         :return: SFAItemData for given name
         """
-        return ALL_ITEMS_TABLE.get(name, SFAItemData(0, GameBit(0x0, 0x0), SFAItemType.FILLER, ItemClassification.filler))
-    
-    def get_bit(self) -> bool:
+        return ALL_ITEMS_TABLE.get(
+            name, SFAItemData(0, GameBit(0x0, 0x0), SFAItemTags.FILLER, ItemClassification.filler)
+        )
+
+    def get_value(self) -> bool:
         """Get bit value for item."""
         return self.game_bit.get_bit()
-    
-    def set_bit(self, state: bool | int) -> None:
+
+    def set_value(self, state: bool) -> None:
         """Set bit for item."""
         self.game_bit.set_bit(state)
-
-
-
-
-@dataclass
-class SFAStaffItemData(SFAItemData):
-    """Data class for staff items."""
-
-    mc_bitflag: int | None = None
-    linked_location: int | None = None
-
 
 @dataclass
 class SFAProgressiveItemData(SFAItemData):
     """Data class for progressive items."""
 
-    # offset, address, count
-    progressive_data: list[tuple]
+    game_bit: None
+    progressive_data: list[GameBit]
 
 
 @dataclass
@@ -138,6 +135,7 @@ def items_name_to_id_dict() -> dict[str, int]:
 
 def get_random_filler_item_name(world: SFAWorld) -> str:
     """Generate filler items."""
+    # Add filler percent in class?
     if world.random.randint(0, 99) < 20:
         return "Health Refill"
     if world.random.randint(0, 99) < 20:
@@ -156,9 +154,11 @@ def create_all_items(world: SFAWorld) -> None:
     itempool: list[Item] = []
 
     for name, data in PROGRESSION_ITEMS.items():
-        if name == "Staff" or name == "Bomb Plant" or name == "Dinosaur Planet Access" or name == "Victory":
+        if name == "Victory":
             continue
-        if isinstance(data, SFACountItemData):
+        elif SFAItemTags.STARTING_ITEM in data.tags:
+            world.push_precollected(world.create_item(name))
+        elif isinstance(data, SFACountItemData):
             itempool.extend([world.create_item(name) for _ in range(data.max_count)])
         elif isinstance(data, SFAProgressiveItemData):
             itempool.extend([world.create_item(name) for _ in range(len(data.progressive_data))])
@@ -176,60 +176,65 @@ def create_all_items(world: SFAWorld) -> None:
 
     itempool += [world.create_filler() for _ in range(needed_number_of_filler_items)]
 
-    print(f"Added items: {itempool}")  # noqa: T201
-
     world.multiworld.itempool += itempool
 
-    # Start with Staff and Bomb Plant for logic (might shuffle later)
-    world.push_precollected(world.create_item("Staff"))
-    world.push_precollected(world.create_item("Bomb Plant"))
-    world.push_precollected(world.create_item("Dinosaur Planet Access"))
 
-
-ITEM_STAFF: dict[str, SFAStaffItemData] = {
-    "Staff": SFAStaffItemData(1, GameBit(0x0080, T2_ADDRESS), SFAItemType.STAFF, ItemClassification.progression),
-    "Fire Blaster": SFAStaffItemData(2, GameBit(0x06FC, T2_ADDRESS), SFAItemType.STAFF, ItemClassification.progression),
-    "Staff Booster": SFAStaffItemData(3, GameBit(0x0706, T2_ADDRESS), SFAItemType.STAFF, ItemClassification.progression),
+ITEM_STAFF: dict[str, SFAItemData] = {
+    "Staff": SFAItemData(
+        1, "Staff", GameBit(0x0080), ItemClassification.progression, [SFAItemTags.STARTING_ITEM]
+    ),
+    "Fire Blaster": SFAItemData(2, "Fire Blaster", GameBit(0x06FC), ItemClassification.progression, []),
+    "Staff Booster": SFAItemData(3, "Staff Booster", GameBit(0x0706), ItemClassification.progression, []),
 }
 
 ITEM_TRICKY: dict[str, SFAProgressiveItemData] = {
     "Tricky (Progressive)": SFAProgressiveItemData(
         10,
-        GameBit(0x0, T2_ADDRESS),
-        SFAItemType.TRICKY,
+        "Tricky (Progressive)",
+        # TDOD: Remove dummy gamebit
+        GameBit(0x0, 0x0),
         ItemClassification.progression,
-        [(0x0846, T2_ADDRESS, 1), (0x084B, T2_ADDRESS, 1)],
+        progressive_data=[GameBit(0x0846), GameBit(0x084B)],
     ),
 }
 
 ITEM_PLANET: dict[str, SFAItemData] = {
-    "Dinosaur Planet Access": SFAItemData(50, GameBit(0x0930, T2_ADDRESS), SFAItemType.PLANET, ItemClassification.progression),
+    "Dinosaur Planet Access": SFAItemData(
+        50,
+        "Dinosaur Planet Access",
+        GameBit(0x0930),
+        ItemClassification.progression,
+        [SFAItemTags.STARTING_ITEM, SFAItemTags.PLANET],
+    ),
     "DarkIce Mines Access": SFAPlanetItemData(
         51,
-        GameBit(0x093D, T2_ADDRESS),
-        SFAItemType.PLANET,
+        "DarkIce Mines Access",
+        GameBit(0x093D),
         ItemClassification.progression,
+        [SFAItemTags.PLANET],
         gate_table_address=T2_ADDRESS,
         gate_bit_offset=0x0931,
     ),
-    # "CloudRunner Fortress": SFAItemData(52, 0x093E, T2_ADDRESS, SFAItemType.PLANET, ItemClassification.progression),
-    # "Walled City": SFAItemData(53, 0x093F, T2_ADDRESS, SFAItemType.PLANET, ItemClassification.progression),
-    # "Dragon Rock": SFAItemData(54, 0x0940, T2_ADDRESS, SFAItemType.PLANET, ItemClassification.progression),
+    # "CloudRunner Fortress": SFAItemData(52, 0x093E, SFAItemType.PLANET, ItemClassification.progression),
+    # "Walled City": SFAItemData(53, 0x093F, SFAItemType.PLANET, ItemClassification.progression),
+    # "Dragon Rock": SFAItemData(54, 0x0940, SFAItemType.PLANET, ItemClassification.progression),
 }
 
 ITEM_INVENTORY: dict[str, SFAItemData] = {
     "Scarab Bag (Progressive)": SFAProgressiveItemData(
         100,
-        GameBit(0x0, T2_ADDRESS),
-        SFAItemType.PROGRESSIVE,
+        "Scarab Bag (Progressive)",
+        GameBit(0x0, 0x0),
         ItemClassification.progression,
-        [(0x035B, T2_ADDRESS, 1), (0x035C, T2_ADDRESS, 1), (0x035D, T2_ADDRESS, 1)],
+        progressive_data=[GameBit(0x035B), GameBit(0x035C), GameBit(0x035D)],
     ),
-    "Bomb Plant": SFAItemData(101, GameBit(0x0, T2_ADDRESS), SFAItemType.INVENTORY, ItemClassification.progression),
+    "Bomb Plant": SFAItemData(
+        101, "Bomb Plant", GameBit(0x0), ItemClassification.progression, [SFAItemTags.STARTING_ITEM]
+    ),
     "SHW Alpine Root": SFAQuestItemData(
         102,
-        GameBit(0x0030, T2_ADDRESS),
-        SFAItemType.INVENTORY,
+        "SHW Alpine Root",
+        GameBit(0x0030),
         ItemClassification.progression,
         max_count=2,
         bit_size=3,
@@ -238,20 +243,22 @@ ITEM_INVENTORY: dict[str, SFAItemData] = {
     ),
     "White GrubTub": SFAQuestItemData(
         103,
-        GameBit(0x00A9, T2_ADDRESS),
-        SFAItemType.INVENTORY,
+        "White GrubTub",
+        GameBit(0x00A9),
         ItemClassification.progression,
         max_count=6,
         bit_size=3,
         item_used_flag_offset=0x00AD,
         item_used_bit_size=3,
     ),
-    "Gate Key": SFAItemData(104, GameBit(0x00B0, T2_ADDRESS), SFAItemType.INVENTORY, ItemClassification.progression),
-    "Entrance Bridge Cog": SFAItemData(105, GameBit(0x036E, T2_ADDRESS), SFAItemType.INVENTORY, ItemClassification.progression),
+    "Gate Key": SFAItemData(104, "Gate Key", GameBit(0x00B0), ItemClassification.progression),
+    "Entrance Bridge Cog": SFAItemData(
+        105, "Entrance Bridge Cog", GameBit(0x036E), ItemClassification.progression
+    ),
     "DIM Alpine Root": SFAQuestItemData(
         106,
-        GameBit(0x037E, T2_ADDRESS),
-        SFAItemType.INVENTORY,
+        "DIM Alpine Root",
+        GameBit(0x037E),
         ItemClassification.progression,
         max_count=2,
         bit_size=3,
@@ -259,31 +266,39 @@ ITEM_INVENTORY: dict[str, SFAItemData] = {
     ),  # Problem if given 1, you will receive 1 again
     "SharpClaw Fort Bridge Cogs": SFAProgressiveItemData(
         107,
-        GameBit(0x0371, T2_ADDRESS),
-        SFAItemType.INVENTORY,
+        "SharpClaw Fort Bridge Cogs",
+        GameBit(0x0371),
         ItemClassification.progression,
-        [(0x0371, T2_ADDRESS, 1), (0x0373, T2_ADDRESS, 1), (0x0375, T2_ADDRESS, 1)],
+        progressive_data=[GameBit(0x0371), GameBit(0x0373), GameBit(0x0375)],
     ),
-    "Dinosaur Horn": SFAItemData(110, GameBit(0x03A0, T2_ADDRESS), SFAItemType.INVENTORY, ItemClassification.progression),
-    # "Cell Silver Key": SFAItemData(111, 0x03DC, T2_ADDRESS, SFAItemType.INVENTORY, ItemClassification.progression),
-    # "Fire Spellstone 1": SFAItemData(112, 0x039E, T2_ADDRESS, SFAItemType.INVENTORY, ItemClassification.progression),
+    "Dinosaur Horn": SFAItemData(110, "Dinosaur Horn", GameBit(0x03A0), ItemClassification.progression),
+    # "Cell Silver Key": SFAItemData(111, 0x03DC, SFAItemType.INVENTORY, ItemClassification.progression),
+    # "Fire Spellstone 1": SFAItemData(112, 0x039E, SFAItemType.INVENTORY, ItemClassification.progression),
 }
 
 ITEM_SHOP: dict[str, SFAItemData] = {
     "Rock Candy": SFAItemData(
         200,
-        GameBit(0x035F, T2_ADDRESS),
-        SFAItemType.SHOP_PROGRESSION,
+        "Rock Candy",
+        GameBit(0x035F),
         ItemClassification.progression,
+        [SFAItemTags.SHOP],
     ),
-    "Hi-Tech Display Device": SFAItemData(201, GameBit(0x035E, T2_ADDRESS), SFAItemType.SHOP_USEFUL, ItemClassification.useful),
-    "Tricky Ball": SFAItemData(202, GameBit(0x084C, T2_ADDRESS), SFAItemType.SHOP_USEFUL, ItemClassification.useful),
-    "BafomDad Holder": SFAItemData(203, GameBit(0x09EE, T2_ADDRESS), SFAItemType.SHOP_USEFUL, ItemClassification.useful),
+    "Hi-Tech Display Device": SFAItemData(
+        201, "Hi-Tech Display Device", GameBit(0x035E), ItemClassification.useful, [SFAItemTags.SHOP]
+    ),
+    "Tricky Ball": SFAItemData(
+        202, "Tricky Ball", GameBit(0x084C), ItemClassification.useful, [SFAItemTags.SHOP]
+    ),
+    "BafomDad Holder": SFAItemData(
+        203, "BafomDad Holder", GameBit(0x09EE), ItemClassification.useful, [SFAItemTags.SHOP]
+    ),
     "FireFly Lantern": SFAItemData(
         204,
-        GameBit(0x0717, T2_ADDRESS),
-        SFAItemType.SHOP_PROGRESSION,
+        "FireFly Lantern",
+        GameBit(0x0717),
         ItemClassification.progression,
+        [SFAItemTags.SHOP],
     ),
     # Gives access to unimplemented area
     # "Snowhorn Artifact": SFAItemData(
@@ -301,45 +316,45 @@ PROGRESSION_ITEMS: dict[str, SFAItemData] = {
     **ITEM_SHOP,
     **ITEM_TRICKY,
     **ITEM_PLANET,
-    "Victory": SFAItemData(2000, GameBit(0x0, 0x0), SFAItemType.FILLER, ItemClassification.progression),
+    "Victory": SFAItemData(2000, "Victory", GameBit(0x0, 0x0), ItemClassification.progression),
 }
 
 USEFUL_ITEMS: dict[str, SFAItemData] = {
     "MP Upgrade": SFACountItemData(
         300,
+        "MP Upgrade",
         GameBit(0x0, PLAYER_MAX_MP),
-        SFAItemType.USEFUL,
         ItemClassification.useful,
-        6,
-        8,
-        25,
-        25,
+        max_count=6,
+        bit_size=8,
+        count_increment=25,
+        start_amount=25,
     ),
     "HP Upgrade": SFACountItemData(
         301,
+        "HP Upgrade",
         GameBit(0x0, PLAYER_MAX_HP),
-        SFAItemType.USEFUL,
         ItemClassification.useful,
-        6,
-        8,
-        4,
-        12,
+        max_count=6,
+        bit_size=8,
+        count_increment=4,
+        start_amount=12,
     ),
 }
 
 FILLER_ITEMS: dict[str, SFAItemData] = {
     "Fuel Cell": SFACountItemData(
         1001,
-        GameBit(0x0935, T2_ADDRESS),
-        SFAItemType.FILLER,
+        "Fuel Cell",
+        GameBit(0x0935),
         ItemClassification.filler,
         max_count=255,
         bit_size=8,
     ),
     "Health Refill": SFAConsumableItemData(
         1002,
+        "Health Refill",
         GameBit(0x0, PLAYER_CUR_HP),
-        SFAItemType.FILLER,
         ItemClassification.filler,
         add_value=4,
         bit_size=8,
@@ -348,8 +363,8 @@ FILLER_ITEMS: dict[str, SFAItemData] = {
     ),
     "Magic Refill": SFAConsumableItemData(
         1003,
+        "Magic Refill",
         GameBit(0x0, PLAYER_CUR_MP),
-        SFAItemType.FILLER,
         ItemClassification.filler,
         add_value=25,
         bit_size=8,

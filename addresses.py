@@ -1,13 +1,10 @@
-from dataclasses import dataclass
-
-from worlds.sfa.bit_helper import GameBit
-
 T0_ADDRESS = 0x803A4198
 T1_ADDRESS = 0x803A380C
 T2_ADDRESS = 0x803A32CC
 T3_ADDRESS = 0x803A3880
 
-# Map specific values
+## Map specific values ##
+
 MAP_ID_ADDRESS = 0x803DCECB
 THORNTAIL_HOLLOW_ID = 0x07
 KRAZOA_PALACE_ID = 0x0B
@@ -35,7 +32,9 @@ DIM2_OBJECTS_ADDRESS = 0x803A3891
 DIM2_SILVER_ZONE_VALUE = 0x40003
 DIM2_SILVER_ZONE_VALUE2 = 0x40042
 
-# Misc
+
+## Misc ##
+
 ITEM_MAP_ADDRESS = 0x803A33D2
 ITEM_MAP_INIT_VALUE = 0b111111001010001000101111
 
@@ -48,118 +47,3 @@ PLAYER_MAX_MP = 0x803A32BB
 PLAYER_CUR_MP = 0x803A32B9
 
 CURRENT_SEQ_ADDRESS = 0x803DD08C
-
-
-@dataclass
-class GameFlag:
-    """GameFlag represents flags to set ON/OFF for QoL."""
-
-    flag_name: str
-    offset: int
-    address: int
-    state: bool = True
-
-
-KRAZOA_SPIRIT_1 = GameFlag("Krazoa Spirit 1", 0x053C, T2_ADDRESS)
-DIM_OPEN_BLIZZARD = [
-    GameFlag("Allow Horn Action", 0x03B3, T2_ADDRESS),
-    GameFlag("Blow Horn Cutscene 1", 0x0104, T0_ADDRESS),
-    GameFlag("Blow Horn Cutscene 2", 0x010F, T0_ADDRESS),
-    GameFlag("SnowHorn Cutscene 1", 0x03A1, T2_ADDRESS),
-    GameFlag("SnowHorn Cutscene 2", 0x03B2, T2_ADDRESS),
-]
-DIM_OPEN_BIKE = [
-    GameFlag("Bike Trigger", 0x0415, T2_ADDRESS),
-    GameFlag("Prevent Crash 1FB", 0x03E1, T2_ADDRESS),
-    GameFlag("Bike 1F0", 0x03D9, T2_ADDRESS),
-]
-DINO_CAVE = GameBit(0x003E, T3_ADDRESS)
-
-# Global flags #
-
-FORCE_TRICKY = GameFlag("Spawn Tricky", 0x0847, T2_ADDRESS)
-FORCE_TRICKY_CALL = GameFlag("Give Call", 0x0849, T2_ADDRESS)
-
-SAW_ITEM_FLAGS: list[GameFlag] = [
-    GameFlag("Saw Apple", 0x0015, T2_ADDRESS),
-    GameFlag("Saw Bafomdad", 0x0020, T2_ADDRESS),
-    GameFlag("Saw BarrelGen", 0x001D, T2_ADDRESS),
-    GameFlag("Saw BigHealth", 0x0014, T2_ADDRESS),
-    GameFlag("Saw BombPlant", 0x001F, T2_ADDRESS),
-    GameFlag("Saw BombPlantPatch", 0x001E, T2_ADDRESS),
-    GameFlag("Saw BombSpore", 0x0853, T2_ADDRESS),
-    GameFlag("Saw CMenuExplanation", 0x001B, T2_ADDRESS),
-    GameFlag("Saw FuelCell", 0x0854, T2_ADDRESS),
-    GameFlag("Saw LifeDoorExplanation", 0x0024, T2_ADDRESS),
-    GameFlag("Saw Magic", 0x0013, T2_ADDRESS),
-    GameFlag("Saw Scarab", 0x0016, T2_ADDRESS),
-    GameFlag("Saw StaffBoostPad", 0x0022, T2_ADDRESS),
-    GameFlag("Saw WarpPad", 0x0018, T2_ADDRESS),
-    GameFlag("Saw GrubTubs", 0x084F, T2_ADDRESS),
-    GameFlag("Saw Alpine Root", 0x0851, T2_ADDRESS),
-    GameFlag("Entered Shop", 0x035A, T2_ADDRESS),
-    GameFlag("Saw Pushable Block", 0x0019, T2_ADDRESS),
-    GameFlag("GrubTub Tutorial 1", 0x0345, T2_ADDRESS),
-    GameFlag("GrubTub Tutorial 2", 0x0346, T2_ADDRESS),
-    GameFlag("GrubTub Tutorial 3", 0x0347, T2_ADDRESS),
-    GameFlag("Slippy Cold Water", 0x001C, T2_ADDRESS),
-    GameFlag("Saw Firefly", 0x0021, T2_ADDRESS),
-    GameFlag("Saw White GrubTubs", 0x0850, T2_ADDRESS),
-    GameFlag("Saw Last Tutorial Message", 0x0104, T2_ADDRESS),  # Also spawns Queen Cave correctly
-    GameFlag("Learned To Speak", 0x001A, T2_ADDRESS),
-]
-
-SH_STATE_FLAGS: list[GameFlag] = [
-    GameFlag("SH WarpStone Open", 0x00D5, T2_ADDRESS),
-]
-
-IM_OPENED_FLAGS: list[GameFlag] = [
-    GameFlag("IM Lava Path Open", 0x0341, T2_ADDRESS),
-    GameFlag("IM Dig Tunnel to Waterspout", 0x0344, T2_ADDRESS),
-    GameFlag("SW Geyser Stop", 0x0036, T2_ADDRESS),
-    GameFlag("SW Ice Block Spawn", 0x0067, T2_ADDRESS),
-    GameFlag("SW Bribed Guard", 0x0039, T2_ADDRESS),
-]
-
-INTRO_OPENED_FLAGS: list[GameFlag] = [
-    GameFlag("Enable C Menu", 0x0356, T1_ADDRESS),
-    GameFlag("Gold Key Got", 0x01DC, T1_ADDRESS),
-    GameFlag("Gold Key Used", 0x4FB, T2_ADDRESS),
-    GameFlag("Skip landing cutscene", 0x04FA, T2_ADDRESS),
-    GameFlag("Destroyed Wall 1", 0x0502, T2_ADDRESS),
-    GameFlag("Destroyed Wall 2", 0x0504, T2_ADDRESS),
-    GameFlag("Switch Door Open", 0x050D, T2_ADDRESS),
-    GameFlag("Dino Talked After Test", 0x0508, T2_ADDRESS),
-]
-
-DIM_STATE_FLAGS: list[GameFlag] = [
-    GameFlag("Belina Te at Bottom", 0x03ED, T2_ADDRESS, True),
-]
-
-CUTSCENE_SKIP_FLAGS: list[GameFlag] = [
-    GameFlag("SH Warpstone explanation", 0x0106, T2_ADDRESS),
-    GameFlag("SH Entered Well", 0x0096, T2_ADDRESS),
-    GameFlag("SH Returned with Tricky", 0x0093, T2_ADDRESS),
-    GameFlag("IM Skip Tricky captured", 0x0310, T2_ADDRESS),
-    GameFlag("IM Skip Hut bullying", 0x0312, T2_ADDRESS),
-    GameFlag("IM Skip Starting first race", 0x0314, T2_ADDRESS),
-    GameFlag("IM Spawn Tricky on bottom", 0x0325, T2_ADDRESS),
-    GameFlag("IM Open Hut Door", 0x0323, T2_ADDRESS),
-]
-
-STARTING_FLAGS: list[GameFlag] = [
-    *SAW_ITEM_FLAGS,
-    *CUTSCENE_SKIP_FLAGS,
-    *SH_STATE_FLAGS,
-    *IM_OPENED_FLAGS,
-    *INTRO_OPENED_FLAGS,
-    *DIM_STATE_FLAGS,
-]
-
-CONSTANT_FLAGS: list[GameFlag] = [
-    FORCE_TRICKY,
-    FORCE_TRICKY_CALL,
-    GameFlag("MagicCaveDoorOpen", 0x0008, T2_ADDRESS, False),
-    GameFlag("MagicCaveDoorRelated", 0x0009, T2_ADDRESS, False),
-    GameFlag("DIM Landing Pad Gate Open", 0x0138, T1_ADDRESS, False),
-]

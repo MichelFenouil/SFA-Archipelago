@@ -36,7 +36,7 @@ from .items import (
     SFAConsumableItemData,
     SFACountItemData,
     SFAItemData,
-    SFAItemType,
+    SFAItemTags,
     SFAPlanetItemData,
     SFAProgressiveItemData,
     SFAQuestItemData,
@@ -49,7 +49,7 @@ from .locations import (
     SFACountLocationData,
     SFALinkedLocationData,
     SFALocationData,
-    SFALocationType,
+    SFALocationTags,
     SFAShopLocationData,
     SFAUpgradeLocationData,
 )
@@ -332,7 +332,7 @@ def _give_item_in_game(ctx: SFAContext, item: SFAItemData | None) -> bool:
         return True
 
     if ctx.stored_map == SHOP_ID and (
-        item.type == SFAItemType.SHOP_PROGRESSION or item.type == SFAItemType.SHOP_USEFUL
+        item.tags == SFAItemTags.SHOP_PROGRESSION or item.tags == SFAItemTags.SHOP_USEFUL
     ):
         # Don't send shop items if inside shop
         return True
@@ -412,7 +412,7 @@ async def force_gameflags(ctx: SFAContext) -> None:
 
     if DINO_CAVE.get_bit():
         dino_horn = SFAItemData.get_by_name("Dinosaur Horn")
-        dino_horn.set_bit(dino_horn.id in ctx.received_items_id)
+        dino_horn.set_value(dino_horn.id in ctx.received_items_id)
 
     # Force Bomb_spore to 1 for testing
     # address, position = get_bit_address(T2_ADDRESS, 0x77)
@@ -447,7 +447,7 @@ async def special_map_flags(ctx: SFAContext) -> None:
             location.set_bit(location.id in ctx.checked_locations or location.id not in ctx.server_locations)
         if ctx.stored_map == map_expected:
             # Retrieve item when leaving map
-            location.set_bit(location.type == SFALocationType.MAP or location.linked_item in ctx.received_items_id)
+            location.set_bit(SFALocationTags.MAP in location.tags or location.linked_item in ctx.received_items_id)
 
     map_value = dme.read_byte(MAP_ID_ADDRESS)
     if ctx.stored_map != map_value:
@@ -498,15 +498,14 @@ async def special_map_flags(ctx: SFAContext) -> None:
 
         # Remove fireblaster in world map
         if map_value == WORLD_MAP_ID:
-            SFAItemData.get_by_name("Fire Blaster").set_bit(False)
+            SFAItemData.get_by_name("Fire Blaster").set_value(False)
         if ctx.stored_map == WORLD_MAP_ID:
             item = SFAItemData.get_by_name("Fire Blaster")
-            item.set_bit(item.id in ctx.received_items_id)
+            item.set_value(item.id in ctx.received_items_id)
 
         # Give Krystal Spirit 1
         if map_value == KRAZOA_PALACE_ID:
-            flag = KRAZOA_SPIRIT_1
-            set_flag_bit(flag.address, flag.offset, True)
+            KRAZOA_SPIRIT_1.set_bit(True)
 
         ctx.stored_map = map_value
 
@@ -528,11 +527,11 @@ async def special_map_flags(ctx: SFAContext) -> None:
         ):
             logger.debug("Entering Blizzard zone")
             for flag in DIM_OPEN_BLIZZARD:
-                set_flag_bit(flag.address, flag.offset, False)
+                flag.set_bit(False)
         elif ctx.stored_dim - dim_obj_value == DIM_BIKE_ZONE_TRANSITION:
             logger.debug("Bike zone transition")
             for flag in DIM_OPEN_BIKE:
-                set_flag_bit(flag.address, flag.offset, False)
+                flag.set_bit(False)
         else:
             item = ITEM_INVENTORY.get("SharpClaw Fort Bridge Cogs")
             location = [

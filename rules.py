@@ -37,140 +37,6 @@ def set_all_location_rules(world: SFAWorld) -> None:
     for dig_name in LOCATION_DIG_SPOT:
         set_rule_if_exists(dig_name, lambda state: state.has("Tricky (Progressive)", world.player))
 
-    # ThornTail Hollow
-    # set_rule_if_exists("TTH: Fire Blaster Upgrade", True_())
-    # set_rule_if_exists("TTH: Pillar Fuel Cell Left", True_())
-    # set_rule_if_exists("TTH: Pillar Fuel Cell Right", True_())
-    # set_rule_if_exists("TTH: Queen Cave Fuel Cell", True_())
-    # set_rule_if_exists(
-    #     "TTH: Beside WarpStone Fuel Cell Left",
-    #     mc.can_explode_bomb_plant,
-    # )
-    # set_rule_if_exists(
-    #     "TTH: Beside WarpStone Fuel Cell Right",
-    #     mc.can_explode_bomb_plant,
-    # )
-    # set_rule_if_exists(
-    #     "TTH: Waterfall Cave Fuel Cell Center", mc.can_explode_bomb_plant
-    # )
-    # set_rule_if_exists(
-    #     "TTH: Waterfall Cave Fuel Cell Left", lambda state: mc.can_explode_bomb_plant(state, world.player)
-    # )
-    # set_rule_if_exists(
-    #     "TTH: Waterfall Cave Fuel Cell Right", lambda state: mc.can_explode_bomb_plant(state, world.player)
-    # )
-    # set_rule_if_exists(
-    #     "TTH: Waterfall Cave Fuel Cell Back",
-    #     lambda state: mc.can_explode_bomb_plant(state, world.player),
-    # )
-    # set_rule_if_exists("TTH: South Cave Fuel Cell Center", lambda state: mc.can_explode_bomb_plant(state, world.player))
-    # set_rule_if_exists("TTH: South Cave Fuel Cell Right", lambda state: mc.can_explode_bomb_plant(state, world.player))
-    # set_rule_if_exists("TTH: South Cave Fuel Cell Left", lambda state: mc.can_explode_bomb_plant(state, world.player))
-    # set_rule_if_exists("TTH: Above Store Fuel Cell Left", lambda state: mc.has_staff_booster(state, world.player))
-    # set_rule_if_exists("TTH: Above Store Fuel Cell Right", lambda state: mc.has_staff_booster(state, world.player))
-    # set_rule_if_exists(
-    #     "TTH: Magic Upgrade above Store",
-    #     lambda state: mc.has_staff_booster(state, world.player)
-    #     and mc.has_blaster(state, world.player)
-    #     and mc.can_explode_bomb_plant(state, world.player),
-    # )
-    # set_rule_if_exists("TTH: Feed Queen White GrubTubs", HasAllCounts({"White GrubTub": 6}))
-
-    # # TH Well
-    # set_rule_if_exists("TTH Well: Fuel Cell Left", lambda state: mc.has_staff_booster(state, world.player))
-    # set_rule_if_exists("TTH Well: Fuel Cell Right", lambda state: mc.has_staff_booster(state, world.player))
-    # set_rule_if_exists("TTH Well: White GrubTub 1", lambda state: True)
-    # set_rule_if_exists("TTH Well: White GrubTub 2", lambda state: True)
-    # set_rule_if_exists("TTH Well: White GrubTub 3", lambda state: mc.can_explode_bomb_plant(state, world.player))
-    # set_rule_if_exists("TTH Well: White GrubTub 4", lambda state: mc.has_staff_booster(state, world.player))
-    # set_rule_if_exists(
-    #     "TTH Well: White GrubTub 5",
-    #     lambda state: mc.has_staff_booster(state, world.player) and mc.can_explode_bomb_plant(state, world.player),
-    # )
-    # set_rule_if_exists(
-    #     "TTH Well: White GrubTub 6",
-    #     lambda state: mc.has_staff_booster(state, world.player) and mc.can_explode_bomb_plant(state, world.player),
-    # )
-    # set_rule_if_exists("TTH Well: Staff Booster Upgrade", lambda state: mc.can_explode_bomb_plant(state, world.player))
-
-    # # Ice Mountain
-    # set_rule_if_exists("IM: Cheat Well Fuel Cell", lambda state: mc.can_explode_bomb_plant(state, world.player))
-    # set_rule_if_exists("IM: Race Cave Fuel Cell Front", lambda state: True)
-    # set_rule_if_exists("IM: Race Cave Fuel Cell Back", lambda state: True)
-
-    # # SnowHorn Wastes
-    # set_rule_if_exists("SHW: Magic Upgrade", lambda state: state.has("Tricky (Progressive)", world.player))
-    # set_rule_if_exists("SHW: Feed Alpine Root 1", lambda state: state.has("SHW Alpine Root", world.player, 1))
-    # set_rule_if_exists("SHW: Feed Alpine Root 2", lambda state: state.has("SHW Alpine Root", world.player, 2))
-    # set_rule_if_exists("SHW: Ice Block Fuel Cell Left", lambda state: True)  # Requires 2 Alpine Roots without open SW
-    # set_rule_if_exists("SHW: Ice Block Fuel Cell Right", lambda state: True)  # Requires 2 Alpine Roots without open SW
-    # set_rule_if_exists("SHW: Water Platform Fuel Cell Left", lambda state: state.has("Staff", world.player))
-    # set_rule_if_exists("SHW: Water Platform Fuel Cell Right", lambda state: state.has("Staff", world.player))
-    # set_rule_if_exists(
-    #     "SHW: Dig Cave near Entrance Fuel Cell", lambda state: state.has("Tricky (Progressive)", world.player)
-    # )
-    # set_rule_if_exists(
-    #     "SHW: Path to TTH Booster Fuel Cell Left",
-    #     lambda state: mc.has_blaster(state, world.player) and mc.has_staff_booster(state, world.player),
-    # )
-    # set_rule_if_exists(
-    #     "SHW: Path to TTH Booster Fuel Cell Right",
-    #     lambda state: mc.has_blaster(state, world.player) and mc.has_staff_booster(state, world.player),
-    # )
-    # set_rule_if_exists("SHW: Rescue GateKeeper", lambda state: True)
-    # set_rule_if_exists("SHW: Blast Tree past Gate Fuel Cell Left", lambda state: mc.has_blaster(state, world.player))
-    # set_rule_if_exists("SHW: Blast Tree past Gate Fuel Cell Right", lambda state: mc.has_blaster(state, world.player))
-    # set_rule_if_exists("SHW: River past Gate Cheat Well Fuel Cell", lambda state: True)
-    # set_rule_if_exists("SHW: River Ledge past Gate Fuel Cell Center", lambda state: True)
-    # set_rule_if_exists("SHW: River Ledge past Gate Fuel Cell Right", lambda state: mc.has_blaster(state, world.player))
-    # set_rule_if_exists("SHW: River Ledge past Gate Fuel Cell Left", lambda state: mc.has_blaster(state, world.player))
-
-    # # LightFoot Village
-    # set_rule_if_exists("TTH: Entrance to LFV Fuel Cell Right", lambda state: state.has("Staff", world.player))
-    # set_rule_if_exists("TTH: Entrance to LFV Fuel Cell Left", lambda state: state.has("Staff", world.player))
-    # set_rule_if_exists("LFV Entrance Booster Ledge 1", lambda state: mc.has_staff_booster(state, world.player))
-    # set_rule_if_exists("LFV Entrance Booster Ledge 2", lambda state: mc.has_staff_booster(state, world.player))
-
-    # # Moon Mountain Pass
-    # set_rule_if_exists("MMP Windy Path In", lambda state: True)
-    # set_rule_if_exists("MMP Windy Path Out", lambda state: True)
-    # set_rule_if_exists("MMP Barrel Hill", lambda state: True)
-
-    # # DarkIce Mines
-    # set_rule_if_exists("DIM: Release Entrance SnowHorn", lambda state: state.has("Tricky (Progressive)", world.player))
-    # set_rule_if_exists("DIM: Rescue Injured SnowHorn", lambda state: state.has("Entrance Bridge Cog", world.player))
-    # set_rule_if_exists(
-    #     "DIM: Feed Injured SnowHorn",
-    #     lambda state: state.has_all_counts({"Entrance Bridge Cog": 1, "DIM Alpine Root": 2}, world.player),
-    # )
-    # set_rule_if_exists("DIM: Enemy Gate Cog Chest", lambda state: mc.has_staff_booster(state, world.player))
-    # set_rule_if_exists("DIM: Hut Cog Chest", lambda state: mc.has_staff_booster(state, world.player))
-    # set_rule_if_exists(
-    #     "DIM: Ice Cog Chest",
-    #     lambda state: mc.has_staff_booster(state, world.player) and state.has("Tricky (Progressive)", world.player, 2),
-    # )
-    # set_rule_if_exists(
-    #     "DIM: Fire Puzzle Reward",
-    #     lambda state: mc.has_blaster(state, world.player)
-    #     and state.has_all_counts({"SharpClaw Fort Bridge Cogs": 3, "Tricky (Progressive)": 2}, world.player),
-    # )
-    # set_rule_if_exists(
-    #     "DIM: Get Silver Key",
-    #     lambda state: mc.has_staff_booster(state, world.player) and mc.has_blaster(state, world.player),
-    # )
-    # set_rule_if_exists(
-    #     "DIM: Dig Alpine Root in Entrance Hut", lambda state: state.has("Tricky (Progressive)", world.player, 2)
-    # )
-    # set_rule_if_exists(
-    #     "DIM: Dig Alpine Root in Boulder Path",
-    #     lambda state: state.has_all_counts({"Entrance Bridge Cog": 1, "Tricky (Progressive)": 2}, world.player),
-    # )
-    # set_rule_if_exists(
-    #     "DIM: Defeat Boss Galdon",
-    #     lambda state: mc.has_blaster(state, world.player)
-    #     and state.has_all_counts({"Tricky (Progressive)": 2}, world.player),
-    # )
-
 
 def connect_regions(world: SFAWorld) -> None:
     """Create entrances for AP world."""
@@ -211,9 +77,11 @@ def connect_regions(world: SFAWorld) -> None:
     sh_well.connect(
         sh_well_bottom,
         "Descend to Well Bottom",
-        lambda state: mc.has_staff_booster(state, world.player)
-        and mc.can_explode_bomb_plant(state, world.player)
-        and state.has("FireFly Lantern", world.player),
+        lambda state: (
+            mc.has_staff_booster(state, world.player)
+            and mc.can_explode_bomb_plant(state, world.player)
+            and state.has("FireFly Lantern", world.player)
+        ),
     )
     sw_entrance.connect(sw_gate, "Pass SnowHorn Gate", lambda state: state.has("Gate Key", world.player))
     thorntail_hollow.connect(

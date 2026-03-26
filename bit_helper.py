@@ -2,26 +2,46 @@ from dataclasses import dataclass
 from typing import Literal
 
 import dolphin_memory_engine as dme
+
+from .addresses import T2_ADDRESS
 # from CommonClient import logger
 
 
 class GameBit:
-    """GameFlag represents flags to set ON/OFF for QoL."""
+    """GameBit object to access bits in memory."""
 
     offset: int
     address: int
 
-    def __init__(self, offset: int, address: int) -> None:
+    def __init__(self, offset: int, address: int = T2_ADDRESS) -> None:
         self.offset = offset
         self.address = address
 
     def get_bit(self) -> bool:
         """Read bit value from memory."""
-        return bool(read_value_bytes(self.address, self.offset))
-    
-    def set_bit(self, value: bool | int) -> None:
+        byte_address, bit_position = get_bit_address(self.address, self.offset)
+        raw_byte = dme.read_byte(byte_address)
+        return bit_position in extract_bitflag_list(raw_byte)
+
+    def set_bit(self, value: bool) -> None:
         """Write bit value into memory."""
-        set_flag_bit(self.address, self.offset, bool(value))
+        set_flag_bit(self.address, self.offset, value)
+
+    def get_value(self) -> int:
+        """Read int value from memory."""
+        return read_value_bytes(self.address, self.offset)
+
+    def set_value(self, value: int, value_size: int = 1):
+        """Write int value into memory."""
+        set_value_bytes(self.address, self.offset, value, value_size)
+
+@dataclass
+class GameFlag(GameBit):
+    """GameFlag represents flags to set ON/OFF for QoL."""
+    offset: int
+    address: int
+    state: bool = True
+
 
 def extract_bitflag_list(input_bytes: int) -> list[int]:
     """
