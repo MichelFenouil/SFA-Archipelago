@@ -1,7 +1,52 @@
+from dataclasses import dataclass
 from typing import Literal
 
 import dolphin_memory_engine as dme
-from CommonClient import logger
+
+from .addresses import T2_ADDRESS
+
+# from CommonClient import logger
+
+
+class GameBit:
+    """GameBit object to access bits in memory."""
+
+    offset: int
+    address: int
+    bit_size: int
+
+    def __init__(self, offset: int, address: int = T2_ADDRESS, bit_size=1) -> None:
+        """Initialize GameBit with address and offset."""
+        self.offset = offset
+        self.address = address
+        self.bit_size = bit_size
+
+    def get_bit(self) -> bool:
+        """Read bit value from memory."""
+        byte_address, bit_position = get_bit_address(self.address, self.offset)
+        raw_byte = dme.read_byte(byte_address)
+        return bit_position in extract_bitflag_list(raw_byte)
+
+    def set_bit(self, value: bool) -> None:
+        """Write bit value into memory."""
+        set_flag_bit(self.address, self.offset, value)
+
+    def get_value(self) -> int:
+        """Read int value from memory."""
+        return read_value_bytes(self.address, self.offset, self.bit_size)
+
+    def set_value(self, value: int):
+        """Write int value into memory."""
+        set_value_bytes(self.address, self.offset, value, self.bit_size)
+
+
+@dataclass
+class GameFlag(GameBit):
+    """GameFlag represents flags to set ON/OFF for QoL."""
+
+    offset: int
+    address: int
+    state: bool = True
 
 
 def extract_bitflag_list(input_bytes: int) -> list[int]:
@@ -111,7 +156,7 @@ def read_value_bytes(
     """
     byte_address, bit_position = get_bit_address(address, offset)
     if bit_position + value_size > 8 * nb_bytes:
-        logger.debug("READ BYTE: Size overflowing into next byte")
+        # logger.debug("READ BYTE: Size overflowing into next byte")
         return read_value_bytes(address, offset, value_size, nb_bytes + 1, endian)
     cache_byte = dme.read_bytes(byte_address, nb_bytes)
     cache_byte = int.from_bytes(cache_byte, endian)
@@ -138,13 +183,13 @@ def set_value_bytes(
     """
     byte_address, bit_position = get_bit_address(address, offset)
     if bit_position + value_size > 8 * nb_bytes:
-        logger.debug("WRITE BYTE: Size overflowing into next byte")
+        # logger.debug("WRITE BYTE: Size overflowing into next byte")
         set_value_bytes(address, offset, value, value_size, nb_bytes + 1, endian)
         return
     cache_byte = dme.read_bytes(byte_address, nb_bytes)
     cache_byte = int.from_bytes(cache_byte, byteorder=endian)
     updated_byte = update_bits(cache_byte, bit_position, value, value_size)
-    logger.debug(f"Writing byte: {updated_byte:b}")
+    # logger.debug(f"Writing byte: {updated_byte:b}")
     dme.write_bytes(byte_address, updated_byte.to_bytes(nb_bytes, endian))
 
 

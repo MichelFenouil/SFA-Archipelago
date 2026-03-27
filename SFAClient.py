@@ -19,24 +19,30 @@ from MultiServer import mark_raw
 from .addresses import *  # noqa: F403
 from .bit_helper import (
     extract_bitflag_list,
-    extract_bits_value,
-    get_bit_address,
     read_value_bytes,
     set_flag_bit,
     set_on_or_bytes,
     set_value_bytes,
     swap_endian,
 )
+from .game_flags import (
+    CONSTANT_FLAGS,
+    DIM_OPEN_BIKE,
+    DIM_OPEN_BLIZZARD,
+    DINO_CAVE,
+    KRAZOA_SPIRIT_1,
+    MAGIC_CAVE_ACT_GAMEBIT,
+    STARTING_FLAGS,
+)
 from .items import (
     FILLER_ITEMS,
     ITEM_INVENTORY,
-    ITEM_STAFF,
     ITEM_TRICKY,
     USEFUL_ITEMS,
     SFAConsumableItemData,
     SFACountItemData,
     SFAItemData,
-    SFAItemType,
+    SFAItemTags,
     SFAPlanetItemData,
     SFAProgressiveItemData,
     SFAQuestItemData,
@@ -46,10 +52,8 @@ from .locations import (
     LOCATION_SHOP,
     LOCATION_UPGRADE,
     NORMAL_TABLES,
-    SFACountLocationData,
-    SFALinkedLocationData,
     SFALocationData,
-    SFALocationType,
+    SFALocationTags,
     SFAShopLocationData,
     SFAUpgradeLocationData,
 )
@@ -228,55 +232,25 @@ async def locations_watcher(ctx):
         """
         if location.id not in ctx.server_locations or location.id in ctx.locations_checked:
             return False
-        address, bit_position = get_bit_address(location.table_address, location.bit_offset)
-        byte = dme.read_byte(address)
-        if bit_position in extract_bitflag_list(byte):
+        if location.is_checked():
             ctx.locations_checked.add(location.id)
             return True
         return False
 
-    def _check_location_value(ctx: SFAContext, location: SFACountLocationData) -> bool:
-        """
-        Check if a location has been checked based on its value.
-
-        :param ctx: The Star Fox Adventures context
-        :param location: The location data to check
-        """
-        if location.id not in ctx.server_locations or location.id in ctx.locations_checked:
-            return False
-        value = read_value_bytes(location.table_address, location.bit_offset, location.bit_size)
-        if value >= location.count:
-            ctx.locations_checked.add(location.id)
-            return True
-        return False
-
+    # TODO: verify snowhorn and queen cutscenes
     for location_data in NORMAL_TABLES.values():
-        if isinstance(location_data, SFALinkedLocationData):
-            map_value = read_value_bytes(
-                location_data.map_address, 0, location_data.map_bit_size * 8, location_data.map_bit_size
-            )
-            if map_value == location_data.map_value:
-                _check_location_flag(ctx, location_data)
-        elif isinstance(location_data, SFACountLocationData):
-            if _check_location_value(ctx, location_data):
-                await _wait_cutscene_end()
-        else:
-            _check_location_flag(ctx, location_data)
+        _check_location_flag(ctx, location_data)
 
     map_value = dme.read_byte(MAP_ID_ADDRESS)
     if map_value == MAGIC_CAVE_ID and ctx.stored_map == MAGIC_CAVE_ID:
+        mc_act = MAGIC_CAVE_ACT_GAMEBIT.get_value()
+        mc_flags_bytes = dme.read_word(MAGIC_CAVE_FLAG_ADDRESS)
+        mc_flags = extract_bitflag_list(swap_endian(mc_flags_bytes))
         for loc_data in LOCATION_UPGRADE.values():
-            mc_act_byte = dme.read_byte(MAGIC_CAVE_ACT_ADDRESS)
-            mc_act = extract_bits_value(mc_act_byte, offset=2, size=4)
-            mc_flags_raw = dme.read_word(MAGIC_CAVE_FLAG_ADDRESS)
-            mc_flags = extract_bitflag_list(swap_endian(mc_flags_raw))
-            if (mc_act == MAGIC_CAVE_UPGRADE_ACT and loc_data.mc_bitflag in mc_flags) or (
-                mc_act == MAGIC_CAVE_MANA_ACT and loc_data.mc_bitflag is None
-            ):
+            if mc_act == MAGIC_CAVE_UPGRADE_ACT and loc_data.mc_bitflag in mc_flags:
                 _check_location_flag(ctx, loc_data)
-                # Wait for anim end
-                await _wait_cutscene_end()
 
+    # TODO: just check CTX
     if map_value == SHOP_ID and ctx.stored_map == SHOP_ID:
         for loc_data in LOCATION_SHOP.values():
             _check_location_flag(ctx, loc_data)
@@ -325,66 +299,35 @@ def _give_item_in_game(ctx: SFAContext, item: SFAItemData | None) -> bool:
     :param item: The item data to give
     :return: True if the item was given successfully, False otherwise
     """
-    if item is None:
+    if item is None or item.id == 0:
         logger.error("Item not found in data.")
         return False
 
-    if item.id == 2000:  # Victory
+    if item.id == SFAItemData.get_by_name("Victory").id:  # Victory
         ctx.victory = True
         return True
 
-    if ctx.stored_map == SHOP_ID and (
-        item.type == SFAItemType.SHOP_PROGRESSION or item.type == SFAItemType.SHOP_USEFUL
-    ):
+    if ctx.stored_map == SHOP_ID and (SFAItemTags.SHOP in item.tags):
         # Don't send shop items if inside shop
         return True
 
-    if isinstance(item, SFAProgressiveItemData):
+    if isinstance(item, (SFAProgressiveItemData, SFACountItemData, SFAQuestItemData)):
         count = ctx.received_items_id.count(item.id)
-        for id, progress in enumerate(item.progressive_data):
-            # Set True until count and False for the rest
-            set_flag_bit(progress[1], progress[0], count > id)
-        logger.debug(f"Received {count} of progressive object: {item}")
-        return True
-
-    if isinstance(item, SFAQuestItemData):
-        count = ctx.received_items_id.count(item.id)
-        if count > item.max_count:
-            count = item.max_count
-            # Could read location count instead
-        used_count = read_value_bytes(item.table_address, item.item_used_flag_offset, item.item_used_bit_size)
-        value = item.start_amount + (count - used_count) * item.count_increment
-        if value < 0:
-            value = 0
-        logger.debug(f"Received {count} of quest object: {item}")
-        set_value_bytes(item.table_address, item.bit_offset, value, item.bit_size)
-        return True
-
-    if isinstance(item, SFACountItemData):
-        count = ctx.received_items_id.count(item.id)
-        if count > item.max_count:
-            count = item.max_count
-        value = item.start_amount + count * item.count_increment
-        logger.debug(f"Received {count} of count object: {item}")
-        set_value_bytes(item.table_address, item.bit_offset, value, item.bit_size)
+        item.set_value(count)
+        logger.debug(f"Received {count} of counted object: {item.name}")
         return True
 
     if isinstance(item, SFAConsumableItemData):
-        current_value = read_value_bytes(item.table_address, item.bit_offset, item.bit_size)
-        value = current_value + item.add_value
-        max_value = read_value_bytes(item.max_read_address, 0x0, item.max_read_bit_size)
-        if value > max_value:
-            value = max_value
-        set_value_bytes(item.table_address, item.bit_offset, value, item.bit_size)
+        item.set_value()
         return True
 
     if isinstance(item, SFAPlanetItemData):
-        set_flag_bit(item.table_address, item.bit_offset, item.id in ctx.received_items_id)
-        set_flag_bit(item.gate_table_address, item.gate_bit_offset, item.id in ctx.received_items_id)
+        item.game_bit.set_bit(item.id in ctx.received_items_id)
+        item.gate_bit.set_bit(item.id in ctx.received_items_id)
         return True
 
     # All other items
-    set_flag_bit(item.table_address, item.bit_offset, item.id in ctx.received_items_id)
+    item.set_value(item.id in ctx.received_items_id)
     return True
 
 
@@ -401,23 +344,20 @@ async def force_gameflags(ctx: SFAContext) -> None:
         set_on_or_bytes(ITEM_MAP_ADDRESS, ITEM_MAP_INIT_VALUE, 3)
         set_on_or_bytes(SKIP_TUTO_ADDRESS, SKIP_TUTO_VALUE, 2)
         for item in STARTING_FLAGS:
-            set_flag_bit(item.table_address, item.bit_offset, item.state)
+            set_flag_bit(item.address, item.offset, item.state)
         await sync_full_player_state(ctx)
 
     for item in CONSTANT_FLAGS:
-        set_flag_bit(item.table_address, item.bit_offset, item.state)
+        set_flag_bit(item.address, item.offset, item.state)
 
-    map_value = dme.read_byte(MAP_ID_ADDRESS)
-    if map_value == 0x38:
-        tricky_item = ITEM_TRICKY["Tricky (Progressive)"]
-        tricky_flag = tricky_item.progressive_data[0]
-        set_flag_bit(tricky_flag[1], tricky_flag[0], tricky_item.id in ctx.received_items_id)
+    if map_value == ICE_MOUNTAIN_BOTTOM_ID:
+        tricky_item = SFAItemData.get_by_name("Tricky (Progressive)")
+        tricky_commands_flag = tricky_item.progressive_data[0]  # type: ignore
+        tricky_commands_flag.set_bit(tricky_item.id in ctx.received_items_id)
 
-    address, position = get_bit_address(DINO_CAVE.table_address, DINO_CAVE.bit_offset)
-    byte = dme.read_byte(address)
-    if position in extract_bitflag_list(byte):
-        dino_horn = ITEM_INVENTORY["Dinosaur Horn"]
-        set_flag_bit(dino_horn.table_address, dino_horn.bit_offset, dino_horn.id in ctx.received_items_id)
+    if DINO_CAVE.get_bit():
+        dino_horn = SFAItemData.get_by_name("Dinosaur Horn")
+        dino_horn.set_value(dino_horn.id in ctx.received_items_id)
 
     # Force Bomb_spore to 1 for testing
     # address, position = get_bit_address(T2_ADDRESS, 0x77)
@@ -448,23 +388,15 @@ async def special_map_flags(ctx: SFAContext) -> None:
         :param map_expected: The expected map for the location
         """
         if map_entered == map_expected:
-            if location.id in ctx.checked_locations or location.id not in ctx.server_locations:
-                # Checked location (or does not exist), force item ON
-                set_flag_bit(location.table_address, location.bit_offset, True)
-            else:
-                # Unchecked location, force item OFF
-                set_flag_bit(location.table_address, location.bit_offset, False)
+            # Give item inside if location is checked
+            location.set_bit(location.id in ctx.checked_locations or location.id not in ctx.server_locations)
         if ctx.stored_map == map_expected:
-            if location.type == SFALocationType.MAP or location.linked_item in ctx.received_items_id:
-                # Item received, set flag back ON
-                set_flag_bit(location.table_address, location.bit_offset, True)
-            else:
-                # Item not received, set flag back OFF
-                set_flag_bit(location.table_address, location.bit_offset, False)
+            # Retrieve item when leaving map
+            location.set_bit(SFALocationTags.MAP in location.tags or location.linked_item in ctx.received_items_id)
 
     map_value = dme.read_byte(MAP_ID_ADDRESS)
     if ctx.stored_map != map_value:
-        logger.debug(f"Entering map {map_value:x}")
+        logger.info(f"Entering map {map_value:x}")
         await ctx.send_msgs(
             [
                 {
@@ -482,8 +414,7 @@ async def special_map_flags(ctx: SFAContext) -> None:
         )
 
         #: Check Magic Cave locations
-        mc_act_byte = dme.read_byte(MAGIC_CAVE_ACT_ADDRESS)
-        mc_act = extract_bits_value(mc_act_byte, offset=2, size=4)
+        mc_act = MAGIC_CAVE_ACT_GAMEBIT.get_value()
         mc_flags_bytes = dme.read_word(MAGIC_CAVE_FLAG_ADDRESS)
         mc_flags = extract_bitflag_list(swap_endian(mc_flags_bytes))
         for loc_data in LOCATION_UPGRADE.values():
@@ -511,16 +442,14 @@ async def special_map_flags(ctx: SFAContext) -> None:
 
         # Remove fireblaster in world map
         if map_value == WORLD_MAP_ID:
-            item = ITEM_STAFF["Fire Blaster"]
-            set_flag_bit(item.table_address, item.bit_offset, False)
+            SFAItemData.get_by_name("Fire Blaster").set_value(False)
         if ctx.stored_map == WORLD_MAP_ID:
-            item = ITEM_STAFF["Fire Blaster"]
-            set_flag_bit(item.table_address, item.bit_offset, item.id in ctx.received_items_id)
+            item = SFAItemData.get_by_name("Fire Blaster")
+            item.set_value(item.id in ctx.received_items_id)
 
         # Give Krystal Spirit 1
         if map_value == KRAZOA_PALACE_ID:
-            flag = KRAZOA_SPIRIT_1
-            set_flag_bit(flag.table_address, flag.bit_offset, True)
+            KRAZOA_SPIRIT_1.set_bit(True)
 
         ctx.stored_map = map_value
 
@@ -534,19 +463,19 @@ async def special_map_flags(ctx: SFAContext) -> None:
             count = ctx.received_items_id.count(item.id)
             for id, progress in enumerate(item.progressive_data):
                 # Set True until count and False for the rest
-                set_flag_bit(progress[1], progress[0], count > id)
-                set_flag_bit(progress[1], progress[0] - 1, False)
+                set_flag_bit(progress.address, progress.offset, count > id)
+                set_flag_bit(progress.address, progress.offset - 1, False)
         elif (
             dim_obj_value - ctx.stored_dim == DIM_BLIZZARD_ZONE_TRANSITION
             or ctx.stored_dim - dim_obj_value == DIM_BLIZZARD_ZONE_TRANSITION
         ):
             logger.debug("Entering Blizzard zone")
             for flag in DIM_OPEN_BLIZZARD:
-                set_flag_bit(flag.table_address, flag.bit_offset, False)
+                flag.set_bit(False)
         elif ctx.stored_dim - dim_obj_value == DIM_BIKE_ZONE_TRANSITION:
             logger.debug("Bike zone transition")
             for flag in DIM_OPEN_BIKE:
-                set_flag_bit(flag.table_address, flag.bit_offset, False)
+                flag.set_bit(False)
         else:
             item = ITEM_INVENTORY.get("SharpClaw Fort Bridge Cogs")
             location = [
@@ -557,9 +486,9 @@ async def special_map_flags(ctx: SFAContext) -> None:
             assert isinstance(item, SFAProgressiveItemData)
             for _id, progress in enumerate(item.progressive_data):
                 # True to hide all cogs
-                set_flag_bit(progress[1], progress[0], True)
+                progress.set_bit(True)
             for loc in location:
-                set_flag_bit(loc.table_address, loc.bit_offset, loc.id in ctx.checked_locations)
+                loc.set_bit(loc.id in ctx.checked_locations)
 
         ctx.stored_dim = dim_obj_value
 
