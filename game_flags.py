@@ -1,7 +1,10 @@
 from .addresses import T0_ADDRESS, T1_ADDRESS, T2_ADDRESS, T3_ADDRESS
-from .bit_helper import GameFlag
+from .bit_helper import GameBit, GameFlag
 
 ## Dynamic flags ##
+
+MAGIC_CAVE_ACT_GAMEBIT = GameBit(0x2, 0x803A3871, bit_size=4)
+MAGIC_CAVE_FLAG_ADDRESS = 0x803A3905
 
 KRAZOA_SPIRIT_1 = GameFlag(0x053C, T2_ADDRESS)
 DIM_OPEN_BLIZZARD = [

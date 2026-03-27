@@ -12,6 +12,7 @@ class GameBit:
 
     offset: int
     address: int
+    bit_size: int = 1
 
     def __init__(self, offset: int, address: int = T2_ADDRESS) -> None:
         self.offset = offset
@@ -29,11 +30,11 @@ class GameBit:
 
     def get_value(self) -> int:
         """Read int value from memory."""
-        return read_value_bytes(self.address, self.offset)
+        return read_value_bytes(self.address, self.offset, self.bit_size)
 
-    def set_value(self, value: int, value_size: int = 1):
+    def set_value(self, value: int):
         """Write int value into memory."""
-        set_value_bytes(self.address, self.offset, value, value_size)
+        set_value_bytes(self.address, self.offset, value, self.bit_size)
 
 @dataclass
 class GameFlag(GameBit):

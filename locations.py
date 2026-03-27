@@ -27,6 +27,7 @@ class SFALocationTags(Enum):
     """This class defines constants for various types of locations in Star Fox Adventures."""
 
     MAP = auto()
+    CUTSCENE = auto() # Not yet used
 
 
 @dataclass
@@ -36,8 +37,12 @@ class SFALocationData:
     id: int
     game_bit: GameBit
     region: SFARegion
-    rule: Rule
-    tags: list[SFALocationTags] = []
+    rule: Rule # Future-proof for 0.6.7
+    tags: list[SFALocationTags] = [] # TODO: use classvar ??
+
+    def is_checked(self) -> bool:
+        """Get bool value if checked in game."""
+        return self.game_bit.get_bit()
 
     def get_bit(self) -> bool:
         """Get bit value for item."""
@@ -65,22 +70,15 @@ class SFAShopLocationData(SFALocationData):
 
 
 @dataclass
-class SFALinkedLocationData(SFALocationData):
-    """Data class for magic cave upgrade locations."""
-
-    linked_item: int
-    map_address: int
-    map_bit_size: int
-    map_value: int
-    state: bool = True
-
-
-@dataclass
 class SFACountLocationData(SFALocationData):
     """Data class for count locations."""
 
     count: int
-    bit_size: int
+
+    def is_checked(self):
+        value = self.game_bit.get_value()
+        return value >= self.count
+            
 
 
 def locations_name_to_id_dict() -> dict[str, int]:
@@ -194,10 +192,10 @@ LOCATION_ANY: dict[str, SFALocationData] = {
         20, GameBit(0x0010, T2_ADDRESS), SFARegion.SW_WATERSPOUT, Has("Tricky (Progressive)")
     ),
     "SHW: Feed Alpine Root 1": SFACountLocationData(
-        21, GameBit(0x0033, T2_ADDRESS), SFARegion.SW_WATERSPOUT, Has("SHW Alpine Root", 1), count=1, bit_size=3
+        21, GameBit(0x0033, T2_ADDRESS, bit_size=3), SFARegion.SW_WATERSPOUT, Has("SHW Alpine Root", 1), count=1
     ),
     "SHW: Feed Alpine Root 2": SFACountLocationData(
-        22, GameBit(0x0033, T2_ADDRESS), SFARegion.SW_WATERSPOUT, Has("SHW Alpine Root", 2), count=2, bit_size=3
+        22, GameBit(0x0033, T2_ADDRESS, bit_size=3), SFARegion.SW_WATERSPOUT, Has("SHW Alpine Root", 2), count=2
     ),
     "SHW: Rescue GateKeeper": SFALocationData(
         23, GameBit(0x0058, T2_ADDRESS), SFARegion.SW_ENTRANCE, True_()
@@ -233,7 +231,7 @@ LOCATION_ANY: dict[str, SFALocationData] = {
         mc.has_staff_booster & mc.has_blaster & mc.can_explode_bomb_plant,
     ),
     "TTH: Feed Queen White GrubTubs": SFACountLocationData(
-        31, GameBit(0x00AD, T2_ADDRESS), SFARegion.TH, Has("White GrubTub", 6), count=6, bit_size=3
+        31, GameBit(0x00AD, T2_ADDRESS, bit_size=3), SFARegion.TH, Has("White GrubTub", 6), count=6
     ),
     "DIM: Release Entrance SnowHorn": SFALocationData(
         32, GameBit(0x0366, T2_ADDRESS), SFARegion.DIM_ENTRANCE, Has("Tricky (Progressive)")

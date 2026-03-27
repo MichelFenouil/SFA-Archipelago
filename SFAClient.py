@@ -1,4 +1,5 @@
 import asyncio
+from itertools import count
 import sys
 import traceback
 from typing import ClassVar
@@ -17,6 +18,7 @@ from CommonClient import (
 from MultiServer import mark_raw
 
 from .addresses import *  # noqa: F403
+from .game_flags import MAGIC_CAVE_ACT_GAMEBIT, STARTING_FLAGS, CONSTANT_FLAGS, DINO_CAVE, DIM_OPEN_BIKE, DIM_OPEN_BLIZZARD, KRAZOA_SPIRIT_1
 from .bit_helper import (
     extract_bitflag_list,
     extract_bits_value,
@@ -228,53 +230,25 @@ async def locations_watcher(ctx):
         """
         if location.id not in ctx.server_locations or location.id in ctx.locations_checked:
             return False
-        if location.get_bit():
+        if location.is_checked():
             ctx.locations_checked.add(location.id)
             return True
         return False
 
-    def _check_location_value(ctx: SFAContext, location: SFACountLocationData) -> bool:
-        """
-        Check if a location has been checked based on its value.
-
-        :param ctx: The Star Fox Adventures context
-        :param location: The location data to check
-        """
-        if location.id not in ctx.server_locations or location.id in ctx.locations_checked:
-            return False
-        value = read_value_bytes(location.game_bit.address, location.game_bit.offset, location.bit_size)
-        if value >= location.count:
-            ctx.locations_checked.add(location.id)
-            return True
-        return False
-
+    # TODO: verify snowhorn and queen cutscenes
     for location_data in NORMAL_TABLES.values():
-        if isinstance(location_data, SFALinkedLocationData):
-            map_value = read_value_bytes(
-                location_data.map_address, 0, location_data.map_bit_size * 8, location_data.map_bit_size
-            )
-            if map_value == location_data.map_value:
-                _check_location_flag(ctx, location_data)
-        elif isinstance(location_data, SFACountLocationData):
-            if _check_location_value(ctx, location_data):
-                await _wait_cutscene_end()
-        else:
-            _check_location_flag(ctx, location_data)
+        _check_location_flag(ctx, location_data)
 
     map_value = dme.read_byte(MAP_ID_ADDRESS)
     if map_value == MAGIC_CAVE_ID and ctx.stored_map == MAGIC_CAVE_ID:
+        mc_act = MAGIC_CAVE_ACT_GAMEBIT.get_value()
+        mc_flags_bytes = dme.read_word(MAGIC_CAVE_FLAG_ADDRESS)
+        mc_flags = extract_bitflag_list(swap_endian(mc_flags_bytes))
         for loc_data in LOCATION_UPGRADE.values():
-            mc_act_byte = dme.read_byte(MAGIC_CAVE_ACT_ADDRESS)
-            mc_act = extract_bits_value(mc_act_byte, offset=2, size=4)
-            mc_flags_raw = dme.read_word(MAGIC_CAVE_FLAG_ADDRESS)
-            mc_flags = extract_bitflag_list(swap_endian(mc_flags_raw))
-            if (mc_act == MAGIC_CAVE_UPGRADE_ACT and loc_data.mc_bitflag in mc_flags) or (
-                mc_act == MAGIC_CAVE_MANA_ACT and loc_data.mc_bitflag is None
-            ):
+            if mc_act == MAGIC_CAVE_UPGRADE_ACT and loc_data.mc_bitflag in mc_flags:
                 _check_location_flag(ctx, loc_data)
-                # Wait for anim end
-                await _wait_cutscene_end()
 
+    # TODO: just check CTX
     if map_value == SHOP_ID and ctx.stored_map == SHOP_ID:
         for loc_data in LOCATION_SHOP.values():
             _check_location_flag(ctx, loc_data)
@@ -327,53 +301,24 @@ def _give_item_in_game(ctx: SFAContext, item: SFAItemData | None) -> bool:
         logger.error("Item not found in data.")
         return False
 
-    if item.id == 2000:  # Victory
+    if item.id == SFAItemData.get_by_name("Victory").id:  # Victory
         ctx.victory = True
         return True
 
     if ctx.stored_map == SHOP_ID and (
-        item.tags == SFAItemTags.SHOP_PROGRESSION or item.tags == SFAItemTags.SHOP_USEFUL
+        SFAItemTags.SHOP in item.tags
     ):
         # Don't send shop items if inside shop
         return True
 
-    if isinstance(item, SFAProgressiveItemData):
+    if isinstance(item, (SFAProgressiveItemData, SFACountItemData, SFAQuestItemData)):
         count = ctx.received_items_id.count(item.id)
-        for id, progress in enumerate(item.progressive_data):
-            # Set True until count and False for the rest
-            set_flag_bit(progress[1], progress[0], count > id)
-        logger.debug(f"Received {count} of progressive object: {item}")
-        return True
-
-    if isinstance(item, SFAQuestItemData):
-        count = ctx.received_items_id.count(item.id)
-        if count > item.max_count:
-            count = item.max_count
-            # Could read location count instead
-        used_count = read_value_bytes(item.game_bit.address, item.item_used_flag_offset, item.item_used_bit_size)
-        value = item.start_amount + (count - used_count) * item.count_increment
-        if value < 0:
-            value = 0
-        logger.debug(f"Received {count} of quest object: {item}")
-        set_value_bytes(item.game_bit.address, item.game_bit.offset, value, item.bit_size)
-        return True
-
-    if isinstance(item, SFACountItemData):
-        count = ctx.received_items_id.count(item.id)
-        if count > item.max_count:
-            count = item.max_count
-        value = item.start_amount + count * item.count_increment
-        logger.debug(f"Received {count} of count object: {item}")
-        set_value_bytes(item.game_bit.address, item.game_bit.offset, value, item.bit_size)
+        item.set_value(count)
+        logger.debug(f"Received {count} of counted object: {item.name}")
         return True
 
     if isinstance(item, SFAConsumableItemData):
-        current_value = read_value_bytes(item.game_bit.address, item.game_bit.offset, item.bit_size)
-        value = current_value + item.add_value
-        max_value = read_value_bytes(item.max_read_address, 0x0, item.max_read_bit_size)
-        if value > max_value:
-            value = max_value
-        set_value_bytes(item.game_bit.address, item.game_bit.offset, value, item.bit_size)
+        item.set_value()
         return True
 
     if isinstance(item, SFAPlanetItemData):
@@ -382,7 +327,7 @@ def _give_item_in_game(ctx: SFAContext, item: SFAItemData | None) -> bool:
         return True
 
     # All other items
-    item.game_bit.set_bit(item.id in ctx.received_items_id)
+    item.set_value(item.id in ctx.received_items_id)
     return True
 
 
@@ -469,8 +414,7 @@ async def special_map_flags(ctx: SFAContext) -> None:
         )
 
         #: Check Magic Cave locations
-        mc_act_byte = dme.read_byte(MAGIC_CAVE_ACT_ADDRESS)
-        mc_act = extract_bits_value(mc_act_byte, offset=2, size=4)
+        mc_act = MAGIC_CAVE_ACT_GAMEBIT.get_value()
         mc_flags_bytes = dme.read_word(MAGIC_CAVE_FLAG_ADDRESS)
         mc_flags = extract_bitflag_list(swap_endian(mc_flags_bytes))
         for loc_data in LOCATION_UPGRADE.values():
