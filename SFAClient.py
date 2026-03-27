@@ -1,5 +1,4 @@
 import asyncio
-from itertools import count
 import sys
 import traceback
 from typing import ClassVar
@@ -18,21 +17,26 @@ from CommonClient import (
 from MultiServer import mark_raw
 
 from .addresses import *  # noqa: F403
-from .game_flags import MAGIC_CAVE_ACT_GAMEBIT, STARTING_FLAGS, CONSTANT_FLAGS, DINO_CAVE, DIM_OPEN_BIKE, DIM_OPEN_BLIZZARD, KRAZOA_SPIRIT_1
 from .bit_helper import (
     extract_bitflag_list,
-    extract_bits_value,
-    get_bit_address,
     read_value_bytes,
     set_flag_bit,
     set_on_or_bytes,
     set_value_bytes,
     swap_endian,
 )
+from .game_flags import (
+    CONSTANT_FLAGS,
+    DIM_OPEN_BIKE,
+    DIM_OPEN_BLIZZARD,
+    DINO_CAVE,
+    KRAZOA_SPIRIT_1,
+    MAGIC_CAVE_ACT_GAMEBIT,
+    STARTING_FLAGS,
+)
 from .items import (
     FILLER_ITEMS,
     ITEM_INVENTORY,
-    ITEM_STAFF,
     ITEM_TRICKY,
     USEFUL_ITEMS,
     SFAConsumableItemData,
@@ -48,7 +52,6 @@ from .locations import (
     LOCATION_SHOP,
     LOCATION_UPGRADE,
     NORMAL_TABLES,
-    SFACountLocationData,
     SFALocationData,
     SFALocationTags,
     SFAShopLocationData,
@@ -304,9 +307,7 @@ def _give_item_in_game(ctx: SFAContext, item: SFAItemData | None) -> bool:
         ctx.victory = True
         return True
 
-    if ctx.stored_map == SHOP_ID and (
-        SFAItemTags.SHOP in item.tags
-    ):
+    if ctx.stored_map == SHOP_ID and (SFAItemTags.SHOP in item.tags):
         # Don't send shop items if inside shop
         return True
 
@@ -351,7 +352,7 @@ async def force_gameflags(ctx: SFAContext) -> None:
 
     if map_value == ICE_MOUNTAIN_BOTTOM_ID:
         tricky_item = SFAItemData.get_by_name("Tricky (Progressive)")
-        tricky_commands_flag = tricky_item.progressive_data[0] # type: ignore
+        tricky_commands_flag = tricky_item.progressive_data[0]  # type: ignore
         tricky_commands_flag.set_bit(tricky_item.id in ctx.received_items_id)
 
     if DINO_CAVE.get_bit():

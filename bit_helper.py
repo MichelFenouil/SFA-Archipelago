@@ -4,6 +4,7 @@ from typing import Literal
 import dolphin_memory_engine as dme
 
 from .addresses import T2_ADDRESS
+
 # from CommonClient import logger
 
 
@@ -14,7 +15,8 @@ class GameBit:
     address: int
     bit_size: int
 
-    def __init__(self, offset: int, address: int = T2_ADDRESS, bit_size = 1) -> None:
+    def __init__(self, offset: int, address: int = T2_ADDRESS, bit_size=1) -> None:
+        """Initialize GameBit with address and offset."""
         self.offset = offset
         self.address = address
         self.bit_size = bit_size
@@ -37,9 +39,11 @@ class GameBit:
         """Write int value into memory."""
         set_value_bytes(self.address, self.offset, value, self.bit_size)
 
+
 @dataclass
 class GameFlag(GameBit):
     """GameFlag represents flags to set ON/OFF for QoL."""
+
     offset: int
     address: int
     state: bool = True
