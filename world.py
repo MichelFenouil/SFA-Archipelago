@@ -36,20 +36,15 @@ class SFAWorld(World):
 
     progress_locations: set[str] = set()  # noqa: RUF012
 
-    # item_mapping = {
-    #     "Tricky (Progressive)": "Tricky",
-    # }
-
     def create_regions(self) -> None:
         """Create regions and entrances for this world player."""
         create_all_regions(self)
         connect_regions(self)
         create_all_locations(self)
-        set_all_rules(self)
 
-    # def set_rules(self) -> None:
-    #     """Create rules for this world player."""
-    #     set_all_rules(self)
+    def set_rules(self) -> None:
+        """Create rules for this world player."""
+        set_all_rules(self)
 
     def create_items(self) -> None:
         """Create items for this world player."""
