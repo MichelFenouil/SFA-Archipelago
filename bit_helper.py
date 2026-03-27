@@ -12,11 +12,12 @@ class GameBit:
 
     offset: int
     address: int
-    bit_size: int = 1
+    bit_size: int
 
-    def __init__(self, offset: int, address: int = T2_ADDRESS) -> None:
+    def __init__(self, offset: int, address: int = T2_ADDRESS, bit_size = 1) -> None:
         self.offset = offset
         self.address = address
+        self.bit_size = bit_size
 
     def get_bit(self) -> bool:
         """Read bit value from memory."""

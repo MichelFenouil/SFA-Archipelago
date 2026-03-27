@@ -48,7 +48,7 @@ class SFALocationData:
         """Get bit value for item."""
         return self.game_bit.get_bit()
 
-    def set_bit(self, state: bool | int) -> None:
+    def set_bit(self, state: bool) -> None:
         """Set bit for item."""
         self.game_bit.set_bit(state)
 
@@ -57,23 +57,23 @@ class SFALocationData:
 class SFAUpgradeLocationData(SFALocationData):
     """Data class for magic cave upgrade locations."""
 
-    linked_item: int
-    mc_bitflag: int
+    linked_item: int = 0
+    mc_bitflag: int = 0
 
 
 @dataclass
 class SFAShopLocationData(SFALocationData):
     """Data class for shop locations."""
 
-    linked_item: int
-    cost: int
+    linked_item: int = 0
+    cost: int = 0
 
 
 @dataclass
 class SFACountLocationData(SFALocationData):
     """Data class for count locations."""
 
-    count: int
+    count: int = 1
 
     def is_checked(self):
         value = self.game_bit.get_value()

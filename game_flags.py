@@ -25,7 +25,7 @@ DINO_CAVE = GameFlag(0x003E, T3_ADDRESS) # Dino horn cave detection
 ## Global static flags ##
 
 FORCE_TRICKY = GameFlag(0x0847, T2_ADDRESS) # Spawn Tricky
-FORCE_TRICKY_CALL = GameFlag(0x0849, T2_ADDRESS) # Give Tricky commands
+FORCE_TRICKY_CALL = GameFlag(0x0849, T2_ADDRESS) # Give Tricky call command
 
 SAW_ITEM_FLAGS: list[GameFlag] = [
     GameFlag(0x0015, T2_ADDRESS), # Saw Apple

@@ -49,7 +49,6 @@ from .locations import (
     LOCATION_UPGRADE,
     NORMAL_TABLES,
     SFACountLocationData,
-    SFALinkedLocationData,
     SFALocationData,
     SFALocationTags,
     SFAShopLocationData,
@@ -323,7 +322,7 @@ def _give_item_in_game(ctx: SFAContext, item: SFAItemData | None) -> bool:
 
     if isinstance(item, SFAPlanetItemData):
         item.game_bit.set_bit(item.id in ctx.received_items_id)
-        set_flag_bit(item.gate_table_address, item.gate_bit_offset, item.id in ctx.received_items_id)
+        item.gate_bit.set_bit(item.id in ctx.received_items_id)
         return True
 
     # All other items
@@ -351,9 +350,9 @@ async def force_gameflags(ctx: SFAContext) -> None:
         set_flag_bit(item.address, item.offset, item.state)
 
     if map_value == ICE_MOUNTAIN_BOTTOM_ID:
-        tricky_item = ITEM_TRICKY["Tricky (Progressive)"]
-        tricky_flag = tricky_item.progressive_data[0]
-        set_flag_bit(tricky_flag[1], tricky_flag[0], tricky_item.id in ctx.received_items_id)
+        tricky_item = SFAItemData.get_by_name("Tricky (Progressive)")
+        tricky_commands_flag = tricky_item.progressive_data[0] # type: ignore
+        tricky_commands_flag.set_bit(tricky_item.id in ctx.received_items_id)
 
     if DINO_CAVE.get_bit():
         dino_horn = SFAItemData.get_by_name("Dinosaur Horn")
@@ -463,8 +462,8 @@ async def special_map_flags(ctx: SFAContext) -> None:
             count = ctx.received_items_id.count(item.id)
             for id, progress in enumerate(item.progressive_data):
                 # Set True until count and False for the rest
-                set_flag_bit(progress[1], progress[0], count > id)
-                set_flag_bit(progress[1], progress[0] - 1, False)
+                set_flag_bit(progress.address, progress.offset, count > id)
+                set_flag_bit(progress.address, progress.offset - 1, False)
         elif (
             dim_obj_value - ctx.stored_dim == DIM_BLIZZARD_ZONE_TRANSITION
             or ctx.stored_dim - dim_obj_value == DIM_BLIZZARD_ZONE_TRANSITION
@@ -486,7 +485,7 @@ async def special_map_flags(ctx: SFAContext) -> None:
             assert isinstance(item, SFAProgressiveItemData)
             for _id, progress in enumerate(item.progressive_data):
                 # True to hide all cogs
-                set_flag_bit(progress[1], progress[0], True)
+                progress.set_bit(True)
             for loc in location:
                 loc.set_bit(loc.id in ctx.checked_locations)
 
