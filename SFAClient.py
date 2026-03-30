@@ -237,7 +237,6 @@ async def locations_watcher(ctx):
             return True
         return False
 
-    # TODO: verify snowhorn and queen cutscenes
     for location_data in NORMAL_TABLES.values():
         _check_location_flag(ctx, location_data)
 
@@ -250,7 +249,6 @@ async def locations_watcher(ctx):
             if mc_act == MAGIC_CAVE_UPGRADE_ACT and loc_data.mc_bitflag in mc_flags:
                 _check_location_flag(ctx, loc_data)
 
-    # TODO: just check CTX
     if map_value == SHOP_ID and ctx.stored_map == SHOP_ID:
         for loc_data in LOCATION_SHOP.values():
             _check_location_flag(ctx, loc_data)
@@ -396,7 +394,7 @@ async def special_map_flags(ctx: SFAContext) -> None:
 
     map_value = dme.read_byte(MAP_ID_ADDRESS)
     if ctx.stored_map != map_value:
-        logger.info(f"Entering map {map_value:x}")
+        logger.debug(f"Entering map {map_value:x}")
         await ctx.send_msgs(
             [
                 {

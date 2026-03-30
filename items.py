@@ -115,8 +115,12 @@ class SFAQuestItemData(SFACountItemData):
         if value > self.max_count:
             value = self.max_count
         used_count = 0
-        for bit in self.used_count_bits:
-            used_count += bit.get_value()
+        # Counter values will return total count, list of bits will return last checked bit
+        for index, bit in enumerate(self.used_count_bits):
+            used_value = bit.get_value()
+            if used_value == 0:
+                break
+            used_count = used_value * (index + 1)
         value = self.start_amount + (value - used_count) * self.count_increment
         if value < 0:
             value = 0
@@ -145,7 +149,7 @@ class SFAPlanetItemData(SFAItemData):
     """Data class for planet items."""
 
     # TODO: Change for general ALL FLAGS items
-    gate_bit: GameBit = GameBit(0x0)
+    gate_bit: GameBit = field(default_factory=lambda: GameBit(0x0))
 
 
 def items_name_to_id_dict() -> dict[str, int]:
@@ -271,7 +275,7 @@ ITEM_INVENTORY: dict[str, SFAItemData] = {
         GameBit(0x037E, bit_size=3),
         ItemClassification.progression,
         max_count=2,
-        used_count_bits=[GameBit(0x036C)],  # TODO: Missing more flags
+        used_count_bits=[GameBit(0x036C), GameBit(0x036D)],
     ),
     "SharpClaw Fort Bridge Cogs": SFAProgressiveItemData(
         107,
