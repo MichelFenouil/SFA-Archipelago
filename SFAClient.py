@@ -105,6 +105,18 @@ class SFACommandProcessor(ClientCommandProcessor):
         else:
             return _give_item_in_game(self.ctx, SFAItemData.get_by_name(name))
         return True
+    
+    def _cmd_export_json(self) -> bool:
+        """
+        Export location and item data to a JSON file.
+
+        This is a utility command for debugging and analysis purposes.
+        """
+        from .export import export_json as export_main
+
+        export_main()
+        logger.info("Exported location and item data to locations-output.json.")
+        return True
 
 
 class SFAContext(CommonContext):
