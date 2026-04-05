@@ -7,10 +7,10 @@ from typing import TYPE_CHECKING
 from BaseClasses import ItemClassification, Location
 from rule_builder.rules import Has, HasAllCounts, Rule, True_
 
-from .addresses import T0_ADDRESS, T2_ADDRESS
+from .addresses import T0_ADDRESS
 from .bit_helper import GameBit
 from .items import SFAItem
-from .macros import CanBuy, can_explode_bomb_plant, has_blaster, has_staff_booster
+from .macros import CanBuy, can_explode_bomb_plant, has_blaster, has_staff_booster, can_grow_moon_seed
 from .regions import SFARegion
 
 if TYPE_CHECKING:
@@ -123,135 +123,141 @@ def create_all_locations(world: SFAWorld) -> None:
 
 LOCATION_UPGRADE: dict[str, SFAUpgradeLocationData] = {
     "TTH: Fire Blaster Upgrade": SFAUpgradeLocationData(
-        1, GameBit(0x06FC, T2_ADDRESS), SFARegion.TH, True_(), linked_item=2, mc_bitflag=0
+        1, GameBit(0x06FC), SFARegion.TH, True_(), linked_item=2, mc_bitflag=0
     ),
     "TTH Well: Staff Booster Upgrade": SFAUpgradeLocationData(
-        2, GameBit(0x0706, T2_ADDRESS), SFARegion.TH_WELL, can_explode_bomb_plant, linked_item=3, mc_bitflag=1
+        2, GameBit(0x0706), SFARegion.TH_WELL, can_explode_bomb_plant, linked_item=3, mc_bitflag=1
+    ),
+    "VFP: Freeze Blast Upgrade": SFAUpgradeLocationData(
+        3, GameBit(0x0703), SFARegion.VFP_PAST_BRIDGE, has_blaster & Has("Fire SpellStone 1") & Has("Tricky (Progressive)", 2), linked_item=4, mc_bitflag=8
+    ),
+    "MMP: Ground Quake Upgrade": SFAUpgradeLocationData(
+        4, GameBit(0x06FE), SFARegion.MMP, Has("Moon Pass Key"), linked_item=5, mc_bitflag=0x10 # Change just read value
     ),
 }
 
 LOCATION_SHOP: dict[str, SFAShopLocationData] = {
     "TTH Store: Rock Candy": SFAShopLocationData(
-        200, GameBit(0x035F, T2_ADDRESS), SFARegion.TH, CanBuy(10), linked_item=200, cost=10
+        200, GameBit(0x035F), SFARegion.TH, CanBuy(10), linked_item=200, cost=10
     ),
     "TTH Store: Hi-Tech Display Device": SFAShopLocationData(
-        201, GameBit(0x035E, T2_ADDRESS), SFARegion.TH, CanBuy(20), linked_item=201, cost=20
+        201, GameBit(0x035E), SFARegion.TH, CanBuy(20), linked_item=201, cost=20
     ),
     "TTH Store: Tricky Ball": SFAShopLocationData(
-        202, GameBit(0x084C, T2_ADDRESS), SFARegion.TH, CanBuy(15), linked_item=202, cost=15
+        202, GameBit(0x084C), SFARegion.TH, CanBuy(15), linked_item=202, cost=15
     ),
     "TTH Store: BafomDad Holder": SFAShopLocationData(
-        203, GameBit(0x09EE, T2_ADDRESS), SFARegion.TH, CanBuy(20), linked_item=203, cost=20
+        203, GameBit(0x09EE), SFARegion.TH, CanBuy(20), linked_item=203, cost=20
     ),
     "TTH Store: FireFly Lantern": SFAShopLocationData(
-        204, GameBit(0x0717, T2_ADDRESS), SFARegion.TH, CanBuy(20), linked_item=204, cost=20
+        204, GameBit(0x0717), SFARegion.TH, CanBuy(20), linked_item=204, cost=20
     ),
     "TTH Store: Snowhorn Artifact": SFAShopLocationData(
-        205, GameBit(0x0060, T2_ADDRESS), SFARegion.TH, CanBuy(130), linked_item=205, cost=130
+        205, GameBit(0x0060), SFARegion.TH, CanBuy(130), linked_item=205, cost=130
     ),
     "TTH Store: Map Cape Claw": SFAShopLocationData(
-        210, GameBit(0x0841, T2_ADDRESS), SFARegion.TH, CanBuy(5), [SFALocationTags.MAP], cost=5
+        210, GameBit(0x0841), SFARegion.TH, CanBuy(5), [SFALocationTags.MAP], cost=5
     ),
     "TTH Store: Map Ocean Force Point": SFAShopLocationData(
-        211, GameBit(0x083F, T2_ADDRESS), SFARegion.TH, CanBuy(10), [SFALocationTags.MAP], cost=10
+        211, GameBit(0x083F), SFARegion.TH, CanBuy(10), [SFALocationTags.MAP], cost=10
     ),
     "TTH Store: Map Krazoa Palace": SFAShopLocationData(
-        212, GameBit(0x083D, T2_ADDRESS), SFARegion.TH, CanBuy(5), [SFALocationTags.MAP], cost=5
+        212, GameBit(0x083D), SFARegion.TH, CanBuy(5), [SFALocationTags.MAP], cost=5
     ),
     "TTH Store: Map Dragon Rock": SFAShopLocationData(
-        213, GameBit(0x0839, T2_ADDRESS), SFARegion.TH, CanBuy(5), [SFALocationTags.MAP], cost=5
+        213, GameBit(0x0839), SFARegion.TH, CanBuy(5), [SFALocationTags.MAP], cost=5
     ),
     "TTH Store: Map ThornTail Hollow": SFAShopLocationData(
-        214, GameBit(0x0837, T2_ADDRESS), SFARegion.TH, CanBuy(5), [SFALocationTags.MAP], cost=5
+        214, GameBit(0x0837), SFARegion.TH, CanBuy(5), [SFALocationTags.MAP], cost=5
     ),
     "TTH Store: Map Moon Pass": SFAShopLocationData(
-        215, GameBit(0x0845, T2_ADDRESS), SFARegion.TH, CanBuy(5), [SFALocationTags.MAP], cost=5
+        215, GameBit(0x0845), SFARegion.TH, CanBuy(5), [SFALocationTags.MAP], cost=5
     ),
     "TTH Store: Map LightFoot Village": SFAShopLocationData(
-        216, GameBit(0x0836, T2_ADDRESS), SFARegion.TH, CanBuy(5), [SFALocationTags.MAP], cost=5
+        216, GameBit(0x0836), SFARegion.TH, CanBuy(5), [SFALocationTags.MAP], cost=5
     ),
     "TTH Store: Map DarkIce Mines": SFAShopLocationData(
-        217, GameBit(0x0833, T2_ADDRESS), SFARegion.TH, CanBuy(5), [SFALocationTags.MAP], cost=5
+        217, GameBit(0x0833), SFARegion.TH, CanBuy(5), [SFALocationTags.MAP], cost=5
     ),
     "TTH Store: Map CloudRunner Fortress": SFAShopLocationData(
-        218, GameBit(0x0835, T2_ADDRESS), SFARegion.TH, CanBuy(5), [SFALocationTags.MAP], cost=5
+        218, GameBit(0x0835), SFARegion.TH, CanBuy(5), [SFALocationTags.MAP], cost=5
     ),
     "TTH Store: Map Walled City": SFAShopLocationData(
-        219, GameBit(0x0840, T2_ADDRESS), SFARegion.TH, CanBuy(5), [SFALocationTags.MAP], cost=5
+        219, GameBit(0x0840), SFARegion.TH, CanBuy(5), [SFALocationTags.MAP], cost=5
     ),
     "TTH Store: Map SnowHorn Wastes": SFAShopLocationData(
-        220, GameBit(0x0834, T2_ADDRESS), SFARegion.TH, CanBuy(5), [SFALocationTags.MAP], cost=5
+        220, GameBit(0x0834), SFARegion.TH, CanBuy(5), [SFALocationTags.MAP], cost=5
     ),
     "TTH Store: Map Volcano Force Point": SFAShopLocationData(
-        221, GameBit(0x0832, T2_ADDRESS), SFARegion.TH, CanBuy(10), [SFALocationTags.MAP], cost=10
+        221, GameBit(0x0832), SFARegion.TH, CanBuy(10), [SFALocationTags.MAP], cost=10
     ),
 }
 
 LOCATION_ANY: dict[str, SFALocationData] = {
     "SHW: Magic Upgrade": SFALocationData(
-        20, GameBit(0x0010, T2_ADDRESS), SFARegion.SW_WATERSPOUT, Has("Tricky (Progressive)")
+        20, GameBit(0x0010), SFARegion.SW_WATERSPOUT, Has("Tricky (Progressive)")
     ),
     "SHW: Feed Alpine Root 1": SFACountLocationData(
-        21, GameBit(0x0033, T2_ADDRESS, bit_size=3), SFARegion.SW_WATERSPOUT, Has("SHW Alpine Root", 1), count=1
+        21, GameBit(0x0033, bit_size=3), SFARegion.SW_WATERSPOUT, Has("SHW Alpine Root", 1), count=1
     ),
     "SHW: Feed Alpine Root 2": SFACountLocationData(
-        22, GameBit(0x0033, T2_ADDRESS, bit_size=3), SFARegion.SW_WATERSPOUT, Has("SHW Alpine Root", 2), count=2
+        22, GameBit(0x0033, bit_size=3), SFARegion.SW_WATERSPOUT, Has("SHW Alpine Root", 2), count=2
     ),
-    "SHW: Rescue GateKeeper": SFALocationData(23, GameBit(0x0058, T2_ADDRESS), SFARegion.SW_ENTRANCE, True_()),
-    "TTH Well: White GrubTub 1": SFALocationData(24, GameBit(0x00A8, T2_ADDRESS), SFARegion.TH_WELL_BOTTOM, True_()),
-    "TTH Well: White GrubTub 2": SFALocationData(25, GameBit(0x00A7, T2_ADDRESS), SFARegion.TH_WELL_BOTTOM, True_()),
+    "SHW: Rescue GateKeeper": SFALocationData(23, GameBit(0x0058), SFARegion.SW_ENTRANCE, True_()),
+    "TTH Well: White GrubTub 1": SFALocationData(24, GameBit(0x00A8), SFARegion.TH_WELL_BOTTOM, True_()),
+    "TTH Well: White GrubTub 2": SFALocationData(25, GameBit(0x00A7), SFARegion.TH_WELL_BOTTOM, True_()),
     "TTH Well: White GrubTub 3": SFALocationData(
-        26, GameBit(0x00A5, T2_ADDRESS), SFARegion.TH_WELL_BOTTOM, can_explode_bomb_plant
+        26, GameBit(0x00A5), SFARegion.TH_WELL_BOTTOM, can_explode_bomb_plant
     ),
     "TTH Well: White GrubTub 4": SFALocationData(
-        27, GameBit(0x00A3, T2_ADDRESS), SFARegion.TH_WELL_BOTTOM, has_staff_booster
+        27, GameBit(0x00A3), SFARegion.TH_WELL_BOTTOM, has_staff_booster
     ),
     "TTH Well: White GrubTub 5": SFALocationData(
         28,
-        GameBit(0x00A4, T2_ADDRESS),
+        GameBit(0x00A4),
         SFARegion.TH_WELL_BOTTOM,
         has_staff_booster & can_explode_bomb_plant,
     ),
     "TTH Well: White GrubTub 6": SFALocationData(
         29,
-        GameBit(0x00A6, T2_ADDRESS),
+        GameBit(0x00A6),
         SFARegion.TH_WELL_BOTTOM,
         has_staff_booster & can_explode_bomb_plant,
     ),
     "TTH: Magic Upgrade above Store": SFALocationData(
         30,
-        GameBit(0x0011, T2_ADDRESS),
+        GameBit(0x0011),
         SFARegion.TH,
         has_staff_booster & has_blaster & can_explode_bomb_plant,
     ),
     "TTH: Feed Queen White GrubTubs": SFACountLocationData(
-        31, GameBit(0x00AD, T2_ADDRESS, bit_size=3), SFARegion.TH, Has("White GrubTub", 6), count=6
+        31, GameBit(0x00AD, bit_size=3), SFARegion.TH, Has("White GrubTub", 6), count=6
     ),
     "DIM: Release Entrance SnowHorn": SFALocationData(
-        32, GameBit(0x0366, T2_ADDRESS), SFARegion.DIM_ENTRANCE, Has("Tricky (Progressive)")
+        32, GameBit(0x0366), SFARegion.DIM_ENTRANCE, Has("Tricky (Progressive)")
     ),
     "DIM: Rescue Injured SnowHorn": SFALocationData(
-        33, GameBit(0x036B, T2_ADDRESS), SFARegion.DIM_ENTRANCE, Has("Entrance Bridge Cog")
+        33, GameBit(0x036B), SFARegion.DIM_ENTRANCE, Has("Entrance Bridge Cog")
     ),
     "DIM: Feed Injured SnowHorn": SFALocationData(
         34,
-        GameBit(0x036D, T2_ADDRESS),
+        GameBit(0x036D),
         SFARegion.DIM_ENTRANCE,
         HasAllCounts({"Entrance Bridge Cog": 1, "DIM Alpine Root": 2}),
     ),
     "DIM: Enemy Gate Cog Chest": SFALocationData(
-        35, GameBit(0x0370, T2_ADDRESS), SFARegion.DIM_FORT, has_staff_booster
+        35, GameBit(0x0370), SFARegion.DIM_FORT, has_staff_booster
     ),
-    "DIM: Hut Cog Chest": SFALocationData(36, GameBit(0x0372, T2_ADDRESS), SFARegion.DIM_FORT, has_staff_booster),
+    "DIM: Hut Cog Chest": SFALocationData(36, GameBit(0x0372), SFARegion.DIM_FORT, has_staff_booster),
     "DIM: Ice Cog Chest": SFALocationData(
         37,
-        GameBit(0x0374, T2_ADDRESS),
+        GameBit(0x0374),
         SFARegion.DIM_FORT,
         has_staff_booster & Has("Tricky (Progressive)", 2),
     ),
     "DIM: Fire Puzzle Reward": SFALocationData(
         38,
-        GameBit(0x03BC, T2_ADDRESS),
+        GameBit(0x03BC),
         SFARegion.DIM_FORT,
         has_blaster & HasAllCounts({"SharpClaw Fort Bridge Cogs": 3, "Tricky (Progressive)": 2}),
     ),
@@ -273,145 +279,159 @@ LOCATION_ANY: dict[str, SFALocationData] = {
         SFARegion.DIM_BOTTOM,
         has_blaster & Has("Tricky (Progressive)", 2),
     ),
+    "VFP: Insert Fire SpellStone 1": SFALocationData(
+        41, GameBit(0x0573), SFARegion.VFP_PAST_PUZZLE, has_blaster & Has("Tricky (Progressive)", 2) & Has("Fire SpellStone 1") & Has("Freeze Blast")
+    ),
 }
 
 # Last id = 138
 LOCATION_FUEL_CELL: dict[str, SFALocationData] = {
     # ThornTail Hollow
-    "TTH: Queen Cave Fuel Cell": SFALocationData(100, GameBit(0x0945, T2_ADDRESS), SFARegion.TH, True_()),
-    "TTH: Pillar Fuel Cell Left": SFALocationData(101, GameBit(0x0946, T2_ADDRESS), SFARegion.TH, True_()),
-    "TTH: Pillar Fuel Cell Right": SFALocationData(102, GameBit(0x0943, T2_ADDRESS), SFARegion.TH, True_()),
+    "TTH: Queen Cave Fuel Cell": SFALocationData(100, GameBit(0x0945), SFARegion.TH, True_()),
+    "TTH: Pillar Fuel Cell Left": SFALocationData(101, GameBit(0x0946), SFARegion.TH, True_()),
+    "TTH: Pillar Fuel Cell Right": SFALocationData(102, GameBit(0x0943), SFARegion.TH, True_()),
     "TTH: Beside WarpStone Fuel Cell Left": SFALocationData(
-        103, GameBit(0x0947, T2_ADDRESS), SFARegion.TH, can_explode_bomb_plant
+        103, GameBit(0x0947), SFARegion.TH, can_explode_bomb_plant
     ),
     "TTH: Beside WarpStone Fuel Cell Right": SFALocationData(
-        104, GameBit(0x0949, T2_ADDRESS), SFARegion.TH, can_explode_bomb_plant
+        104, GameBit(0x0949), SFARegion.TH, can_explode_bomb_plant
     ),
     "TTH: Waterfall Cave Fuel Cell Center": SFALocationData(
-        105, GameBit(0x094E, T2_ADDRESS), SFARegion.TH, can_explode_bomb_plant
+        105, GameBit(0x094E), SFARegion.TH, can_explode_bomb_plant
     ),
     "TTH: Waterfall Cave Fuel Cell Left": SFALocationData(
-        106, GameBit(0x094C, T2_ADDRESS), SFARegion.TH, can_explode_bomb_plant
+        106, GameBit(0x094C), SFARegion.TH, can_explode_bomb_plant
     ),
     "TTH: Waterfall Cave Fuel Cell Right": SFALocationData(
-        107, GameBit(0x0950, T2_ADDRESS), SFARegion.TH, can_explode_bomb_plant
+        107, GameBit(0x0950), SFARegion.TH, can_explode_bomb_plant
     ),
     "TTH: Waterfall Cave Fuel Cell Back": SFALocationData(
-        108, GameBit(0x0948, T2_ADDRESS), SFARegion.TH, can_explode_bomb_plant
+        108, GameBit(0x0948), SFARegion.TH, can_explode_bomb_plant
     ),
     "TTH: South Cave Fuel Cell Center": SFALocationData(
-        109, GameBit(0x0944, T2_ADDRESS), SFARegion.TH, can_explode_bomb_plant
+        109, GameBit(0x0944), SFARegion.TH, can_explode_bomb_plant
     ),
     "TTH: South Cave Fuel Cell Right": SFALocationData(
-        110, GameBit(0x0942, T2_ADDRESS), SFARegion.TH, can_explode_bomb_plant
+        110, GameBit(0x0942), SFARegion.TH, can_explode_bomb_plant
     ),
     "TTH: South Cave Fuel Cell Left": SFALocationData(
-        111, GameBit(0x0941, T2_ADDRESS), SFARegion.TH, can_explode_bomb_plant
+        111, GameBit(0x0941), SFARegion.TH, can_explode_bomb_plant
     ),
     "TTH: Above Store Fuel Cell Left": SFALocationData(
-        112, GameBit(0x094F, T2_ADDRESS), SFARegion.TH, has_staff_booster
+        112, GameBit(0x094F), SFARegion.TH, has_staff_booster
     ),
     "TTH: Above Store Fuel Cell Right": SFALocationData(
-        113, GameBit(0x094D, T2_ADDRESS), SFARegion.TH, has_staff_booster
+        113, GameBit(0x094D), SFARegion.TH, has_staff_booster
     ),
-    "TTH Well: Fuel Cell Left": SFALocationData(128, GameBit(0x095D, T2_ADDRESS), SFARegion.TH_WELL, has_staff_booster),
+    "TTH Well: Fuel Cell Left": SFALocationData(128, GameBit(0x095D), SFARegion.TH_WELL, has_staff_booster),
     "TTH Well: Fuel Cell Right": SFALocationData(
-        129, GameBit(0x095E, T2_ADDRESS), SFARegion.TH_WELL, has_staff_booster
+        129, GameBit(0x095E), SFARegion.TH_WELL, has_staff_booster
     ),
     # Ice Mountain
-    "IM: Cheat Well Fuel Cell": SFALocationData(114, GameBit(0x0957, T2_ADDRESS), SFARegion.IM, True_()),
-    "IM: Race Cave Fuel Cell Front": SFALocationData(115, GameBit(0x0955, T2_ADDRESS), SFARegion.IM, True_()),
-    "IM: Race Cave Fuel Cell Back": SFALocationData(116, GameBit(0x0956, T2_ADDRESS), SFARegion.IM, True_()),
+    "IM: Cheat Well Fuel Cell": SFALocationData(114, GameBit(0x0957), SFARegion.IM, True_()),
+    "IM: Race Cave Fuel Cell Front": SFALocationData(115, GameBit(0x0955), SFARegion.IM, True_()),
+    "IM: Race Cave Fuel Cell Back": SFALocationData(116, GameBit(0x0956), SFARegion.IM, True_()),
     # SnowHorn Wastes
     "SHW: Ice Block Fuel Cell Left": SFALocationData(
-        117, GameBit(0x0958, T2_ADDRESS), SFARegion.SW_WATERSPOUT, True_()
+        117, GameBit(0x0958), SFARegion.SW_WATERSPOUT, True_()
     ),
     "SHW: Ice Block Fuel Cell Right": SFALocationData(
-        118, GameBit(0x0959, T2_ADDRESS), SFARegion.SW_WATERSPOUT, True_()
+        118, GameBit(0x0959), SFARegion.SW_WATERSPOUT, True_()
     ),
     "SHW: Water Platform Fuel Cell Left": SFALocationData(
-        119, GameBit(0x0952, T2_ADDRESS), SFARegion.SW_ENTRANCE, Has("Staff")
+        119, GameBit(0x0952), SFARegion.SW_ENTRANCE, Has("Staff")
     ),
     "SHW: Water Platform Fuel Cell Right": SFALocationData(
-        120, GameBit(0x0953, T2_ADDRESS), SFARegion.SW_ENTRANCE, Has("Staff")
+        120, GameBit(0x0953), SFARegion.SW_ENTRANCE, Has("Staff")
     ),  # Also Linked to dig cave fuel cell
     "SHW: Dig Cave near Entrance Fuel Cell": SFALocationData(
-        121, GameBit(0x0954, T2_ADDRESS), SFARegion.SW_ENTRANCE, Has("Tricky (Progressive)")
+        121, GameBit(0x0954), SFARegion.SW_ENTRANCE, Has("Tricky (Progressive)")
     ),
     "SHW: Path to TTH Booster Fuel Cell Left": SFALocationData(
         122,
-        GameBit(0x095F, T2_ADDRESS),
+        GameBit(0x095F),
         SFARegion.SW_ENTRANCE,
         has_blaster & has_staff_booster,
     ),
     "SHW: Path to TTH Booster Fuel Cell Right": SFALocationData(
         123,
-        GameBit(0x0960, T2_ADDRESS),
+        GameBit(0x0960),
         SFARegion.SW_ENTRANCE,
         has_blaster & has_staff_booster,
     ),
     "SHW: Blast Tree past Gate Fuel Cell Left": SFALocationData(
-        133, GameBit(0x0967, T2_ADDRESS), SFARegion.SW_GATE, has_blaster
+        133, GameBit(0x0967), SFARegion.SW_GATE, has_blaster
     ),
     "SHW: Blast Tree past Gate Fuel Cell Right": SFALocationData(
-        134, GameBit(0x0968, T2_ADDRESS), SFARegion.SW_GATE, has_blaster
+        134, GameBit(0x0968), SFARegion.SW_GATE, has_blaster
     ),
     "SHW: River past Gate Cheat Well Fuel Cell": SFALocationData(
-        135, GameBit(0x0984, T2_ADDRESS), SFARegion.SW_GATE, True_()
+        135, GameBit(0x0984), SFARegion.SW_GATE, True_()
     ),
     "SHW: River Ledge past Gate Fuel Cell Center": SFALocationData(
-        136, GameBit(0x095A, T2_ADDRESS), SFARegion.SW_GATE, True_()
+        136, GameBit(0x095A), SFARegion.SW_GATE, True_()
     ),
     "SHW: River Ledge past Gate Fuel Cell Right": SFALocationData(
-        137, GameBit(0x095B, T2_ADDRESS), SFARegion.SW_GATE, has_blaster
+        137, GameBit(0x095B), SFARegion.SW_GATE, has_blaster
     ),
     "SHW: River Ledge past Gate Fuel Cell Left": SFALocationData(
-        138, GameBit(0x095C, T2_ADDRESS), SFARegion.SW_GATE, has_blaster
+        138, GameBit(0x095C), SFARegion.SW_GATE, has_blaster
     ),
     # LightFoot Village
     "TTH: Entrance to LFV Fuel Cell Right": SFALocationData(
-        124, GameBit(0x094A, T2_ADDRESS), SFARegion.LFV, Has("Staff")
+        124, GameBit(0x094A), SFARegion.LFV, Has("Staff")
     ),
     "TTH: Entrance to LFV Fuel Cell Left": SFALocationData(
-        125, GameBit(0x094B, T2_ADDRESS), SFARegion.LFV, Has("Staff")
+        125, GameBit(0x094B), SFARegion.LFV, Has("Staff")
     ),
-    # "LFV Entrance Booster Ledge 1": SFALocationData(126, 0x096B, T2_ADDRESS, SFALocationType.FUELCELL, SFARegion.LFV),
-    # "LFV Entrance Booster Ledge 2": SFALocationData(127, 0x096C, T2_ADDRESS, SFALocationType.FUELCELL, SFARegion.LFV),
-    # Moon Mountain Pass
-    # "MMP Windy Path In": SFALocationData(130, 0x0985, T2_ADDRESS, SFALocationType.FUELCELL, SFARegion.MMP),
-    # "MMP Windy Path Out": SFALocationData(131, 0x097E, T2_ADDRESS, SFALocationType.FUELCELL, SFARegion.MMP),
-    # "MMP Barrel Hill": SFALocationData(132, 0x0961, T2_ADDRESS, SFALocationType.FUELCELL, SFARegion.MMP),
+    # "LFV Entrance Booster Ledge 1": SFALocationData(126, 0x096B, SFALocationType.FUELCELL, SFARegion.LFV),
+    # "LFV Entrance Booster Ledge 2": SFALocationData(127, 0x096C, SFALocationType.FUELCELL, SFARegion.LFV),
+    ## Moon Mountain Pass
+    "MMP: Wind Draft Entrance Fuel Cell": SFALocationData(130, GameBit(0x0985), SFARegion.MMP, True_()),
+    "MMP: Wind Draft Exit Fuel Cell": SFALocationData(131, GameBit(0x097E), SFARegion.MMP, True_()),
+    "MMP: Barrel Hill Fuel Cell": SFALocationData(132, GameBit(0x0961), SFARegion.MMP, True_()),
+    "MMP: Behind Fort Fuel Cell": SFALocationData(139, GameBit(0x0966), SFARegion.MMP, Has("Moon Pass Key")),
+    ## VFP
+    "VFP: Ice Blast Alcove Fuel Cell Left": SFALocationData(140, GameBit(0x096F), SFARegion.VFP, has_staff_booster & Has("Freeze Blast")),
+    "VFP: Ice Blast Alcove Fuel Cell Right": SFALocationData(141, GameBit(0x0970), SFARegion.VFP, has_staff_booster & Has("Freeze Blast")),
+    "VFP: Disguise Alcove Fuel Cell Left": SFALocationData(142, GameBit(0x0973), SFARegion.VFP, has_staff_booster & Has("SharpClaw Disguise")),
+    "VFP: Disguise Alcove Fuel Cell Right": SFALocationData(143, GameBit(0x0974), SFARegion.VFP, has_staff_booster & Has("SharpClaw Disguise")),
+    "VFP: Below Bridge Fuel Cell": SFALocationData(144, GameBit(0x098A), SFARegion.VFP, True_()),
+    "VFP: Cheat Well Fuel Cell Left": SFALocationData(145, GameBit(0x097A), SFARegion.VFP_PAST_BRIDGE, can_grow_moon_seed),
+    "VFP: Cheat Well Fuel Cell Right": SFALocationData(146, GameBit(0x097B), SFARegion.VFP_PAST_BRIDGE, can_grow_moon_seed),
+    "VFP: Round Room Ledge Fuel Cell": SFALocationData(147, GameBit(0x0989), SFARegion.VFP_PAST_PUZZLE, Has("Freeze Blast")), # Damage Boost?
+    "VFP: Warp Room Fuel Cell": SFALocationData(148, GameBit(0x0962), SFARegion.VFP_PAST_PUZZLE, has_blaster & Has("Tricky (Progressive)", 2) & Has("Freeze Blast")), # Damage Boost?
 }
 
 # Last id = 307
 LOCATION_DIG_SPOT: dict[str, SFALocationData] = {
     "SHW: Dig Alpine Root near Campfire": SFALocationData(
-        300, GameBit(0x002F, T2_ADDRESS), SFARegion.SW_WATERSPOUT, Has("Tricky (Progressive)")
+        300, GameBit(0x002F), SFARegion.SW_WATERSPOUT, Has("Tricky (Progressive)")
     ),
     "SHW: Dig Alpine Root near Fallen Tree": SFALocationData(
-        301, GameBit(0x002E, T2_ADDRESS), SFARegion.SW_WATERSPOUT, Has("Tricky (Progressive)")
+        301, GameBit(0x002E), SFARegion.SW_WATERSPOUT, Has("Tricky (Progressive)")
     ),
     "SHW: Dig Egg near Water Spout": SFALocationData(
-        302, GameBit(0x003A, T2_ADDRESS), SFARegion.SW_WATERSPOUT, Has("Tricky (Progressive)")
+        302, GameBit(0x003A), SFARegion.SW_WATERSPOUT, Has("Tricky (Progressive)")
     ),
     "SHW: Dig BafomDad near Entrance": SFALocationData(
-        303, GameBit(0x086F, T2_ADDRESS), SFARegion.SW_ENTRANCE, Has("Tricky (Progressive)")
+        303, GameBit(0x086F), SFARegion.SW_ENTRANCE, Has("Tricky (Progressive)")
     ),
     "SHW: Dig in Cave past Gate": SFALocationData(
-        307, GameBit(0x086E, T2_ADDRESS), SFARegion.SW_GATE, Has("Tricky (Progressive)")
+        307, GameBit(0x086E), SFARegion.SW_GATE, Has("Tricky (Progressive)")
     ),
-    "TTH: Dig near Store": SFALocationData(304, GameBit(0x0857, T2_ADDRESS), SFARegion.TH, Has("Tricky (Progressive)")),
+    "TTH: Dig near Store": SFALocationData(304, GameBit(0x0857), SFARegion.TH, Has("Tricky (Progressive)")),
     "TTH: Dig near Queen Cave": SFALocationData(
-        305, GameBit(0x0856, T2_ADDRESS), SFARegion.TH, Has("Tricky (Progressive)")
+        305, GameBit(0x0856), SFARegion.TH, Has("Tricky (Progressive)")
     ),
     "TTH: Dig in Entrance to LFV": SFALocationData(
-        306, GameBit(0x0858, T2_ADDRESS), SFARegion.LFV, Has("Tricky (Progressive)")
+        306, GameBit(0x0858), SFARegion.LFV, Has("Tricky (Progressive)")
     ),
     "DIM: Dig Alpine Root in Entrance Hut": SFALocationData(
-        308, GameBit(0x037C, T2_ADDRESS), SFARegion.DIM_ENTRANCE, Has("Tricky (Progressive)")
+        308, GameBit(0x037C), SFARegion.DIM_ENTRANCE, Has("Tricky (Progressive)")
     ),
     "DIM: Dig Alpine Root in Boulder Path": SFALocationData(
-        309, GameBit(0x037D, T2_ADDRESS), SFARegion.DIM_ENTRANCE, Has("Tricky (Progressive)")
+        309, GameBit(0x037D), SFARegion.DIM_ENTRANCE, Has("Tricky (Progressive)")
     ),
 }
 

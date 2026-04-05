@@ -12,8 +12,8 @@ from .items import (
 )
 from .locations import create_all_locations, locations_name_to_id_dict
 from .options import SFAOptions
-from .regions import create_all_regions
-from .rules import connect_regions, set_all_rules
+from .regions import create_all_regions, connect_regions
+from .rules import set_all_rules
 
 
 class SFAWorld(World):

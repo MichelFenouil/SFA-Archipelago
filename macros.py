@@ -3,7 +3,7 @@ from typing import TYPE_CHECKING, override
 
 from BaseClasses import CollectionState
 from NetUtils import JSONMessagePart
-from rule_builder.rules import Has, Rule, HasAll, Or
+from rule_builder.rules import Has, HasAllCounts, Rule, HasAll, Or
 
 if TYPE_CHECKING:
     from .world import SFAWorld
@@ -14,6 +14,7 @@ has_staff_booster = HasAll("Staff", "Staff Booster")
 # Also explodes with Ground Quake
 can_explode_bomb_plant = HasAll("Staff", "Bomb Plant", "Fire Blaster")
 # can_explode_bomb_plant = HasAll("Staff", "Bomb Plant") & Or(Has("Fire Blaster"), Has("Ground Quake"))
+can_grow_moon_seed = HasAllCounts({"Moon Seed": 1, "Tricky (Progressive)": 2})
 
 
 @dataclasses.dataclass()

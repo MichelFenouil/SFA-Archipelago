@@ -45,7 +45,7 @@ class GameFlag(GameBit):
     """GameFlag represents flags to set ON/OFF for QoL."""
 
     offset: int
-    address: int
+    address: int = T2_ADDRESS
     state: bool = True
 
 

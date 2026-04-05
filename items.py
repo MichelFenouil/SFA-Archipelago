@@ -207,6 +207,8 @@ ITEM_STAFF: dict[str, SFAItemData] = {
     "Staff": SFAItemData(1, "Staff", GameBit(0x0080), ItemClassification.progression, [SFAItemTags.STARTING_ITEM]),
     "Fire Blaster": SFAItemData(2, "Fire Blaster", GameBit(0x06FC), ItemClassification.progression, []),
     "Staff Booster": SFAItemData(3, "Staff Booster", GameBit(0x0706), ItemClassification.progression, []),
+    "Freeze Blast": SFAItemData(4, "Freeze Blast", GameBit(0x0703), ItemClassification.progression, []),
+    "Ground Quake": SFAItemData(5, "Ground Quake", GameBit(0x06FE), ItemClassification.progression, []),
 }
 
 ITEM_TRICKY: dict[str, SFAProgressiveItemData] = {
@@ -286,7 +288,9 @@ ITEM_INVENTORY: dict[str, SFAItemData] = {
     ),
     "Dinosaur Horn": SFAItemData(110, "Dinosaur Horn", GameBit(0x03A0), ItemClassification.progression),
     # "Cell Silver Key": SFAItemData(111, 0x03DC, SFAItemType.INVENTORY, ItemClassification.progression),
-    # "Fire Spellstone 1": SFAItemData(112, 0x039E, SFAItemType.INVENTORY, ItemClassification.progression),
+    "Fire SpellStone 1": SFAItemData(112, "Fire SpellStone 1", GameBit(0x039E), ItemClassification.progression),
+    "Moon Pass Key": SFAItemData(113, "Moon Pass Key", GameBit(0x017B), ItemClassification.progression),
+    "Moon Seed": SFAItemData(114, "Moon Seed", GameBit(), ItemClassification.progression),
 }
 
 ITEM_SHOP: dict[str, SFAItemData] = {
