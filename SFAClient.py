@@ -1,4 +1,5 @@
 import asyncio
+import ctypes
 import sys
 import traceback
 from typing import ClassVar
@@ -15,6 +16,8 @@ from CommonClient import (
     server_loop,
 )
 from MultiServer import mark_raw
+from worlds.sfa.game_connection.game_changes import get_all_loaded_objects, get_player, search_objects
+from worlds.sfa.game_connection.structures import ObjState
 
 from .addresses import *  # noqa: F403
 from .bit_helper import (
@@ -145,6 +148,8 @@ class SFAContext(CommonContext):
     stored_dim = 0
     stored_dim2 = 0
 
+    object_list = []
+
     def __init__(self, server_address, password):
         """
         Initialize the Star Fox Adventures context.
@@ -250,7 +255,8 @@ async def locations_watcher(ctx):
         return False
 
     for location_data in NORMAL_TABLES.values():
-        _check_location_flag(ctx, location_data)
+        if not SFALocationTags.ACTIVE_ZONE in location_data.tags:
+            _check_location_flag(ctx, location_data)
 
     map_value = dme.read_byte(MAP_ID_ADDRESS)
     if map_value == MAGIC_CAVE_ID and ctx.stored_map == MAGIC_CAVE_ID:
@@ -264,6 +270,9 @@ async def locations_watcher(ctx):
     if map_value == SHOP_ID and ctx.stored_map == SHOP_ID:
         for loc_data in LOCATION_SHOP.values():
             _check_location_flag(ctx, loc_data)
+    
+    if ctx.stored_map == COMBAT_SHRINE_ID:
+        _check_location_flag(ctx, LOCATION_ANY["MMP: Test of Combat"])
 
     locations_checked = ctx.locations_checked.difference(ctx.checked_locations)
     if locations_checked:
@@ -461,10 +470,14 @@ async def special_map_flags(ctx: SFAContext) -> None:
         if map_value == KRAZOA_PALACE_ID:
             KRAZOA_SPIRIT_1.set_bit(True)
 
+        # Remove Spirit 2 in Combat Shrine
+        if map_value == COMBAT_SHRINE_ID:
+            LOCATION_ANY["MMP: Test of Combat"].set_bit(False)
+
         ctx.stored_map = map_value
 
     # Place bridge cogs when entering the room
-    dim_obj_value = read_value_bytes(DIM_OBJECTS_ADDRESS, 0, 32, 4)
+    dim_obj_value = read_value_bytes(DIM_OBJGROUP_ADDRESS, 0, 32, 4)
     if dim_obj_value != ctx.stored_dim:
         logger.debug(f"Entering dim zone {dim_obj_value:x}")
         if dim_obj_value == DIM_COGS_ZONE_VALUE or dim_obj_value == DIM_COGS_ZONE_VALUE2:
@@ -499,8 +512,21 @@ async def special_map_flags(ctx: SFAContext) -> None:
                 progress.set_bit(True)
             for loc in location:
                 loc.set_bit(loc.id in ctx.checked_locations)
-
         ctx.stored_dim = dim_obj_value
+
+    player = get_player()
+    if player.position.pos.x > -11900 and player.position.pos.x < -11780 and player.position.pos.z > -4650 and player.position.pos.z < -4550:
+        object_list = get_all_loaded_objects()
+        WARPPAD = 0xEC
+        warppad = search_objects(object_list, WARPPAD)
+        state_bytes = dme.read_bytes(warppad.state_ptr, ctypes.sizeof(ObjState))
+        state = ObjState.from_buffer_copy(state_bytes)
+        flagE_offset = ObjState.flagE.offset
+        if LOCATION_ANY["MMP: Test of Combat"].id in ctx.checked_locations:
+            dme.write_bytes(warppad.state_ptr + flagE_offset, bytes.fromhex('20'))
+        else:
+            dme.write_bytes(warppad.state_ptr + flagE_offset, bytes.fromhex('01'))
+        
 
 
 async def game_watcher(ctx: SFAContext):

@@ -290,7 +290,8 @@ ITEM_INVENTORY: dict[str, SFAItemData] = {
     # "Cell Silver Key": SFAItemData(111, 0x03DC, SFAItemType.INVENTORY, ItemClassification.progression),
     "Fire SpellStone 1": SFAItemData(112, "Fire SpellStone 1", GameBit(0x039E), ItemClassification.progression),
     "Moon Pass Key": SFAItemData(113, "Moon Pass Key", GameBit(0x017B), ItemClassification.progression),
-    "Moon Seed": SFAItemData(114, "Moon Seed", GameBit(), ItemClassification.progression),
+    "Moon Seed": SFAItemData(114, "Moon Seed", GameBit(0x0), ItemClassification.progression),
+    "Krazoa Spirit 2": SFAItemData(115, "Krazoa Spirit 2", GameBit(0x03A1), ItemClassification.progression),
 }
 
 ITEM_SHOP: dict[str, SFAItemData] = {

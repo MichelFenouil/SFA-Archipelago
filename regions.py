@@ -5,7 +5,7 @@ from typing import TYPE_CHECKING
 
 from BaseClasses import Region
 from rule_builder.rules import Has, HasAllCounts, True_
-from .macros import can_explode_bomb_plant, has_staff_booster, has_blaster
+from .macros import can_explode_bomb_plant, has_staff_booster, has_blaster, can_grow_moon_seed
 
 if TYPE_CHECKING:
     from .world import SFAWorld
@@ -24,6 +24,7 @@ class SFARegion(Enum):
     TH_WELL_BOTTOM = "ThornTail Hollow - Dark Well Bottom"
     LFV = "LightFoot Village"
     MMP = "Moon Mountain Pass"
+    MMP_METEORITE = "Moon Mountain Pass - Meteorite Area"
     DIM_ENTRANCE = "DarkIce Mines - Entrance"
     DIM_FORT = "DarkIce Mines - SharpClaw Fort"
     DIM_BOTTOM = "DarkIce Mines - Bottom"
@@ -51,6 +52,7 @@ def connect_regions(world: SFAWorld) -> None:
     sw_gate = world.get_region(SFARegion.SW_GATE.value)
     lightfoot_village = world.get_region(SFARegion.LFV.value)
     moon_mountain_pass = world.get_region(SFARegion.MMP.value)
+    mmp_meteorite = world.get_region(SFARegion.MMP_METEORITE.value)
     dim_entrance = world.get_region(SFARegion.DIM_ENTRANCE.value)
     dim_fort = world.get_region(SFARegion.DIM_FORT.value)
     dim_bottom = world.get_region(SFARegion.DIM_BOTTOM.value)
@@ -102,5 +104,6 @@ def connect_regions(world: SFAWorld) -> None:
         has_staff_booster & Has("Dinosaur Horn"),
     )
     moon_mountain_pass.connect(vfp, "Access Volcano Force Point", Has("Moon Pass Key"))
+    moon_mountain_pass.connect(mmp_meteorite, "Access Meteorite Area", Has("Moon Pass Key") & can_grow_moon_seed & can_explode_bomb_plant)
     vfp.connect(vfp_past_bridge, "Cross VFP Bridge", Has("Fire SpellStone 1"))
     vfp_past_bridge.connect(vfp_past_puzzle, "Access VFP Past Puzzle", has_blaster & Has("Tricky (Progressive)", 2) & Has("Freeze Blast"))

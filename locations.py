@@ -27,6 +27,7 @@ class SFALocationTags(Enum):
     """This class defines constants for various types of locations in Star Fox Adventures."""
 
     MAP = auto()
+    ACTIVE_ZONE = auto()
     CUTSCENE = auto()  # Not yet used
 
 
@@ -282,11 +283,14 @@ LOCATION_ANY: dict[str, SFALocationData] = {
     "VFP: Insert Fire SpellStone 1": SFALocationData(
         41, GameBit(0x0573), SFARegion.VFP_PAST_PUZZLE, has_blaster & Has("Tricky (Progressive)", 2) & Has("Fire SpellStone 1") & Has("Freeze Blast")
     ),
+    "MMP: Test of Combat": SFALocationData(
+        42, GameBit(0x0537), SFARegion.MMP_METEORITE, Has("Freeze Blast") & Has("Tricky (Progressive)", 2), [SFALocationTags.ACTIVE_ZONE]
+    ),
 }
 
 # Last id = 138
 LOCATION_FUEL_CELL: dict[str, SFALocationData] = {
-    # ThornTail Hollow
+    ## ThornTail Hollow
     "TTH: Queen Cave Fuel Cell": SFALocationData(100, GameBit(0x0945), SFARegion.TH, True_()),
     "TTH: Pillar Fuel Cell Left": SFALocationData(101, GameBit(0x0946), SFARegion.TH, True_()),
     "TTH: Pillar Fuel Cell Right": SFALocationData(102, GameBit(0x0943), SFARegion.TH, True_()),
@@ -327,11 +331,13 @@ LOCATION_FUEL_CELL: dict[str, SFALocationData] = {
     "TTH Well: Fuel Cell Right": SFALocationData(
         129, GameBit(0x095E), SFARegion.TH_WELL, has_staff_booster
     ),
-    # Ice Mountain
+
+    ## Ice Mountain
     "IM: Cheat Well Fuel Cell": SFALocationData(114, GameBit(0x0957), SFARegion.IM, True_()),
     "IM: Race Cave Fuel Cell Front": SFALocationData(115, GameBit(0x0955), SFARegion.IM, True_()),
     "IM: Race Cave Fuel Cell Back": SFALocationData(116, GameBit(0x0956), SFARegion.IM, True_()),
-    # SnowHorn Wastes
+
+    ## SnowHorn Wastes
     "SHW: Ice Block Fuel Cell Left": SFALocationData(
         117, GameBit(0x0958), SFARegion.SW_WATERSPOUT, True_()
     ),
@@ -377,7 +383,8 @@ LOCATION_FUEL_CELL: dict[str, SFALocationData] = {
     "SHW: River Ledge past Gate Fuel Cell Left": SFALocationData(
         138, GameBit(0x095C), SFARegion.SW_GATE, has_blaster
     ),
-    # LightFoot Village
+
+    ## LightFoot Village
     "TTH: Entrance to LFV Fuel Cell Right": SFALocationData(
         124, GameBit(0x094A), SFARegion.LFV, Has("Staff")
     ),
@@ -386,16 +393,21 @@ LOCATION_FUEL_CELL: dict[str, SFALocationData] = {
     ),
     # "LFV Entrance Booster Ledge 1": SFALocationData(126, 0x096B, SFALocationType.FUELCELL, SFARegion.LFV),
     # "LFV Entrance Booster Ledge 2": SFALocationData(127, 0x096C, SFALocationType.FUELCELL, SFARegion.LFV),
+    
     ## Moon Mountain Pass
     "MMP: Wind Draft Entrance Fuel Cell": SFALocationData(130, GameBit(0x0985), SFARegion.MMP, True_()),
     "MMP: Wind Draft Exit Fuel Cell": SFALocationData(131, GameBit(0x097E), SFARegion.MMP, True_()),
     "MMP: Barrel Hill Fuel Cell": SFALocationData(132, GameBit(0x0961), SFARegion.MMP, True_()),
     "MMP: Behind Fort Fuel Cell": SFALocationData(139, GameBit(0x0966), SFARegion.MMP, Has("Moon Pass Key")),
-    ## VFP
+    "MMP: Meteorite Area Fuel Cell": SFALocationData(149, GameBit(0x0977), SFARegion.MMP_METEORITE, True_()),
+    "MMP: Cheat Well near Warp Fuel Cell": SFALocationData(150, GameBit(0x0978), SFARegion.MMP_METEORITE, can_grow_moon_seed),
+    "MMP: Beside Krazoa Warp Fuel Cell": SFALocationData(151, GameBit(0x0979), SFARegion.MMP_METEORITE, True_()),
+    
+    ## Volcano Force Point
     "VFP: Ice Blast Alcove Fuel Cell Left": SFALocationData(140, GameBit(0x096F), SFARegion.VFP, has_staff_booster & Has("Freeze Blast")),
     "VFP: Ice Blast Alcove Fuel Cell Right": SFALocationData(141, GameBit(0x0970), SFARegion.VFP, has_staff_booster & Has("Freeze Blast")),
-    "VFP: Disguise Alcove Fuel Cell Left": SFALocationData(142, GameBit(0x0973), SFARegion.VFP, has_staff_booster & Has("SharpClaw Disguise")),
-    "VFP: Disguise Alcove Fuel Cell Right": SFALocationData(143, GameBit(0x0974), SFARegion.VFP, has_staff_booster & Has("SharpClaw Disguise")),
+    # "VFP: Disguise Alcove Fuel Cell Left": SFALocationData(142, GameBit(0x0973), SFARegion.VFP, has_staff_booster & Has("SharpClaw Disguise")),
+    # "VFP: Disguise Alcove Fuel Cell Right": SFALocationData(143, GameBit(0x0974), SFARegion.VFP, has_staff_booster & Has("SharpClaw Disguise")),
     "VFP: Below Bridge Fuel Cell": SFALocationData(144, GameBit(0x098A), SFARegion.VFP, True_()),
     "VFP: Cheat Well Fuel Cell Left": SFALocationData(145, GameBit(0x097A), SFARegion.VFP_PAST_BRIDGE, can_grow_moon_seed),
     "VFP: Cheat Well Fuel Cell Right": SFALocationData(146, GameBit(0x097B), SFARegion.VFP_PAST_BRIDGE, can_grow_moon_seed),
