@@ -151,6 +151,19 @@ class SFAPlanetItemData(SFAItemData):
     # TODO: Change for general ALL FLAGS items
     gate_bit: GameBit = field(default_factory=lambda: GameBit(0x0))
 
+@dataclass
+class SFALockedConsumableItemData(SFAItemData):
+    """Data class for locked consumable items."""
+
+    set_amount: int = 1
+
+    def set_value(self, value: bool) -> None:
+        """Set value for locked consumable item."""
+        if value:
+            self.game_bit.set_value(self.set_amount)
+        else:
+            self.game_bit.set_value(0)
+
 
 def items_name_to_id_dict() -> dict[str, int]:
     """Name to id dict for Star Fox Adventures items."""
@@ -250,8 +263,8 @@ ITEM_INVENTORY: dict[str, SFAItemData] = {
         ItemClassification.progression,
         progressive_data=[GameBit(0x035B), GameBit(0x035C), GameBit(0x035D)],
     ),
-    "Bomb Plant": SFAItemData(
-        101, "Bomb Plant", GameBit(0x0), ItemClassification.progression, [SFAItemTags.STARTING_ITEM]
+    "Bomb Plant": SFALockedConsumableItemData(
+        101, "Bomb Plant", GameBit(0x0077, bit_size=3), ItemClassification.progression, [], set_amount=7
     ),
     "SHW Alpine Root": SFAQuestItemData(
         102,
@@ -290,8 +303,8 @@ ITEM_INVENTORY: dict[str, SFAItemData] = {
     # "Cell Silver Key": SFAItemData(111, 0x03DC, SFAItemType.INVENTORY, ItemClassification.progression),
     "Fire SpellStone 1": SFAItemData(112, "Fire SpellStone 1", GameBit(0x039E), ItemClassification.progression),
     "Moon Pass Key": SFAItemData(113, "Moon Pass Key", GameBit(0x017B), ItemClassification.progression),
-    "Moon Seed": SFAItemData(114, "Moon Seed", GameBit(0x0), ItemClassification.progression),
-    "Krazoa Spirit 2": SFAItemData(115, "Krazoa Spirit 2", GameBit(0x03A1), ItemClassification.progression),
+    "Moon Seed": SFALockedConsumableItemData(114, "Moon Seed", GameBit(0x01FE, bit_size=3), ItemClassification.progression, set_amount=7),
+    "Krazoa Spirit 2": SFAItemData(115, "Krazoa Spirit 2", GameBit(0x0537), ItemClassification.progression),
 }
 
 ITEM_SHOP: dict[str, SFAItemData] = {

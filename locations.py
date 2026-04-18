@@ -130,10 +130,10 @@ LOCATION_UPGRADE: dict[str, SFAUpgradeLocationData] = {
         2, GameBit(0x0706), SFARegion.TH_WELL, can_explode_bomb_plant, linked_item=3, mc_bitflag=1
     ),
     "VFP: Freeze Blast Upgrade": SFAUpgradeLocationData(
-        3, GameBit(0x0703), SFARegion.VFP_PAST_BRIDGE, has_blaster & Has("Fire SpellStone 1") & Has("Tricky (Progressive)", 2), linked_item=4, mc_bitflag=8
+        3, GameBit(0x0703), SFARegion.VFP_PAST_BRIDGE, has_blaster & Has("Fire SpellStone 1") & Has("Tricky (Progressive)", 2), linked_item=4, mc_bitflag=3
     ),
     "MMP: Ground Quake Upgrade": SFAUpgradeLocationData(
-        4, GameBit(0x06FE), SFARegion.MMP, Has("Moon Pass Key"), linked_item=5, mc_bitflag=0x10 # Change just read value
+        4, GameBit(0x06FE), SFARegion.MMP, Has("Moon Pass Key"), linked_item=5, mc_bitflag=4 # Change just read value
     ),
 }
 
@@ -284,7 +284,7 @@ LOCATION_ANY: dict[str, SFALocationData] = {
         41, GameBit(0x0573), SFARegion.VFP_PAST_PUZZLE, has_blaster & Has("Tricky (Progressive)", 2) & Has("Fire SpellStone 1") & Has("Freeze Blast")
     ),
     "MMP: Test of Combat": SFALocationData(
-        42, GameBit(0x0537), SFARegion.MMP_METEORITE, Has("Freeze Blast") & Has("Tricky (Progressive)", 2), [SFALocationTags.ACTIVE_ZONE]
+        42, GameBit(0x0537), SFARegion.MMP_METEORITE, Has("Freeze Blast") & Has("Tricky (Progressive)", 2) & has_blaster, [SFALocationTags.ACTIVE_ZONE]
     ),
 }
 
@@ -400,8 +400,8 @@ LOCATION_FUEL_CELL: dict[str, SFALocationData] = {
     "MMP: Barrel Hill Fuel Cell": SFALocationData(132, GameBit(0x0961), SFARegion.MMP, True_()),
     "MMP: Behind Fort Fuel Cell": SFALocationData(139, GameBit(0x0966), SFARegion.MMP, Has("Moon Pass Key")),
     "MMP: Meteorite Area Fuel Cell": SFALocationData(149, GameBit(0x0977), SFARegion.MMP_METEORITE, True_()),
-    "MMP: Cheat Well near Warp Fuel Cell": SFALocationData(150, GameBit(0x0978), SFARegion.MMP_METEORITE, can_grow_moon_seed),
-    "MMP: Beside Krazoa Warp Fuel Cell": SFALocationData(151, GameBit(0x0979), SFARegion.MMP_METEORITE, True_()),
+    "MMP: Cheat Well near Combat Shrine Fuel Cell": SFALocationData(150, GameBit(0x0978), SFARegion.MMP_METEORITE, can_grow_moon_seed),
+    "MMP: Beside Combat Shrine Fuel Cell": SFALocationData(151, GameBit(0x0979), SFARegion.MMP_METEORITE, True_()),
     
     ## Volcano Force Point
     "VFP: Ice Blast Alcove Fuel Cell Left": SFALocationData(140, GameBit(0x096F), SFARegion.VFP, has_staff_booster & Has("Freeze Blast")),

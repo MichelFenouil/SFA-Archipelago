@@ -87,6 +87,7 @@ DIM_STATE_FLAGS: list[GameFlag] = [
 MMP_STATE_FLAGS: list[GameFlag] = [
     GameFlag(0x01D0),  # Skip Krazoa Intro
     GameFlag(0x0218),  # Open Door to Quake Upgrade
+    GameFlag(0x01CF),  # Skip Krazoa Combat Cutscene
 ]
 
 VFP_STATE_FLAGS: list[GameFlag] = [
@@ -118,7 +119,7 @@ STARTING_FLAGS: list[GameFlag] = [
 CONSTANT_FLAGS: list[GameFlag] = [
     FORCE_TRICKY,
     FORCE_TRICKY_CALL,
-    GameFlag(0x0008, False),  # MagicCaveDoorOpen
-    GameFlag(0x0009, False),  # MagicCaveDoorRelated
+    GameFlag(0x0008, state=False),  # MagicCaveDoorOpen
+    GameFlag(0x0009, state=False),  # MagicCaveDoorRelated
     GameFlag(0x0138, T1_ADDRESS, False),  # DIM Landing Pad Gate Open
 ]

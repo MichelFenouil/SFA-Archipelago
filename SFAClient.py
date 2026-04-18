@@ -46,6 +46,7 @@ from .items import (
     SFACountItemData,
     SFAItemData,
     SFAItemTags,
+    SFALockedConsumableItemData,
     SFAPlanetItemData,
     SFAProgressiveItemData,
     SFAQuestItemData,
@@ -190,7 +191,11 @@ class SFAContext(CommonContext):
 
     def on_package(self, cmd: str, args: dict):
         """Handle incoming packages from the server."""
-        return super().on_package(cmd, args)
+        super().on_package(cmd, args)
+        
+        if cmd == "Connected":
+            self.slot_data = args["slot_data"]
+        return 
 
 
 def sync_player_state(ctx: SFAContext):
@@ -378,11 +383,10 @@ async def force_gameflags(ctx: SFAContext) -> None:
         dino_horn = SFAItemData.get_by_name("Dinosaur Horn")
         dino_horn.set_value(dino_horn.id in ctx.received_items_id)
 
-    # Force Bomb_spore to 1 for testing
-    # address, position = get_bit_address(T2_ADDRESS, 0x77)
-    # cache_byte = dme.read_byte(address)
-    # updated_byte = update_bits(cache_byte, position, True)
-    # dme.write_byte(address, updated_byte)
+    if ctx.slot_data["seed_shuffle"]:
+        for item in ITEM_INVENTORY.values():
+            if isinstance(item, SFALockedConsumableItemData):
+                item.set_value(item.id in ctx.received_items_id)
 
 
 async def special_map_flags(ctx: SFAContext) -> None:
@@ -527,6 +531,7 @@ async def special_map_flags(ctx: SFAContext) -> None:
         else:
             dme.write_bytes(warppad.state_ptr + flagE_offset, bytes.fromhex('01'))
         
+    # Give Spellstone x -17200 / -17000 z -230/-420
 
 
 async def game_watcher(ctx: SFAContext):
