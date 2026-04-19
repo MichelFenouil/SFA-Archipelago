@@ -3,7 +3,7 @@ from typing import TYPE_CHECKING, override
 
 from BaseClasses import CollectionState
 from NetUtils import JSONMessagePart
-from rule_builder.rules import Has, HasAllCounts, Rule, HasAll, Or
+from rule_builder.rules import HasAll, HasAllCounts, Rule
 
 if TYPE_CHECKING:
     from .world import SFAWorld

@@ -5,7 +5,8 @@ from typing import TYPE_CHECKING
 
 from BaseClasses import Region
 from rule_builder.rules import Has, HasAllCounts, True_
-from .macros import can_explode_bomb_plant, has_staff_booster, has_blaster, can_grow_moon_seed
+
+from .macros import can_explode_bomb_plant, can_grow_moon_seed, has_blaster, has_staff_booster
 
 if TYPE_CHECKING:
     from .world import SFAWorld
@@ -33,12 +34,12 @@ class SFARegion(Enum):
     VFP_PAST_PUZZLE = "Volcano Force Point - Past Puzzle"
 
 
-
 def create_all_regions(world: SFAWorld) -> None:
     """Create regions for AP world."""
     sfa_region_list = [Region(region.value, world.player, world.multiworld) for region in SFARegion]
     print(f"Added regions: {sfa_region_list}")  # noqa: T201
     world.multiworld.regions += sfa_region_list
+
 
 def connect_regions(world: SFAWorld) -> None:
     """Create entrances for AP world."""
@@ -104,6 +105,10 @@ def connect_regions(world: SFAWorld) -> None:
         has_staff_booster & Has("Dinosaur Horn"),
     )
     moon_mountain_pass.connect(vfp, "Access Volcano Force Point", Has("Moon Pass Key"))
-    moon_mountain_pass.connect(mmp_meteorite, "Access Meteorite Area", Has("Moon Pass Key") & can_grow_moon_seed & can_explode_bomb_plant)
+    moon_mountain_pass.connect(
+        mmp_meteorite, "Access Meteorite Area", Has("Moon Pass Key") & can_grow_moon_seed & can_explode_bomb_plant
+    )
     vfp.connect(vfp_past_bridge, "Cross VFP Bridge", Has("Fire SpellStone 1"))
-    vfp_past_bridge.connect(vfp_past_puzzle, "Access VFP Past Puzzle", has_blaster & Has("Tricky (Progressive)", 2) & Has("Freeze Blast"))
+    vfp_past_bridge.connect(
+        vfp_past_puzzle, "Access VFP Past Puzzle", has_blaster & Has("Tricky (Progressive)", 2) & Has("Freeze Blast")
+    )

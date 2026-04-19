@@ -20,6 +20,7 @@ class ShopLocations(Choice):
 
     default = "no_map"
 
+
 class SeedShuffle(Toggle):
     """Toggle to shuffle seed items."""
 

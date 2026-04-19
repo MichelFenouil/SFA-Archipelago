@@ -151,6 +151,7 @@ class SFAPlanetItemData(SFAItemData):
     # TODO: Change for general ALL FLAGS items
     gate_bit: GameBit = field(default_factory=lambda: GameBit(0x0))
 
+
 @dataclass
 class SFALockedConsumableItemData(SFAItemData):
     """Data class for locked consumable items."""
@@ -303,7 +304,9 @@ ITEM_INVENTORY: dict[str, SFAItemData] = {
     # "Cell Silver Key": SFAItemData(111, 0x03DC, SFAItemType.INVENTORY, ItemClassification.progression),
     "Fire SpellStone 1": SFAItemData(112, "Fire SpellStone 1", GameBit(0x039E), ItemClassification.progression),
     "Moon Pass Key": SFAItemData(113, "Moon Pass Key", GameBit(0x017B), ItemClassification.progression),
-    "Moon Seed": SFALockedConsumableItemData(114, "Moon Seed", GameBit(0x01FE, bit_size=3), ItemClassification.progression, set_amount=7),
+    "Moon Seed": SFALockedConsumableItemData(
+        114, "Moon Seed", GameBit(0x01FE, bit_size=3), ItemClassification.progression, set_amount=7
+    ),
     "Krazoa Spirit 2": SFAItemData(115, "Krazoa Spirit 2", GameBit(0x0537), ItemClassification.progression),
 }
 

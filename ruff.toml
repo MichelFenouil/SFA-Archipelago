@@ -22,6 +22,7 @@ ignore = [
 "macros.py" = ["D103"]
 "world.py" = ["D205"]
 "SFAClient.py" = ["F405", "D401"]
+"structures.py" = ["F405", "D101", "RUF012"]
 
 [format]
 quote-style = "double"
