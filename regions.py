@@ -4,9 +4,9 @@ from enum import Enum
 from typing import TYPE_CHECKING
 
 from BaseClasses import Region
-from rule_builder.rules import Has, HasAllCounts, True_
+from rule_builder.rules import Has, HasAll, HasAllCounts, True_
 
-from .macros import can_explode_bomb_plant, can_grow_moon_seed, has_blaster, has_staff_booster
+from .macros import CanExplodeBombPlant, CanGrowMoonSeed
 
 if TYPE_CHECKING:
     from .world import SFAWorld
@@ -82,14 +82,14 @@ def connect_regions(world: SFAWorld) -> None:
     sh_well.connect(
         sh_well_bottom,
         "Descend to Well Bottom",
-        has_staff_booster & can_explode_bomb_plant & Has("FireFly Lantern"),
+        Has("Staff Booster") & CanExplodeBombPlant() & Has("FireFly Lantern"),
     )
     sw_entrance.connect(sw_gate, "Pass SnowHorn Gate", Has("Gate Key"))
     thorntail_hollow.connect(lightfoot_village, "Access to LightFoot Village", Has("Staff"))
     thorntail_hollow.connect(
         moon_mountain_pass,
         "Entrance to Moon Mountain Pass",
-        can_explode_bomb_plant,
+        CanExplodeBombPlant(),
     )
 
     world_map.connect(dim_entrance, "Fly to DarkIce Mines", Has("DarkIce Mines Access"))
@@ -102,13 +102,15 @@ def connect_regions(world: SFAWorld) -> None:
     dim_fort.connect(
         dim_bottom,
         "Descend to DarkIce Mines Bottom",
-        has_staff_booster & Has("Dinosaur Horn"),
+        HasAll("Dinosaur Horn", "Staff Booster"),
     )
     moon_mountain_pass.connect(vfp, "Access Volcano Force Point", Has("Moon Pass Key"))
     moon_mountain_pass.connect(
-        mmp_meteorite, "Access Meteorite Area", Has("Moon Pass Key") & can_grow_moon_seed & can_explode_bomb_plant
+        mmp_meteorite, "Access Meteorite Area", Has("Moon Pass Key") & CanGrowMoonSeed() & CanExplodeBombPlant()
     )
     vfp.connect(vfp_past_bridge, "Cross VFP Bridge", Has("Fire SpellStone 1"))
     vfp_past_bridge.connect(
-        vfp_past_puzzle, "Access VFP Past Puzzle", has_blaster & Has("Tricky (Progressive)", 2) & Has("Freeze Blast")
+        vfp_past_puzzle,
+        "Access VFP Past Puzzle",
+        Has("Fire Blaster") & Has("Tricky (Progressive)", 2) & Has("Freeze Blast"),
     )

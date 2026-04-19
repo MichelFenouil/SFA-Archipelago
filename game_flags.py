@@ -88,6 +88,7 @@ MMP_STATE_FLAGS: list[GameFlag] = [
     GameFlag(0x01D0),  # Skip Krazoa Intro
     GameFlag(0x0218),  # Open Door to Quake Upgrade
     GameFlag(0x01CF),  # Skip Krazoa Combat Cutscene TODO: fix
+    # TODO: add wind after warps (objgroup bit 11)
 ]
 
 VFP_STATE_FLAGS: list[GameFlag] = [

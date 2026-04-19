@@ -1,25 +1,42 @@
-import dataclasses
+from dataclasses import dataclass
 from typing import TYPE_CHECKING, override
 
 from BaseClasses import CollectionState
 from NetUtils import JSONMessagePart
-from rule_builder.rules import HasAll, HasAllCounts, Rule
+from rule_builder.options import OptionFilter
+from rule_builder.rules import Has, HasAny, Rule
+
+from .options import SeedShuffle
 
 if TYPE_CHECKING:
     from .world import SFAWorld
 
 
-has_blaster = HasAll("Staff", "Fire Blaster")
-has_staff_booster = HasAll("Staff", "Staff Booster")
-# Also explodes with Ground Quake
-can_explode_bomb_plant = HasAll("Staff", "Bomb Plant", "Fire Blaster")
-# can_explode_bomb_plant = HasAll("Staff", "Bomb Plant") & Or(Has("Fire Blaster"), Has("Ground Quake"))
-can_grow_moon_seed = HasAllCounts({"Moon Seed": 1, "Tricky (Progressive)": 2})
+@dataclass()
+class CanExplodeBombPlant(Rule["SFAWorld"], game="Star Fox Adventures"):
+    """Rule that checks if the player can explode a bomb plant."""
+
+    def _instantiate(self, world: "SFAWorld") -> Rule.Resolved:
+        return (
+            Has("Bomb Plant", options=[OptionFilter(SeedShuffle, True)], filtered_resolution=True)
+            & HasAny("Fire Blaster", "Ground Quake")
+        ).resolve(world)
 
 
-@dataclasses.dataclass()
+@dataclass()
+class CanGrowMoonSeed(Rule["SFAWorld"], game="Star Fox Adventures"):
+    """Rule that checks if the player can grow a moon seed."""
+
+    def _instantiate(self, world: "SFAWorld") -> Rule.Resolved:
+        seed_shuffle_rule = Has("Moon Seed", options=[OptionFilter(SeedShuffle, True)]) | Has(
+            "Ground Quake", options=[OptionFilter(SeedShuffle, False)]
+        )
+        return (seed_shuffle_rule & Has("Tricky (Progressive)", count=2)).resolve(world)
+
+
+@dataclass()
 class CanBuy(Rule["SFAWorld"], game="Star Fox Adventures"):
-    """A Rule that checks if the player can buy an item based on its price and the number of scarab bags they have."""
+    """Rule that checks if the player can buy an item based on its price and the number of scarab bags they have."""
 
     price: int
 

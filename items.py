@@ -26,6 +26,7 @@ class SFAItemTags(Enum):
     PLANET = auto()
     STARTING_ITEM = auto()
     SKIP_ITEMPOOL = auto()
+    SEED = auto()
 
 
 @dataclass
@@ -194,6 +195,8 @@ def create_all_items(world: SFAWorld) -> None:
     for name, data in PROGRESSION_ITEMS.items():
         if SFAItemTags.SKIP_ITEMPOOL in data.tags:
             continue
+        if SFAItemTags.SEED in data.tags and not world.options.seed_shuffle:
+            continue
         if SFAItemTags.STARTING_ITEM in data.tags:
             world.push_precollected(world.create_item(name))
         elif isinstance(data, SFACountItemData):
@@ -265,7 +268,7 @@ ITEM_INVENTORY: dict[str, SFAItemData] = {
         progressive_data=[GameBit(0x035B), GameBit(0x035C), GameBit(0x035D)],
     ),
     "Bomb Plant": SFALockedConsumableItemData(
-        101, "Bomb Plant", GameBit(0x0077, bit_size=3), ItemClassification.progression, [], set_amount=7
+        101, "Bomb Plant", GameBit(0x0077, bit_size=3), ItemClassification.progression, [SFAItemTags.SEED], set_amount=7
     ),
     "SHW Alpine Root": SFAQuestItemData(
         102,
@@ -305,7 +308,7 @@ ITEM_INVENTORY: dict[str, SFAItemData] = {
     "Fire SpellStone 1": SFAItemData(112, "Fire SpellStone 1", GameBit(0x039E), ItemClassification.progression),
     "Moon Pass Key": SFAItemData(113, "Moon Pass Key", GameBit(0x017B), ItemClassification.progression),
     "Moon Seed": SFALockedConsumableItemData(
-        114, "Moon Seed", GameBit(0x01FE, bit_size=3), ItemClassification.progression, set_amount=7
+        114, "Moon Seed", GameBit(0x01FE, bit_size=3), ItemClassification.progression, [SFAItemTags.SEED], set_amount=7
     ),
     "Krazoa Spirit 2": SFAItemData(115, "Krazoa Spirit 2", GameBit(0x0537), ItemClassification.progression),
 }
