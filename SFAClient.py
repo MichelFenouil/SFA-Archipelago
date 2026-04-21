@@ -8,7 +8,6 @@ import Utils
 from CommonClient import (
     ClientCommandProcessor,
     ClientStatus,
-    CommonContext,
     get_base_parser,
     gui_enabled,
     logger,
@@ -25,8 +24,8 @@ from .bit_helper import (
     set_value_bytes,
     swap_endian,
 )
-from .game_connection.game_changes import get_all_loaded_objects, get_player, search_objects
-from .game_connection.structures import ObjState
+from .game_memory.loaded_objects import get_all_loaded_objects, get_player, search_objects
+from .game_memory.memory_struct import ObjState
 from .game_flags import (
     CONSTANT_FLAGS,
     DIM_OPEN_BIKE,
@@ -66,10 +65,11 @@ from .locations import (
 )
 
 TRACKER_LOADED = False
-# try:
-#     from worlds.tracker.TrackerClient import TrackerGameContext as SuperContext
-#     TRACKER_LOADED = True
-# except ModuleNotFoundError:
+try:
+    from worlds.tracker.TrackerClient import TrackerGameContext as SuperContext
+    TRACKER_LOADED = True
+except ModuleNotFoundError:
+    from CommonClient import CommonContext as SuperContext
 
 CONNECTION_REFUSED_GAME_STATUS = (
     "Dolphin failed to connect. Please load a Star Fox Adventures ROM. Trying again in 5 seconds..."
@@ -126,7 +126,7 @@ class SFACommandProcessor(ClientCommandProcessor):
         return True
 
 
-class SFAContext(CommonContext):
+class SFAContext(SuperContext):
     """
     The context for Star Fox Adventures client.
 
@@ -664,7 +664,9 @@ def main(*launch_args: str):
         """
         ctx = SFAContext(connect, password)
         ctx.server_task = asyncio.create_task(server_loop(ctx), name="ServerLoop")
-
+        
+        if TRACKER_LOADED:
+            ctx.run_generator()
         if gui_enabled:
             ctx.run_gui()
         ctx.run_cli()

@@ -2,7 +2,7 @@ import ctypes
 
 import dolphin_memory_engine as dme
 
-from .structures import ObjData
+from .memory_struct import ObjData
 
 START_LOADED_REGISTRY = 0x803428F8
 
@@ -29,8 +29,6 @@ def get_all_loaded_objects():
         obj_list.update(object_chain)
 
         read_ptr += 4
-        # await asyncio.sleep(0.1)
-    # print(f"Total objects read: {len(obj_list)}")
     return obj_list
 
 
@@ -54,5 +52,4 @@ def follow_next_object_chain(address):
         chain[address] = obj_data
         return chain
     except RuntimeError:
-        # print(f"End of object chain reached: {address:x}")
         return {}
