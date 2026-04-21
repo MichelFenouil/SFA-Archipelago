@@ -24,8 +24,6 @@ from .bit_helper import (
     set_value_bytes,
     swap_endian,
 )
-from .game_memory.loaded_objects import get_all_loaded_objects, get_player, search_objects
-from .game_memory.memory_struct import ObjState
 from .game_flags import (
     CONSTANT_FLAGS,
     DIM_OPEN_BIKE,
@@ -35,6 +33,9 @@ from .game_flags import (
     MAGIC_CAVE_ACT_GAMEBIT,
     STARTING_FLAGS,
 )
+from .game_memory.code_edit import remove_max_bafomdad_check
+from .game_memory.loaded_objects import get_all_loaded_objects, get_player, search_objects
+from .game_memory.memory_struct import ObjState
 from .hook_handlers import (
     PlayerCoordZone,
     SFAHookHandlers,
@@ -67,6 +68,7 @@ from .locations import (
 TRACKER_LOADED = False
 try:
     from worlds.tracker.TrackerClient import TrackerGameContext as SuperContext
+
     TRACKER_LOADED = True
 except ModuleNotFoundError:
     from CommonClient import CommonContext as SuperContext
@@ -514,6 +516,7 @@ async def force_gameflags(ctx: SFAContext) -> None:
         set_on_or_bytes(SKIP_TUTO_ADDRESS, SKIP_TUTO_VALUE, 2)
         for item in STARTING_FLAGS:
             set_flag_bit(item.address, item.offset, item.state)
+        remove_max_bafomdad_check()
         await sync_full_player_state(ctx)
 
     for item in CONSTANT_FLAGS:
@@ -664,7 +667,7 @@ def main(*launch_args: str):
         """
         ctx = SFAContext(connect, password)
         ctx.server_task = asyncio.create_task(server_loop(ctx), name="ServerLoop")
-        
+
         if TRACKER_LOADED:
             ctx.run_generator()
         if gui_enabled:

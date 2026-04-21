@@ -31,7 +31,7 @@ class SFARegion(Enum):
     DIM_BOTTOM = "DarkIce Mines - Bottom"
     VFP = "Volcano Force Point"
     VFP_PAST_BRIDGE = "Volcano Force Point - Past Bridge"
-    VFP_PAST_PUZZLE = "Volcano Force Point - Past Puzzle"
+    VFP_WARP_ROOM = "Volcano Force Point - Warp Room"
 
 
 def create_all_regions(world: SFAWorld) -> None:
@@ -59,7 +59,7 @@ def connect_regions(world: SFAWorld) -> None:
     dim_bottom = world.get_region(SFARegion.DIM_BOTTOM.value)
     vfp = world.get_region(SFARegion.VFP.value)
     vfp_past_bridge = world.get_region(SFARegion.VFP_PAST_BRIDGE.value)
-    vfp_past_puzzle = world.get_region(SFARegion.VFP_PAST_PUZZLE.value)
+    vfp_warp_room = world.get_region(SFARegion.VFP_WARP_ROOM.value)
 
     world_map.connect(thorntail_hollow, "Fly to Planet", Has("Dinosaur Planet Access"))
     thorntail_hollow.connect(
@@ -110,7 +110,7 @@ def connect_regions(world: SFAWorld) -> None:
     )
     vfp.connect(vfp_past_bridge, "Cross VFP Bridge", Has("Fire SpellStone 1"))
     vfp_past_bridge.connect(
-        vfp_past_puzzle,
-        "Access VFP Past Puzzle",
+        vfp_warp_room,
+        "Access VFP Past Puzzles",
         Has("Fire Blaster") & Has("Tricky (Progressive)", 2) & Has("Freeze Blast"),
     )

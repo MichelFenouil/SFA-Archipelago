@@ -305,12 +305,13 @@ ITEM_INVENTORY: dict[str, SFAItemData] = {
     ),
     "Dinosaur Horn": SFAItemData(110, "Dinosaur Horn", GameBit(0x03A0), ItemClassification.progression),
     # "Cell Silver Key": SFAItemData(111, 0x03DC, SFAItemType.INVENTORY, ItemClassification.progression),
-    "Fire SpellStone 1": SFAItemData(112, "Fire SpellStone 1", GameBit(0x039E), ItemClassification.progression),
-    "Moon Pass Key": SFAItemData(113, "Moon Pass Key", GameBit(0x017B), ItemClassification.progression),
+    # "DIM Gold Key": 112
+    "Fire SpellStone 1": SFAItemData(113, "Fire SpellStone 1", GameBit(0x039E), ItemClassification.progression),
+    "Moon Pass Key": SFAItemData(114, "Moon Pass Key", GameBit(0x017B), ItemClassification.progression),
     "Moon Seed": SFALockedConsumableItemData(
-        114, "Moon Seed", GameBit(0x01FE, bit_size=3), ItemClassification.progression, [SFAItemTags.SEED], set_amount=7
+        115, "Moon Seed", GameBit(0x01FE, bit_size=3), ItemClassification.progression, [SFAItemTags.SEED], set_amount=7
     ),
-    "Krazoa Spirit 2": SFAItemData(115, "Krazoa Spirit 2", GameBit(0x0537), ItemClassification.progression),
+    "Krazoa Spirit 2": SFAItemData(116, "Krazoa Spirit 2", GameBit(0x0537), ItemClassification.progression),
 }
 
 ITEM_SHOP: dict[str, SFAItemData] = {

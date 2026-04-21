@@ -205,6 +205,7 @@ LOCATION_SHOP: dict[str, SFAShopLocationData] = {
 }
 
 LOCATION_ANY: dict[str, SFALocationData] = {
+    ## SnowHorn Wastes
     "SHW: Magic Upgrade": SFALocationData(20, GameBit(0x0010), SFARegion.SW_WATERSPOUT, Has("Tricky (Progressive)")),
     "SHW: Feed Alpine Root 1": SFACountLocationData(
         21, GameBit(0x0033, bit_size=3), SFARegion.SW_WATERSPOUT, Has("SHW Alpine Root", 1), count=1
@@ -213,6 +214,7 @@ LOCATION_ANY: dict[str, SFALocationData] = {
         22, GameBit(0x0033, bit_size=3), SFARegion.SW_WATERSPOUT, Has("SHW Alpine Root", 2), count=2
     ),
     "SHW: Rescue GateKeeper": SFALocationData(23, GameBit(0x0058), SFARegion.SW_ENTRANCE, True_()),
+    ## Thorntail Hollow
     "TTH Well: White GrubTub 1": SFALocationData(24, GameBit(0x00A8), SFARegion.TH_WELL_BOTTOM, True_()),
     "TTH Well: White GrubTub 2": SFALocationData(25, GameBit(0x00A7), SFARegion.TH_WELL_BOTTOM, True_()),
     "TTH Well: White GrubTub 3": SFALocationData(26, GameBit(0x00A5), SFARegion.TH_WELL_BOTTOM, CanExplodeBombPlant()),
@@ -238,6 +240,7 @@ LOCATION_ANY: dict[str, SFALocationData] = {
     "TTH: Feed Queen White GrubTubs": SFACountLocationData(
         31, GameBit(0x00AD, bit_size=3), SFARegion.TH, Has("White GrubTub", 6), count=6
     ),
+    ## DarkIce Mines
     "DIM: Release Entrance SnowHorn": SFALocationData(
         32, GameBit(0x0366), SFARegion.DIM_ENTRANCE, Has("Tricky (Progressive)")
     ),
@@ -282,12 +285,14 @@ LOCATION_ANY: dict[str, SFALocationData] = {
         SFARegion.DIM_BOTTOM,
         Has("Fire Blaster") & Has("Tricky (Progressive)", 2),
     ),
+    ## Volcano Force Point
     "VFP: Insert Fire SpellStone 1": SFALocationData(
         41,
         GameBit(0x0573),
-        SFARegion.VFP_PAST_PUZZLE,
-        Has("Fire Blaster") & Has("Tricky (Progressive)", 2) & Has("Fire SpellStone 1") & Has("Freeze Blast"),
+        SFARegion.VFP_WARP_ROOM,
+        Has("Fire SpellStone 1"),
     ),
+    ## Moon Mountain Pass
     "MMP: Test of Combat": SFALocationData(
         42,
         GameBit(0x0537),
@@ -297,7 +302,7 @@ LOCATION_ANY: dict[str, SFALocationData] = {
     ),
 }
 
-# Last id = 138
+# Last id = 148
 LOCATION_FUEL_CELL: dict[str, SFALocationData] = {
     ## ThornTail Hollow
     "TTH: Queen Cave Fuel Cell": SFALocationData(100, GameBit(0x0945), SFARegion.TH, True_()),
@@ -372,10 +377,10 @@ LOCATION_FUEL_CELL: dict[str, SFALocationData] = {
     ),
     "MMP: Beside Combat Shrine Fuel Cell": SFALocationData(151, GameBit(0x0979), SFARegion.MMP_METEORITE, True_()),
     ## Volcano Force Point
-    "VFP: Ice Blast Alcove Fuel Cell Left": SFALocationData(
+    "VFP: Freeze Blast Alcove Fuel Cell Left": SFALocationData(
         140, GameBit(0x096F), SFARegion.VFP, Has("Staff Booster") & Has("Freeze Blast")
     ),
-    "VFP: Ice Blast Alcove Fuel Cell Right": SFALocationData(
+    "VFP: Freeze Blast Alcove Fuel Cell Right": SFALocationData(
         141, GameBit(0x0970), SFARegion.VFP, Has("Staff Booster") & Has("Freeze Blast")
     ),
     # "VFP: Disguise Alcove Fuel Cell Left": SFALocationData(142, GameBit(0x0973), SFARegion.VFP, Has("Staff Booster") & Has("SharpClaw Disguise")),
@@ -387,19 +392,18 @@ LOCATION_FUEL_CELL: dict[str, SFALocationData] = {
     "VFP: Cheat Well Fuel Cell Right": SFALocationData(
         146, GameBit(0x097B), SFARegion.VFP_PAST_BRIDGE, CanGrowMoonSeed()
     ),
-    "VFP: Round Room Ledge Fuel Cell": SFALocationData(
-        147, GameBit(0x0989), SFARegion.VFP_PAST_PUZZLE, Has("Freeze Blast")
-    ),  # Damage Boost?
+    "VFP: Round Room Ledge Fuel Cell": SFALocationData(147, GameBit(0x0989), SFARegion.VFP_WARP_ROOM, True_()),
     "VFP: Warp Room Fuel Cell": SFALocationData(
         148,
         GameBit(0x0962),
-        SFARegion.VFP_PAST_PUZZLE,
-        Has("Fire Blaster") & Has("Tricky (Progressive)", 2) & Has("Freeze Blast"),
-    ),  # Damage Boost?
+        SFARegion.VFP_WARP_ROOM,
+        True_(),
+    ),
 }
 
-# Last id = 307
-LOCATION_DIG_SPOT: dict[str, SFALocationData] = {
+# Last id = 309
+LOCATION_DIG_AND_BAFOMDAD: dict[str, SFALocationData] = {
+    ## SnowHorn Wastes
     "SHW: Dig Alpine Root near Campfire": SFALocationData(
         300, GameBit(0x002F), SFARegion.SW_WATERSPOUT, Has("Tricky (Progressive)")
     ),
@@ -410,24 +414,45 @@ LOCATION_DIG_SPOT: dict[str, SFALocationData] = {
         302, GameBit(0x003A), SFARegion.SW_WATERSPOUT, Has("Tricky (Progressive)")
     ),
     "SHW: Dig BafomDad near Entrance": SFALocationData(
-        303, GameBit(0x086F), SFARegion.SW_ENTRANCE, Has("Tricky (Progressive)")
+        303, GameBit(0x08D3), SFARegion.SW_ENTRANCE, Has("Tricky (Progressive)")
     ),
     "SHW: Dig in Cave past Gate": SFALocationData(307, GameBit(0x086E), SFARegion.SW_GATE, Has("Tricky (Progressive)")),
-    "TTH: Dig near Store": SFALocationData(304, GameBit(0x0857), SFARegion.TH, Has("Tricky (Progressive)")),
-    "TTH: Dig near Queen Cave": SFALocationData(305, GameBit(0x0856), SFARegion.TH, Has("Tricky (Progressive)")),
-    "TTH: Dig in Entrance to LFV": SFALocationData(306, GameBit(0x0858), SFARegion.LFV, Has("Tricky (Progressive)")),
+    "SHW: Dig Cave BafomDad near Entrance": SFALocationData(
+        310, GameBit(0x08D4), SFARegion.SW_ENTRANCE, Has("Tricky (Progressive)")
+    ),
+    "SHW: Blast Tree past Gate BafomDad": SFALocationData(311, GameBit(0x08D5), SFARegion.SW_GATE, Has("Fire Blaster")),
+    ## Thorntail Hollow
+    "TTH: Dig BafomDad near Store": SFALocationData(304, GameBit(0x08BB), SFARegion.TH, Has("Tricky (Progressive)")),
+    "TTH: Dig BafomDad near Queen Cave": SFALocationData(
+        305, GameBit(0x08BA), SFARegion.TH, Has("Tricky (Progressive)")
+    ),
+    "TTH: Dig BafomDad in Entrance to LFV": SFALocationData(
+        306, GameBit(0x08BC), SFARegion.LFV, Has("Tricky (Progressive)")
+    ),
+    ## DarkIce Mines
     "DIM: Dig Alpine Root in Entrance Hut": SFALocationData(
         308, GameBit(0x037C), SFARegion.DIM_ENTRANCE, Has("Tricky (Progressive)")
     ),
     "DIM: Dig Alpine Root in Boulder Path": SFALocationData(
         309, GameBit(0x037D), SFARegion.DIM_ENTRANCE, Has("Tricky (Progressive)")
     ),
+    ## Volcano Force Point
+    "VFP: BafomDad Cell": SFALocationData(312, GameBit(0x08C9), SFARegion.VFP, Has("Staff Booster")),
+    "VFP: BafomDad Disguise Cell": SFALocationData(
+        313, GameBit(0x08CA), SFARegion.VFP, Has("Staff Booster") & Has("SharpClaw Disguise")
+    ),
+    "VFP: BafomDad Cheat Well": SFALocationData(314, GameBit(0x08CB), SFARegion.VFP_PAST_BRIDGE, CanGrowMoonSeed()),
+    ## Moon Mountain Pass
+    "MMP: BafomDad Ledge near Fort": SFALocationData(315, GameBit(0x08EE), SFARegion.MMP, CanGrowMoonSeed()),
+    "MMP: BafomDad in Moon Seed Zone": SFALocationData(316, GameBit(0x08ED), SFARegion.MMP, CanGrowMoonSeed()),
+    "MMP: Meteorite Area BafomDad": SFALocationData(317, GameBit(0x08EF), SFARegion.MMP_METEORITE, True_()),
+    "MMP: Cheat Well BafomDad": SFALocationData(318, GameBit(0x08F0), SFARegion.MMP_METEORITE, CanGrowMoonSeed()),
 }
 
 NORMAL_TABLES: dict[str, SFALocationData] = {
     **LOCATION_ANY,
     **LOCATION_FUEL_CELL,
-    **LOCATION_DIG_SPOT,
+    **LOCATION_DIG_AND_BAFOMDAD,
 }
 
 LOCATION_TABLE: dict[str, SFALocationData] = {
@@ -435,5 +460,5 @@ LOCATION_TABLE: dict[str, SFALocationData] = {
     **LOCATION_SHOP,
     **LOCATION_ANY,
     **LOCATION_FUEL_CELL,
-    **LOCATION_DIG_SPOT,
+    **LOCATION_DIG_AND_BAFOMDAD,
 }
