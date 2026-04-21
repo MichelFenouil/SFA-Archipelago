@@ -438,9 +438,9 @@ LOCATION_DIG_AND_BAFOMDAD: dict[str, SFALocationData] = {
     ),
     ## Volcano Force Point
     "VFP: BafomDad Cell": SFALocationData(312, GameBit(0x08C9), SFARegion.VFP, Has("Staff Booster")),
-    "VFP: BafomDad Disguise Cell": SFALocationData(
-        313, GameBit(0x08CA), SFARegion.VFP, Has("Staff Booster") & Has("SharpClaw Disguise")
-    ),
+    # "VFP: BafomDad Disguise Cell": SFALocationData(
+    #     313, GameBit(0x08CA), SFARegion.VFP, Has("Staff Booster") & Has("SharpClaw Disguise")
+    # ),
     "VFP: BafomDad Cheat Well": SFALocationData(314, GameBit(0x08CB), SFARegion.VFP_PAST_BRIDGE, CanGrowMoonSeed()),
     ## Moon Mountain Pass
     "MMP: BafomDad Ledge near Fort": SFALocationData(315, GameBit(0x08EE), SFARegion.MMP, CanGrowMoonSeed()),

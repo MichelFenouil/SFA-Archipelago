@@ -19,6 +19,7 @@ Remove-Item -Path "$tempFolder\ruff.toml" -Force
 Remove-Item -Path "$tempFolder\StarFoxAdventuresLogo.png" -Force
 Remove-Item -Path "$tempFolder\TODO.md" -Force
 Remove-Item -Path "$tempFolder\sfa.zip" -Force
+Remove-Item -Path "$tempFolder\sfa.apworld" -Force
 
 # Define the output zip file path
 $zipPath = Join-Path $parentDir "sfa.zip"
