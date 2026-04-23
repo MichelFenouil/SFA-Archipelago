@@ -535,7 +535,7 @@ async def force_gameflags(ctx: SFAContext) -> None:
         dino_horn = SFAItemData.get_by_name("Dinosaur Horn")
         dino_horn.set_value(dino_horn.id in ctx.received_items_id)
 
-    if ctx.slot_data["seed_shuffle"]:
+    if ctx.slot_data["plant_shuffle"]:
         for item in ITEM_INVENTORY.values():
             if isinstance(item, SFALockedConsumableItemData):
                 item.set_value(item.id in ctx.received_items_id)

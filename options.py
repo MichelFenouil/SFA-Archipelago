@@ -21,10 +21,15 @@ class ShopLocations(Choice):
     default = "no_map"
 
 
-class SeedShuffle(Toggle):
-    """Toggle to shuffle seed items."""
+class PlantShuffle(Toggle):
+    """
+    Shuffle plant items.
 
-    display_name = "Shuffle Seed Items"
+    Bomb Spores and Moon Seeds are locked at the beginning of the game,
+    and receiving the item unlocks the plant with infinite uses.
+    """
+
+    display_name = "Shuffle Plant Items"
 
     default = True
 
@@ -34,7 +39,7 @@ class SFAOptions(PerGameCommonOptions):
     """Star Fox Adventures options class."""
 
     shop_locations: ShopLocations
-    seed_shuffle: SeedShuffle
+    plant_shuffle: PlantShuffle
 
 
 option_groups = [

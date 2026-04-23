@@ -6,7 +6,7 @@ from NetUtils import JSONMessagePart
 from rule_builder.options import OptionFilter
 from rule_builder.rules import Has, HasAny, Rule
 
-from .options import SeedShuffle
+from .options import PlantShuffle
 
 if TYPE_CHECKING:
     from .world import SFAWorld
@@ -18,7 +18,7 @@ class CanExplodeBombPlant(Rule["SFAWorld"], game="Star Fox Adventures"):
 
     def _instantiate(self, world: "SFAWorld") -> Rule.Resolved:
         return (
-            Has("Bomb Plant", options=[OptionFilter(SeedShuffle, True)], filtered_resolution=True)
+            Has("Bomb Plant", options=[OptionFilter(PlantShuffle, True)], filtered_resolution=True)
             & HasAny("Fire Blaster", "Ground Quake")
         ).resolve(world)
 
@@ -28,10 +28,10 @@ class CanGrowMoonSeed(Rule["SFAWorld"], game="Star Fox Adventures"):
     """Rule that checks if the player can grow a moon seed."""
 
     def _instantiate(self, world: "SFAWorld") -> Rule.Resolved:
-        seed_shuffle_rule = Has("Moon Seed", options=[OptionFilter(SeedShuffle, True)]) | Has(
-            "Ground Quake", options=[OptionFilter(SeedShuffle, False)]
+        plant_shuffle_rule = Has("Moon Seed", options=[OptionFilter(PlantShuffle, True)]) | Has(
+            "Ground Quake", options=[OptionFilter(PlantShuffle, False)]
         )
-        return (seed_shuffle_rule & Has("Tricky (Progressive)", count=2)).resolve(world)
+        return (plant_shuffle_rule & Has("Tricky (Progressive)", count=2)).resolve(world)
 
 
 @dataclass()

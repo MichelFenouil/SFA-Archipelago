@@ -401,7 +401,7 @@ LOCATION_FUEL_CELL: dict[str, SFALocationData] = {
     ),
 }
 
-# Last id = 309
+# Last id = 318
 LOCATION_DIG_AND_BAFOMDAD: dict[str, SFALocationData] = {
     ## SnowHorn Wastes
     "SHW: Dig Alpine Root near Campfire": SFALocationData(

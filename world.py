@@ -1,6 +1,8 @@
 from collections.abc import Mapping
 from typing import TYPE_CHECKING, Any
 
+from rule_builder.rules import Has
+
 from worlds.AutoWorld import World
 
 from .items import (
@@ -13,7 +15,6 @@ from .items import (
 from .locations import create_all_locations, locations_name_to_id_dict
 from .options import SFAOptions
 from .regions import connect_regions, create_all_regions
-from .rules import set_all_rules
 
 if TYPE_CHECKING:
     from Options import Option
@@ -49,7 +50,7 @@ class SFAWorld(World):
 
     def set_rules(self) -> None:
         """Create rules for this world player."""
-        set_all_rules(self)
+        self.set_completion_rule(Has("Victory"))
 
     def create_items(self) -> None:
         """Create items for this world player."""
@@ -86,11 +87,11 @@ class SFAWorld(World):
         return {
             **self.options.as_dict(
                 "shop_locations",
-                "seed_shuffle",
+                "plant_shuffle",
             ),
             "options": self.options.as_dict(
                 "shop_locations",
-                "seed_shuffle",
+                "plant_shuffle",
             ),
         }
 

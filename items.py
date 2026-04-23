@@ -195,7 +195,7 @@ def create_all_items(world: SFAWorld) -> None:
     for name, data in PROGRESSION_ITEMS.items():
         if SFAItemTags.SKIP_ITEMPOOL in data.tags:
             continue
-        if SFAItemTags.SEED in data.tags and not world.options.seed_shuffle:
+        if SFAItemTags.SEED in data.tags and not world.options.plant_shuffle:
             continue
         if SFAItemTags.STARTING_ITEM in data.tags:
             world.push_precollected(world.create_item(name))
