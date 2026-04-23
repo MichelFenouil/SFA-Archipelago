@@ -17,6 +17,7 @@ from MultiServer import mark_raw
 
 from .addresses import *  # noqa: F403
 from .bit_helper import (
+    GameBit,
     extract_bitflag_list,
     read_value_bytes,
     set_flag_bit,
@@ -30,6 +31,7 @@ from .game_flags import (
     DIM_OPEN_BLIZZARD,
     DINO_CAVE,
     KRAZOA_SPIRIT_1,
+    KRAZOA_STATUE_2,
     MAGIC_CAVE_ACT_GAMEBIT,
     STARTING_FLAGS,
 )
@@ -57,6 +59,7 @@ from .items import (
 from .locations import (
     LOCATION_ANY,
     LOCATION_SHOP,
+    LOCATION_TABLE,
     LOCATION_UPGRADE,
     NORMAL_TABLES,
     SFALocationData,
@@ -280,6 +283,15 @@ async def _handle_map_entry_state(ctx: SFAContext, entered_map: int, from_map: i
         LOCATION_ANY["MMP: Test of Combat"].set_bit(False)
 
 
+async def _handle_krazoa_palace(ctx: SFAContext, entered_map: int, from_map: int) -> None:
+    if entered_map != KRAZOA_PALACE_ID:
+        return
+    await asyncio.sleep(1)  # Wait for the map to fully load so the flag is set correctly
+    act_nb = GameBit(0x02DA, T1_ADDRESS, bit_size=4).get_value()
+    if act_nb == 0x1:
+        KRAZOA_SPIRIT_1.set_bit(True)
+
+
 async def _handle_dim_zone_transition(ctx: SFAContext, entered_zone: int, from_zone: int) -> None:
     logger.debug(f"Entering dim zone {entered_zone:x}")
     # 0000 0000 0100 0100 1000 0011 1000 0000
@@ -336,16 +348,35 @@ async def _handle_spellstone_door(ctx: SFAContext, zone_name: str) -> None:
     ITEM_INVENTORY["Fire SpellStone 1"].set_value(True)
 
 
+async def _give_spirit_near_warpstone(ctx: SFAContext, zone_name: str) -> None:
+    if zone_name != "TTH_WARPSTONE":
+        return
+    krazoa_spirit = SFAItemData.get_by_name("Krazoa Spirit 2")
+    if krazoa_spirit.id in ctx.received_items_id:
+        if LOCATION_ANY["KP: Release Spirit 2"].id not in ctx.checked_locations:
+            SFAItemData.get_by_name("Krazoa Spirit 2").set_value(True)
+            KRAZOA_STATUE_2.set_bit(True)
+        if LOCATION_TABLE["KP: Dark Room BafomDad"].id not in ctx.checked_locations:
+            SFAItemData.get_by_name("Krazoa Spirit 2").set_value(True)
+
+
 def _register_default_special_hooks(ctx: SFAContext) -> None:
     ctx.hooks.add_map_transition(_sync_current_map)
     ctx.hooks.add_map_transition(_handle_magic_cave_transition)
     ctx.hooks.add_map_transition(_handle_shop_transition)
     ctx.hooks.add_map_transition(_handle_map_entry_state)
+    ctx.hooks.add_map_transition(_handle_krazoa_palace)
     ctx.hooks.add_zone_transition(_handle_dim_zone_transition, map_id=DARKICE_TOP_ID)
-    ctx.hooks.add_player_coord_zone(PlayerCoordZone.square("MMP_TEST_OF_COMBAT_WARPPAD", -11900, -11780, -4650, -4550))
+    ctx.hooks.add_player_coord_zone(
+        PlayerCoordZone.square("MMP_TEST_OF_COMBAT_WARPPAD", -11900, -11780, -4650, -4550, MOON_MOUNTAIN_PASS_ID)
+    )
     ctx.hooks.add_player_coord_transition(_handle_test_of_combat_warppad, "enter")
-    ctx.hooks.add_player_coord_zone(PlayerCoordZone.square("VFP_SPELLSTONE_DOOR_ZONE", -17350, -17000, -420, -230))
+    ctx.hooks.add_player_coord_zone(
+        PlayerCoordZone.square("VFP_SPELLSTONE_DOOR_ZONE", -17350, -17000, -420, -230, VOLCANO_FORCE_POINT_ID)
+    )
     ctx.hooks.add_player_coord_transition(_handle_spellstone_door, "enter")
+    ctx.hooks.add_player_coord_zone(PlayerCoordZone.circle("TTH_WARPSTONE", -5225, -1726, 100, THORNTAIL_HOLLOW_ID))
+    ctx.hooks.add_player_coord_transition(_give_spirit_near_warpstone, "enter")
 
 
 def sync_player_state(ctx: SFAContext):

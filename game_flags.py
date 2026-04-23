@@ -20,6 +20,7 @@ DIM_OPEN_BIKE = [
     GameFlag(0x03D9),  # Bike 1F0
 ]
 DINO_CAVE = GameFlag(0x003E, T3_ADDRESS)  # Dino horn cave detection
+KRAZOA_STATUE_2 = GameFlag(0x0525)  # Krazoa Statue 2 interaction
 
 
 ## Global static flags ##
@@ -104,6 +105,8 @@ CUTSCENE_SKIP_FLAGS: list[GameFlag] = [
     GameFlag(0x0314),  # IM Skip Starting first race
     GameFlag(0x0325),  # IM Spawn Tricky on bottom
     GameFlag(0x0323),  # IM Open Hut Door
+    GameFlag(0x0528),  # KP Skip First Cutscene
+    GameFlag(0x09EC),  # KP Skip Krystal Cutscene
 ]
 
 STARTING_FLAGS: list[GameFlag] = [

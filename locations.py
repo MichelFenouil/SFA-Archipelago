@@ -300,6 +300,13 @@ LOCATION_ANY: dict[str, SFALocationData] = {
         Has("Freeze Blast") & Has("Tricky (Progressive)", 2) & Has("Fire Blaster"),
         [SFALocationTags.ACTIVE_ZONE],
     ),
+    ## Krazoa Palace
+    "KP: Release Spirit 2": SFALocationData(
+        43,
+        GameBit(0x0524),
+        SFARegion.KP_MAIN,
+        Has("Krazoa Spirit 2"),  # & Has any other spirits
+    ),
 }
 
 # Last id = 148
@@ -447,6 +454,10 @@ LOCATION_DIG_AND_BAFOMDAD: dict[str, SFALocationData] = {
     "MMP: BafomDad in Moon Seed Zone": SFALocationData(316, GameBit(0x08ED), SFARegion.MMP, CanGrowMoonSeed()),
     "MMP: Meteorite Area BafomDad": SFALocationData(317, GameBit(0x08EF), SFARegion.MMP_METEORITE, True_()),
     "MMP: Cheat Well BafomDad": SFALocationData(318, GameBit(0x08F0), SFARegion.MMP_METEORITE, CanGrowMoonSeed()),
+    ## Krazoa Palace
+    "KP: Dark Room BafomDad": SFALocationData(
+        319, GameBit(0x08C7), SFARegion.KP_ENTRANCE, Has("FireFly Lantern")
+    ),  # dark option
 }
 
 NORMAL_TABLES: dict[str, SFALocationData] = {

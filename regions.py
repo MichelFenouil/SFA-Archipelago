@@ -32,6 +32,8 @@ class SFARegion(Enum):
     VFP = "Volcano Force Point"
     VFP_PAST_BRIDGE = "Volcano Force Point - Past Bridge"
     VFP_WARP_ROOM = "Volcano Force Point - Warp Room"
+    KP_ENTRANCE = "Krazoa Palace - Entrance"  # Only accessed on first warp (Spirit 2)
+    KP_MAIN = "Krazoa Palace - Main Area"  # Every other Spirit warps directly to main room
 
 
 def create_all_regions(world: SFAWorld) -> None:
@@ -60,6 +62,8 @@ def connect_regions(world: SFAWorld) -> None:
     vfp = world.get_region(SFARegion.VFP.value)
     vfp_past_bridge = world.get_region(SFARegion.VFP_PAST_BRIDGE.value)
     vfp_warp_room = world.get_region(SFARegion.VFP_WARP_ROOM.value)
+    krazoa_palace_entrance = world.get_region(SFARegion.KP_ENTRANCE.value)
+    krazoa_palace_main = world.get_region(SFARegion.KP_MAIN.value)
 
     world_map.connect(thorntail_hollow, "Fly to Planet", Has("Dinosaur Planet Access"))
     thorntail_hollow.connect(
@@ -114,3 +118,18 @@ def connect_regions(world: SFAWorld) -> None:
         "Access VFP Past Puzzles",
         Has("Fire Blaster") & Has("Tricky (Progressive)", 2) & Has("Freeze Blast"),
     )
+    thorntail_hollow.connect(
+        krazoa_palace_entrance,
+        "Warp to Krazoa Palace with Spirit 2",
+        Has("Rock Candy") & Has("Krazoa Spirit 2"),
+    )
+    krazoa_palace_entrance.connect(
+        krazoa_palace_main,
+        "Enter Krazoa Palace Main Area",
+        Has("Fire Blaster") & Has("FireFly Lantern"),  # Possible 'dark option' to skip lantern
+    )
+    # thorntail_hollow.connect(
+    #     krazoa_palace_main,
+    #     "Warp to Krazoa Palace Main Room",
+    #     Has("Rock Candy") # & Has any other spirits
+    # )
