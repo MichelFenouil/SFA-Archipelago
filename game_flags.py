@@ -1,4 +1,4 @@
-from .addresses import T0_ADDRESS, T1_ADDRESS, T3_ADDRESS
+from .addresses import MMP_OBJGROUP_ADDRESS, T0_ADDRESS, T1_ADDRESS, T3_ADDRESS
 from .bit_helper import GameBit, GameFlag
 
 ## Dynamic flags ##
@@ -81,14 +81,14 @@ INTRO_OPENED_FLAGS: list[GameFlag] = [
 ]
 
 DIM_STATE_FLAGS: list[GameFlag] = [
-    GameFlag(0x03ED, True),  # Belina Te at Bottom
+    GameFlag(0x03ED),  # Belina Te at Bottom
 ]
 
 MMP_STATE_FLAGS: list[GameFlag] = [
     GameFlag(0x01D0),  # Skip Krazoa Intro
     GameFlag(0x0218),  # Open Door to Quake Upgrade
-    GameFlag(0x01CF),  # Skip Krazoa Combat Cutscene TODO: fix
-    # TODO: add wind after warps (objgroup bit 11)
+    GameFlag(0x01CF),  # Skip Krazoa Combat Cutscene
+    GameFlag(11, MMP_OBJGROUP_ADDRESS)  # MMP wind after warps
 ]
 
 VFP_STATE_FLAGS: list[GameFlag] = [

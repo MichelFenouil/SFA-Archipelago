@@ -264,6 +264,9 @@ async def _handle_map_entry_state(ctx: SFAContext, entered_map: int, from_map: i
     if entered_map == THORNTAIL_HOLLOW_ID:
         set_value_bytes(T2_ADDRESS, THORNTAIL_HOLLOW_ACT_OFFSET, 0x2, value_size=4)
 
+    if entered_map == MOON_MOUNTAIN_PASS_ID:
+        set_value_bytes(T1_ADDRESS, MOON_MOUNTAIN_PASS_ACT_OFFSET, 0x2, value_size=4)
+
     if entered_map == WORLD_MAP_ID:
         SFAItemData.get_by_name("Fire Blaster").set_value(False)
     elif from_map == WORLD_MAP_ID:
@@ -361,6 +364,7 @@ def sync_player_state(ctx: SFAContext):
     _give_item_in_game(ctx, ITEM_INVENTORY["Entrance Bridge Cog"])
     _give_item_in_game(ctx, ITEM_INVENTORY["DIM Alpine Root"])
     _give_item_in_game(ctx, ITEM_TRICKY["Tricky (Progressive)"])
+    _give_item_in_game(ctx, ITEM_INVENTORY["Krazoa Spirit 2"])
 
 
 async def sync_full_player_state(ctx: SFAContext):
