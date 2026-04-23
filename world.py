@@ -1,5 +1,7 @@
 from collections.abc import Mapping
-from typing import Any
+from typing import TYPE_CHECKING, Any
+
+from rule_builder.rules import Has
 
 from worlds.AutoWorld import World
 
@@ -12,8 +14,10 @@ from .items import (
 )
 from .locations import create_all_locations, locations_name_to_id_dict
 from .options import SFAOptions
-from .regions import create_all_regions
-from .rules import connect_regions, set_all_rules
+from .regions import connect_regions, create_all_regions
+
+if TYPE_CHECKING:
+    from Options import Option
 
 
 class SFAWorld(World):
@@ -28,6 +32,8 @@ class SFAWorld(World):
 
     options_dataclass = SFAOptions
     options: SFAOptions  # Common mistake: This has to be a colon (:), not an equals sign (=).
+
+    ut_can_gen_without_yaml = True
 
     item_name_to_id = items_name_to_id_dict()
     location_name_to_id = locations_name_to_id_dict()
@@ -44,7 +50,7 @@ class SFAWorld(World):
 
     def set_rules(self) -> None:
         """Create rules for this world player."""
-        set_all_rules(self)
+        self.set_completion_rule(Has("Victory"))
 
     def create_items(self) -> None:
         """Create items for this world player."""
@@ -78,6 +84,33 @@ class SFAWorld(World):
         :return: A dictionary to be sent to the client when it connects to the server.
         """
         # If you need access to the player's chosen options on the client side, there is a helper for that.
-        return self.options.as_dict(
-            "shop_locations",
-        )
+        return {
+            **self.options.as_dict(
+                "shop_locations",
+                "plant_shuffle",
+            ),
+            "options": self.options.as_dict(
+                "shop_locations",
+                "plant_shuffle",
+            ),
+        }
+
+    @staticmethod
+    def interpret_slot_data(slot_data: dict[str, Any]) -> dict[str, Any]:
+        """Trigger regen for UT."""
+        return slot_data
+
+    def generate_early(self) -> None:
+        """Add slot data options for UT."""
+        re_gen_passthrough = getattr(self.multiworld, "re_gen_passthrough", {})
+        if re_gen_passthrough and self.game in re_gen_passthrough:
+            # Get the passed through slot data from the real generation
+            slot_data: dict[str, Any] = re_gen_passthrough[self.game]
+
+            slot_options: dict[str, Any] = slot_data.get("options", {})
+            # Set all your options here instead of getting them from the yaml
+            for key, value in slot_options.items():
+                opt: Option | None = getattr(self.options, key, None)
+                if opt is not None:
+                    # You can also set .value directly but that won't work if you have OptionSets
+                    setattr(self.options, key, opt.from_any(value))

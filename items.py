@@ -26,6 +26,7 @@ class SFAItemTags(Enum):
     PLANET = auto()
     STARTING_ITEM = auto()
     SKIP_ITEMPOOL = auto()
+    SEED = auto()
 
 
 @dataclass
@@ -152,6 +153,20 @@ class SFAPlanetItemData(SFAItemData):
     gate_bit: GameBit = field(default_factory=lambda: GameBit(0x0))
 
 
+@dataclass
+class SFALockedConsumableItemData(SFAItemData):
+    """Data class for locked consumable items."""
+
+    set_amount: int = 1
+
+    def set_value(self, value: bool) -> None:
+        """Set value for locked consumable item."""
+        if value:
+            self.game_bit.set_value(self.set_amount)
+        else:
+            self.game_bit.set_value(0)
+
+
 def items_name_to_id_dict() -> dict[str, int]:
     """Name to id dict for Star Fox Adventures items."""
     return {name: data.id for name, data in ALL_ITEMS_TABLE.items()}
@@ -180,6 +195,8 @@ def create_all_items(world: SFAWorld) -> None:
     for name, data in PROGRESSION_ITEMS.items():
         if SFAItemTags.SKIP_ITEMPOOL in data.tags:
             continue
+        if SFAItemTags.SEED in data.tags and not world.options.plant_shuffle:
+            continue
         if SFAItemTags.STARTING_ITEM in data.tags:
             world.push_precollected(world.create_item(name))
         elif isinstance(data, SFACountItemData):
@@ -207,6 +224,8 @@ ITEM_STAFF: dict[str, SFAItemData] = {
     "Staff": SFAItemData(1, "Staff", GameBit(0x0080), ItemClassification.progression, [SFAItemTags.STARTING_ITEM]),
     "Fire Blaster": SFAItemData(2, "Fire Blaster", GameBit(0x06FC), ItemClassification.progression, []),
     "Staff Booster": SFAItemData(3, "Staff Booster", GameBit(0x0706), ItemClassification.progression, []),
+    "Freeze Blast": SFAItemData(4, "Freeze Blast", GameBit(0x0703), ItemClassification.progression, []),
+    "Ground Quake": SFAItemData(5, "Ground Quake", GameBit(0x06FE), ItemClassification.progression, []),
 }
 
 ITEM_TRICKY: dict[str, SFAProgressiveItemData] = {
@@ -248,8 +267,8 @@ ITEM_INVENTORY: dict[str, SFAItemData] = {
         ItemClassification.progression,
         progressive_data=[GameBit(0x035B), GameBit(0x035C), GameBit(0x035D)],
     ),
-    "Bomb Plant": SFAItemData(
-        101, "Bomb Plant", GameBit(0x0), ItemClassification.progression, [SFAItemTags.STARTING_ITEM]
+    "Bomb Plant": SFALockedConsumableItemData(
+        101, "Bomb Plant", GameBit(0x0077, bit_size=3), ItemClassification.progression, [SFAItemTags.SEED], set_amount=7
     ),
     "SHW Alpine Root": SFAQuestItemData(
         102,
@@ -286,7 +305,13 @@ ITEM_INVENTORY: dict[str, SFAItemData] = {
     ),
     "Dinosaur Horn": SFAItemData(110, "Dinosaur Horn", GameBit(0x03A0), ItemClassification.progression),
     # "Cell Silver Key": SFAItemData(111, 0x03DC, SFAItemType.INVENTORY, ItemClassification.progression),
-    # "Fire Spellstone 1": SFAItemData(112, 0x039E, SFAItemType.INVENTORY, ItemClassification.progression),
+    # "DIM Gold Key": 112
+    "Fire SpellStone 1": SFAItemData(113, "Fire SpellStone 1", GameBit(0x039E), ItemClassification.progression),
+    "Moon Pass Key": SFAItemData(114, "Moon Pass Key", GameBit(0x017B), ItemClassification.progression),
+    "Moon Seed": SFALockedConsumableItemData(
+        115, "Moon Seed", GameBit(0x01FE, bit_size=3), ItemClassification.progression, [SFAItemTags.SEED], set_amount=7
+    ),
+    "Krazoa Spirit 2": SFAItemData(116, "Krazoa Spirit 2", GameBit(0x0537), ItemClassification.progression),
 }
 
 ITEM_SHOP: dict[str, SFAItemData] = {
