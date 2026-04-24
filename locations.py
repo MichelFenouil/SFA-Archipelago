@@ -320,6 +320,43 @@ LOCATION_ANY: dict[str, SFALocationData] = {
         SFARegion.CC_OPEN,
         Has("Gold Bars", 4) & (CanBuy(25) | Has("Staff Booster")),  # Requires quest to open door
     ),
+    ## CloudRunner Fortress
+    "CRF: Entrance Platform Race": SFALocationData(
+        46,
+        GameBit(0x09F5),
+        SFARegion.CRF_LANDING,
+        True_(),
+    ),
+    "CRF: Explode Prison Ceiling": SFALocationData(
+        47,
+        GameBit(0x02B9),
+        SFARegion.CRF_MAIN,
+        True_(),
+    ),
+    "CRF: Rescue Gradabug": SFALocationData(
+        48,
+        GameBit(0x02A1),
+        SFARegion.CRF_MAIN,
+        Has("Staff"),
+    ),
+    "CRF: Red Crystal Chest": SFALocationData(
+        49,
+        GameBit(0x02A7),
+        SFARegion.CRF_MAIN,
+        True_(),
+    ),
+    "CRF: Green Crystal Chest": SFALocationData(
+        50,
+        GameBit(0x02A8),
+        SFARegion.CRF_MAIN,
+        Has("Freeze Blast"),
+    ),
+    "CRF: Blue Crystal Chest": SFALocationData(
+        51,
+        GameBit(0x02A9),
+        SFARegion.CRF_MAIN,
+        Has("Freeze Blast") & Has("Staff Booster"),
+    ),
 }
 
 # Last id = 148
@@ -504,6 +541,13 @@ LOCATION_DIG_AND_BAFOMDAD: dict[str, SFALocationData] = {
     ),
     "CC: Dig Gold Bar near CloudRunner Cell": SFALocationData(
         325, GameBit(0x0235), SFARegion.CC_OPEN, Has("Tricky (Progressive)")
+    ),
+    ## ClouRunner Fortress
+    "CRF: Cage BafomDad": SFALocationData(
+        326, GameBit(0x08C0), SFARegion.CRF_MAIN, True_()
+    ),
+    "CRF: Cell BafomDad": SFALocationData(
+        327, GameBit(0x08C4), SFARegion.CRF_MAIN, True_()
     ),
 }
 

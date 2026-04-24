@@ -229,6 +229,7 @@ ITEM_STAFF: dict[str, SFAItemData] = {
     "Staff Booster": SFAItemData(3, "Staff Booster", GameBit(0x0706), ItemClassification.progression, []),
     "Freeze Blast": SFAItemData(4, "Freeze Blast", GameBit(0x0703), ItemClassification.progression, []),
     "Ground Quake": SFAItemData(5, "Ground Quake", GameBit(0x06FE), ItemClassification.progression, []),
+    "SharpClaw Disguise": SFAItemData(6, "SharpClaw Disguise", GameBit(0x06FD), ItemClassification.progression, []),
 }
 
 ITEM_TRICKY: dict[str, SFAProgressiveItemData] = {
@@ -328,6 +329,17 @@ ITEM_INVENTORY: dict[str, SFAItemData] = {
         max_count=4,
         used_count_bits=[GameBit(0x023E, bit_size=3)],
     ),
+    "CRF Power Key": SFAQuestItemData(
+        118,
+        "CRF Power Key",
+        GameBit(0x02C0),
+        ItemClassification.progression,
+        used_count_bits=[GameBit(0x02BF)],
+    ),
+    "Red Crystal": SFAQuestItemData(119, "Red Crystal", GameBit(0x02A4), ItemClassification.progression, used_count_bits=[GameBit(0x02AD)]),
+    "Green Crystal": SFAQuestItemData(120, "Green Crystal", GameBit(0x02A5), ItemClassification.progression, used_count_bits=[GameBit(0x02AE)]),
+    "Blue Crystal": SFAQuestItemData(121, "Blue Crystal", GameBit(0x02A6), ItemClassification.progression, used_count_bits=[GameBit(0x02AF)]),
+
 }
 
 ITEM_SHOP: dict[str, SFAItemData] = {

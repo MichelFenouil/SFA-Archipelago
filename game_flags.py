@@ -21,7 +21,8 @@ DIM_OPEN_BIKE = [
 ]
 DINO_CAVE = GameFlag(0x003E, T3_ADDRESS)  # Dino horn cave detection
 KRAZOA_STATUE_2 = GameFlag(0x0525)  # Krazoa Statue 2 interaction
-
+CRF_ENTRANCE_RACE = GameFlag(0x02F9)  # CloudRunner Fortress race and cutscene
+CRF_PRISON_WIND = GameFlag(0x02B1)  # Prison wind draft direction (ON = Down, OFF = Up)
 
 ## Global static flags ##
 
@@ -101,6 +102,13 @@ CC_STATE_FLAGS: list[GameFlag] = [
     GameFlag(0x0241),  # Activate HighTop Quest
 ]
 
+CRF_STATE_FLAGS: list[GameFlag] = [
+    GameFlag(0x02FA),  # Entrance Platform cutscene
+    GameFlag(0x0115, T1_ADDRESS),  # Entrance Ring on target
+    GameFlag(0x0299),  # Prison Guard Left
+    GameFlag(0x0297),  # Explode Ceiling Cutscene
+]
+
 CUTSCENE_SKIP_FLAGS: list[GameFlag] = [
     GameFlag(0x0106),  # SH Warpstone explanation
     GameFlag(0x0096),  # SH Entered Well
@@ -124,6 +132,7 @@ STARTING_FLAGS: list[GameFlag] = [
     *MMP_STATE_FLAGS,
     *VFP_STATE_FLAGS,
     *CC_STATE_FLAGS,
+    *CRF_STATE_FLAGS,
 ]
 
 CONSTANT_FLAGS: list[GameFlag] = [

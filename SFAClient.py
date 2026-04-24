@@ -27,6 +27,8 @@ from .bit_helper import (
 )
 from .game_flags import (
     CONSTANT_FLAGS,
+    CRF_ENTRANCE_RACE,
+    CRF_PRISON_WIND,
     DIM_OPEN_BIKE,
     DIM_OPEN_BLIZZARD,
     DINO_CAVE,
@@ -46,6 +48,7 @@ from .items import (
     FILLER_ITEMS,
     ITEM_INVENTORY,
     ITEM_PLANET,
+    ITEM_STAFF,
     ITEM_TRICKY,
     USEFUL_ITEMS,
     SFAConsumableItemData,
@@ -271,6 +274,10 @@ async def _handle_map_entry_state(ctx: SFAContext, entered_map: int, from_map: i
     if entered_map == MOON_MOUNTAIN_PASS_ID:
         set_value_bytes(T1_ADDRESS, MOON_MOUNTAIN_PASS_ACT_OFFSET, 0x2, value_size=4)
 
+    if entered_map == CLOUDRUNNER_FORTRESS_ID:
+        set_value_bytes(CRF_OBJGROUP_ADDRESS, 16, 1)
+        CRF_ENTRANCE_RACE.set_bit(True)
+
     if entered_map == WORLD_MAP_ID:
         SFAItemData.get_by_name("Fire Blaster").set_value(False)
         for planet in ITEM_PLANET.values():
@@ -362,6 +369,20 @@ async def _give_spirit_near_warpstone(ctx: SFAContext, zone_name: str) -> None:
         if LOCATION_TABLE["KP: Dark Room BafomDad"].id not in ctx.checked_locations:
             SFAItemData.get_by_name("Krazoa Spirit 2").set_value(True)
 
+async def _show_race_ring(ctx: SFAContext, zone_name: str) -> None:
+    if zone_name != "CRF_ENTRANCE_RACE_START" and zone_name != "CRF_ENTRANCE_RACE_LADDER":
+        return
+    # False on race start, True on ladder to leave zone
+    CRF_ENTRANCE_RACE.set_bit(zone_name == "CRF_ENTRANCE_RACE_LADDER")
+
+async def _turn_off_up_draft(ctx: SFAContext, zone_name: str) -> None:
+    if zone_name != "CRF_PRISON_WIND_DRAFT":
+        return
+    # False = Up draft, True = Down draft
+    CRF_PRISON_WIND.set_bit(True)
+    _give_item_in_game(ctx, ITEM_INVENTORY["CRF Power Key"])
+    _give_item_in_game(ctx, ITEM_STAFF["SharpClaw Disguise"])
+
 
 def _register_default_special_hooks(ctx: SFAContext) -> None:
     ctx.hooks.add_map_transition(_sync_current_map)
@@ -380,6 +401,11 @@ def _register_default_special_hooks(ctx: SFAContext) -> None:
     ctx.hooks.add_player_coord_transition(_handle_spellstone_door, "enter")
     ctx.hooks.add_player_coord_zone(PlayerCoordZone.circle("TTH_WARPSTONE", -5225, -1726, 100, THORNTAIL_HOLLOW_ID))
     ctx.hooks.add_player_coord_transition(_give_spirit_near_warpstone, "enter")
+    ctx.hooks.add_player_coord_zone(PlayerCoordZone.circle("CRF_ENTRANCE_RACE_START", 2650, -17600, 100, CLOUDRUNNER_FORTRESS_ID))
+    ctx.hooks.add_player_coord_zone(PlayerCoordZone.circle("CRF_ENTRANCE_RACE_LADDER", 2529, -18360, 100, CLOUDRUNNER_FORTRESS_ID))
+    ctx.hooks.add_player_coord_transition(_show_race_ring, "enter")
+    ctx.hooks.add_player_coord_zone(PlayerCoordZone.square("CRF_PRISON_WIND_DRAFT", 1650, 1520, -16770, -16690, CLOUDRUNNER_FORTRESS_ID))
+    ctx.hooks.add_player_coord_transition(_turn_off_up_draft, "enter")
 
 
 def sync_player_state(ctx: SFAContext):
@@ -400,6 +426,10 @@ def sync_player_state(ctx: SFAContext):
     _give_item_in_game(ctx, ITEM_TRICKY["Tricky (Progressive)"])
     _give_item_in_game(ctx, ITEM_INVENTORY["Krazoa Spirit 2"])
     _give_item_in_game(ctx, ITEM_INVENTORY["Gold Bars"])
+    _give_item_in_game(ctx, ITEM_INVENTORY["CRF Power Key"])
+    _give_item_in_game(ctx, ITEM_INVENTORY["Red Crystal"])
+    _give_item_in_game(ctx, ITEM_INVENTORY["Green Crystal"])
+    _give_item_in_game(ctx, ITEM_INVENTORY["Blue Crystal"])
 
 
 async def sync_full_player_state(ctx: SFAContext):

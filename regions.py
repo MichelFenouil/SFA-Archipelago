@@ -36,7 +36,9 @@ class SFARegion(Enum):
     KP_MAIN = "Krazoa Palace - Main Area"  # Every other Spirit warps directly to main room
     CC_TRANSITION = "Cape Claw Transition"
     CC_OPEN = "Cape Claw Open Area"
-
+    CRF_LANDING = "CloudRunner Fortress - Landing Pad"
+    CRF_MAIN = "CloudRunner Fortress - Central Area"
+    CRF_POWERED = "CloudRunner Fortress - With Power"
 
 def create_all_regions(world: SFAWorld) -> None:
     """Create regions for AP world."""
@@ -68,6 +70,9 @@ def connect_regions(world: SFAWorld) -> None:
     krazoa_palace_main = world.get_region(SFARegion.KP_MAIN.value)
     cc_transition = world.get_region(SFARegion.CC_TRANSITION.value)
     cc_open = world.get_region(SFARegion.CC_OPEN.value)
+    cloudrunner_fortress_landing = world.get_region(SFARegion.CRF_LANDING.value)
+    cloudrunner_fortress_main = world.get_region(SFARegion.CRF_MAIN.value)
+    cloudrunner_fortress_powered = world.get_region(SFARegion.CRF_POWERED.value)
 
     world_map.connect(thorntail_hollow, "Fly to Planet", Has("Dinosaur Planet Access"))
     thorntail_hollow.connect(
@@ -139,3 +144,5 @@ def connect_regions(world: SFAWorld) -> None:
     # )
     lightfoot_village.connect(cc_transition, "Access Cape Claw Transition", CanBuy(60))
     cc_transition.connect(cc_open, "Access Cape Claw Open Area", True_())
+    world_map.connect(cloudrunner_fortress_landing, "Fly to CloudRunner Fortress", Has("CloudRunner Fortress Access"))
+    cloudrunner_fortress_landing.connect(cloudrunner_fortress_main, "Enter CloudRunner Fortress Main Area", Has("Fire Blaster"))
