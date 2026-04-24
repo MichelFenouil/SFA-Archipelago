@@ -96,6 +96,11 @@ VFP_STATE_FLAGS: list[GameFlag] = [
     GameFlag(0x0583),  # Skip Peppy Cutscene
 ]
 
+CC_STATE_FLAGS: list[GameFlag] = [
+    GameFlag(0x0229),  # Skip Cape Claw entrance Cutscene
+    GameFlag(0x0241),  # Activate HighTop Quest
+]
+
 CUTSCENE_SKIP_FLAGS: list[GameFlag] = [
     GameFlag(0x0106),  # SH Warpstone explanation
     GameFlag(0x0096),  # SH Entered Well
@@ -118,6 +123,7 @@ STARTING_FLAGS: list[GameFlag] = [
     *DIM_STATE_FLAGS,
     *MMP_STATE_FLAGS,
     *VFP_STATE_FLAGS,
+    *CC_STATE_FLAGS,
 ]
 
 CONSTANT_FLAGS: list[GameFlag] = [

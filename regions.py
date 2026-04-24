@@ -6,7 +6,7 @@ from typing import TYPE_CHECKING
 from BaseClasses import Region
 from rule_builder.rules import Has, HasAll, HasAllCounts, True_
 
-from .macros import CanExplodeBombPlant, CanGrowMoonSeed
+from .macros import CanBuy, CanExplodeBombPlant, CanGrowMoonSeed
 
 if TYPE_CHECKING:
     from .world import SFAWorld
@@ -34,6 +34,8 @@ class SFARegion(Enum):
     VFP_WARP_ROOM = "Volcano Force Point - Warp Room"
     KP_ENTRANCE = "Krazoa Palace - Entrance"  # Only accessed on first warp (Spirit 2)
     KP_MAIN = "Krazoa Palace - Main Area"  # Every other Spirit warps directly to main room
+    CC_TRANSITION = "Cape Claw Transition"
+    CC_OPEN = "Cape Claw Open Area"
 
 
 def create_all_regions(world: SFAWorld) -> None:
@@ -64,6 +66,8 @@ def connect_regions(world: SFAWorld) -> None:
     vfp_warp_room = world.get_region(SFARegion.VFP_WARP_ROOM.value)
     krazoa_palace_entrance = world.get_region(SFARegion.KP_ENTRANCE.value)
     krazoa_palace_main = world.get_region(SFARegion.KP_MAIN.value)
+    cc_transition = world.get_region(SFARegion.CC_TRANSITION.value)
+    cc_open = world.get_region(SFARegion.CC_OPEN.value)
 
     world_map.connect(thorntail_hollow, "Fly to Planet", Has("Dinosaur Planet Access"))
     thorntail_hollow.connect(
@@ -133,3 +137,5 @@ def connect_regions(world: SFAWorld) -> None:
     #     "Warp to Krazoa Palace Main Room",
     #     Has("Rock Candy") # & Has any other spirits
     # )
+    lightfoot_village.connect(cc_transition, "Access Cape Claw Transition", CanBuy(60))
+    cc_transition.connect(cc_open, "Access Cape Claw Open Area", True_())

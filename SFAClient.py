@@ -45,6 +45,7 @@ from .hook_handlers import (
 from .items import (
     FILLER_ITEMS,
     ITEM_INVENTORY,
+    ITEM_PLANET,
     ITEM_TRICKY,
     USEFUL_ITEMS,
     SFAConsumableItemData,
@@ -272,6 +273,8 @@ async def _handle_map_entry_state(ctx: SFAContext, entered_map: int, from_map: i
 
     if entered_map == WORLD_MAP_ID:
         SFAItemData.get_by_name("Fire Blaster").set_value(False)
+        for planet in ITEM_PLANET.values():
+            planet.set_value(planet.id in ctx.received_items_id)
     elif from_map == WORLD_MAP_ID:
         item = SFAItemData.get_by_name("Fire Blaster")
         item.set_value(item.id in ctx.received_items_id)
@@ -396,6 +399,7 @@ def sync_player_state(ctx: SFAContext):
     _give_item_in_game(ctx, ITEM_INVENTORY["DIM Alpine Root"])
     _give_item_in_game(ctx, ITEM_TRICKY["Tricky (Progressive)"])
     _give_item_in_game(ctx, ITEM_INVENTORY["Krazoa Spirit 2"])
+    _give_item_in_game(ctx, ITEM_INVENTORY["Gold Bars"])
 
 
 async def sync_full_player_state(ctx: SFAContext):
@@ -520,7 +524,6 @@ def _give_item_in_game(ctx: SFAContext, item: SFAItemData | None) -> bool:
     if isinstance(item, (SFAProgressiveItemData, SFACountItemData, SFAQuestItemData)):
         count = ctx.received_items_id.count(item.id)
         item.set_value(count)
-        logger.debug(f"Received {count} of counted object: {item.name}")
         return True
 
     if isinstance(item, SFAConsumableItemData):

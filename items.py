@@ -23,7 +23,6 @@ class SFAItemTags(Enum):
     """This class defines constants for various types of items to know how to handle in game."""
 
     SHOP = auto()
-    PLANET = auto()
     STARTING_ITEM = auto()
     SKIP_ITEMPOOL = auto()
     SEED = auto()
@@ -149,8 +148,12 @@ class SFAConsumableItemData(SFAItemData):
 class SFAPlanetItemData(SFAItemData):
     """Data class for planet items."""
 
-    # TODO: Change for general ALL FLAGS items
     gate_bit: GameBit = field(default_factory=lambda: GameBit(0x0))
+
+    def set_value(self, value: bool) -> None:
+        """Set value for planet item."""
+        self.game_bit.set_bit(value)
+        self.gate_bit.set_bit(value)
 
 
 @dataclass
@@ -244,17 +247,22 @@ ITEM_PLANET: dict[str, SFAItemData] = {
         "Dinosaur Planet Access",
         GameBit(0x0930),
         ItemClassification.progression,
-        [SFAItemTags.STARTING_ITEM, SFAItemTags.PLANET],
+        [SFAItemTags.STARTING_ITEM],
     ),
     "DarkIce Mines Access": SFAPlanetItemData(
         51,
         "DarkIce Mines Access",
         GameBit(0x093D),
         ItemClassification.progression,
-        [SFAItemTags.PLANET],
         gate_bit=GameBit(0x0931),
     ),
-    # "CloudRunner Fortress": SFAItemData(52, 0x093E, SFAItemType.PLANET, ItemClassification.progression),
+    "CloudRunner Fortress Access": SFAPlanetItemData(
+        52,
+        "CloudRunner Fortress Access",
+        GameBit(0x093E),
+        ItemClassification.progression,
+        gate_bit=GameBit(0x0932),
+    ),
     # "Walled City": SFAItemData(53, 0x093F, SFAItemType.PLANET, ItemClassification.progression),
     # "Dragon Rock": SFAItemData(54, 0x0940, SFAItemType.PLANET, ItemClassification.progression),
 }
@@ -312,6 +320,14 @@ ITEM_INVENTORY: dict[str, SFAItemData] = {
         115, "Moon Seed", GameBit(0x01FE, bit_size=3), ItemClassification.progression, [SFAItemTags.SEED], set_amount=7
     ),
     "Krazoa Spirit 2": SFAItemData(116, "Krazoa Spirit 2", GameBit(0x0537), ItemClassification.progression),
+    "Gold Bars": SFAQuestItemData(
+        117,
+        "Gold Bars",
+        GameBit(0x023B, bit_size=3),
+        ItemClassification.progression,
+        max_count=4,
+        used_count_bits=[GameBit(0x023E, bit_size=3)],
+    ),
 }
 
 ITEM_SHOP: dict[str, SFAItemData] = {

@@ -307,6 +307,19 @@ LOCATION_ANY: dict[str, SFALocationData] = {
         SFARegion.KP_MAIN,
         Has("Krazoa Spirit 2"),  # & Has any other spirits
     ),
+    ## Cape Claw
+    "CC: Give HighTop Gold Bars": SFALocationData(
+        44,
+        GameBit(0x0242),
+        SFARegion.CC_OPEN,
+        Has("Gold Bars", 4) & (CanBuy(25) | Has("Staff Booster")),
+    ),
+    "CC: Rescue CloudRunner": SFALocationData(
+        45,
+        GameBit(0x024A),
+        SFARegion.CC_OPEN,
+        Has("Gold Bars", 4) & (CanBuy(25) | Has("Staff Booster")),  # Requires quest to open door
+    ),
 }
 
 # Last id = 148
@@ -371,8 +384,8 @@ LOCATION_FUEL_CELL: dict[str, SFALocationData] = {
     ## LightFoot Village
     "TTH: Entrance to LFV Fuel Cell Right": SFALocationData(124, GameBit(0x094A), SFARegion.LFV, Has("Staff")),
     "TTH: Entrance to LFV Fuel Cell Left": SFALocationData(125, GameBit(0x094B), SFARegion.LFV, Has("Staff")),
-    # "LFV Entrance Booster Ledge 1": SFALocationData(126, 0x096B, SFALocationType.FUELCELL, SFARegion.LFV),
-    # "LFV Entrance Booster Ledge 2": SFALocationData(127, 0x096C, SFALocationType.FUELCELL, SFARegion.LFV),
+    "LFV: Entrance Booster Ledge Right": SFALocationData(126, GameBit(0x096B), SFARegion.LFV, Has("Staff Booster")),
+    "LFV: Entrance Booster Ledge Left": SFALocationData(127, GameBit(0x096C), SFARegion.LFV, Has("Staff Booster")),
     ## Moon Mountain Pass
     "MMP: Wind Draft Entrance Fuel Cell": SFALocationData(130, GameBit(0x0985), SFARegion.MMP, True_()),
     "MMP: Wind Draft Exit Fuel Cell": SFALocationData(131, GameBit(0x097E), SFARegion.MMP, True_()),
@@ -405,6 +418,22 @@ LOCATION_FUEL_CELL: dict[str, SFALocationData] = {
         GameBit(0x0962),
         SFARegion.VFP_WARP_ROOM,
         True_(),
+    ),
+    ## Cape Claw
+    # Transition fuel cells are accessible without Staff Booster, but require booster to go back up
+    "CC: Transition Bottom Platform Fuel Cell": SFALocationData(
+        152, GameBit(0x0983), SFARegion.CC_TRANSITION, Has("Staff Booster")
+    ),
+    "CC: Transition Bottom Waterfall Fuel Cell": SFALocationData(
+        153, GameBit(0x0982), SFARegion.CC_TRANSITION, Has("Staff Booster")
+    ),
+    "CC: Transition Bottom Weeds Fuel Cell": SFALocationData(
+        154, GameBit(0x0986), SFARegion.CC_TRANSITION, Has("Staff Booster")
+    ),
+    "CC: Drop from Bridge Fuel Cell": SFALocationData(155, GameBit(0x0964), SFARegion.CC_OPEN, True_()),
+    "CC: Drop from Deck Fuel Cell": SFALocationData(156, GameBit(0x0963), SFARegion.CC_OPEN, True_()),
+    "CC: Dig in Back Cave Fuel Cell": SFALocationData(
+        157, GameBit(0x0965), SFARegion.CC_OPEN, Has("Tricky (Progressive)")
     ),
 }
 
@@ -458,6 +487,24 @@ LOCATION_DIG_AND_BAFOMDAD: dict[str, SFALocationData] = {
     "KP: Dark Room BafomDad": SFALocationData(
         319, GameBit(0x08C7), SFARegion.KP_ENTRANCE, Has("FireFly Lantern")
     ),  # dark option
+    ## LightFoot Village
+    "LFV: BafomDad Entrance Booster Ledge": SFALocationData(320, GameBit(0x08C5), SFARegion.LFV, Has("Staff Booster")),
+    ## Cape Claw
+    "CC: Dig BafomDad middle of Water": SFALocationData(
+        321, GameBit(0x08CF), SFARegion.CC_OPEN, Has("Tricky (Progressive)")
+    ),
+    "CC: Dig Gold Bar near HighTop": SFALocationData(
+        322, GameBit(0x0231), SFARegion.CC_OPEN, Has("Tricky (Progressive)")
+    ),
+    "CC: Dig Gold Bar behind Bramble": SFALocationData(
+        323, GameBit(0x0233), SFARegion.CC_OPEN, Has("Tricky (Progressive)", 2)
+    ),
+    "CC: Dig Gold Bar before Bramble": SFALocationData(
+        324, GameBit(0x0234), SFARegion.CC_OPEN, Has("Tricky (Progressive)")
+    ),
+    "CC: Dig Gold Bar near CloudRunner Cell": SFALocationData(
+        325, GameBit(0x0235), SFARegion.CC_OPEN, Has("Tricky (Progressive)")
+    ),
 }
 
 NORMAL_TABLES: dict[str, SFALocationData] = {
