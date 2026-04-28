@@ -40,6 +40,7 @@ class SFARegion(Enum):
     CRF_MAIN = "CloudRunner Fortress - Central Area"
     CRF_POWERED = "CloudRunner Fortress - With Power"
 
+
 def create_all_regions(world: SFAWorld) -> None:
     """Create regions for AP world."""
     sfa_region_list = [Region(region.value, world.player, world.multiworld) for region in SFARegion]
@@ -145,4 +146,11 @@ def connect_regions(world: SFAWorld) -> None:
     lightfoot_village.connect(cc_transition, "Access Cape Claw Transition", CanBuy(60))
     cc_transition.connect(cc_open, "Access Cape Claw Open Area", True_())
     world_map.connect(cloudrunner_fortress_landing, "Fly to CloudRunner Fortress", Has("CloudRunner Fortress Access"))
-    cloudrunner_fortress_landing.connect(cloudrunner_fortress_main, "Enter CloudRunner Fortress Main Area", Has("Fire Blaster"))
+    cloudrunner_fortress_landing.connect(
+        cloudrunner_fortress_main, "Enter CloudRunner Fortress Main Area", Has("Fire Blaster")
+    )
+    cloudrunner_fortress_main.connect(
+        cloudrunner_fortress_powered,
+        "Access CloudRunner Fortress Powered Area",
+        HasAll("CRF Power Key", "Red Crystal", "Green Crystal", "Blue Crystal", "SharpClaw Disguise"),
+    )

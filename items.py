@@ -6,10 +6,11 @@ from typing import TYPE_CHECKING
 
 from BaseClasses import Item, ItemClassification
 
-from .addresses import PLAYER_CUR_HP, PLAYER_CUR_MP, PLAYER_MAX_HP, PLAYER_MAX_MP
+from .addresses import PLAYER_CUR_HP, PLAYER_CUR_MP, PLAYER_MAX_HP, PLAYER_MAX_MP, SHOP_ID
 from .bit_helper import GameBit
 
 if TYPE_CHECKING:
+    from .SFAClient import SFAContext
     from .world import SFAWorld
 
 
@@ -223,6 +224,44 @@ def create_all_items(world: SFAWorld) -> None:
     world.multiworld.itempool += itempool
 
 
+def give_item_in_game(ctx: SFAContext, item: SFAItemData | None) -> bool:
+    """
+    Give an item to the player in the game.
+
+    :param ctx: The Star Fox Adventures context
+    :param item: The item data to give
+    :return: True if the item was given successfully, False otherwise
+    """
+    if item is None or item.id == 0:
+        return False
+
+    if item.id == SFAItemData.get_by_name("Victory").id:  # Victory
+        ctx.victory = True
+        return True
+
+    if ctx.stored_map == SHOP_ID and (SFAItemTags.SHOP in item.tags):
+        # Don't send shop items if inside shop
+        return True
+
+    if isinstance(item, (SFAProgressiveItemData, SFACountItemData, SFAQuestItemData)):
+        count = ctx.received_items_id.count(item.id)
+        item.set_value(count)
+        return True
+
+    if isinstance(item, SFAConsumableItemData):
+        item.set_value()
+        return True
+
+    if isinstance(item, SFAPlanetItemData):
+        item.game_bit.set_bit(item.id in ctx.received_items_id)
+        item.gate_bit.set_bit(item.id in ctx.received_items_id)
+        return True
+
+    # All other items
+    item.set_value(item.id in ctx.received_items_id)
+    return True
+
+
 ITEM_STAFF: dict[str, SFAItemData] = {
     "Staff": SFAItemData(1, "Staff", GameBit(0x0080), ItemClassification.progression, [SFAItemTags.STARTING_ITEM]),
     "Fire Blaster": SFAItemData(2, "Fire Blaster", GameBit(0x06FC), ItemClassification.progression, []),
@@ -336,10 +375,16 @@ ITEM_INVENTORY: dict[str, SFAItemData] = {
         ItemClassification.progression,
         used_count_bits=[GameBit(0x02BF)],
     ),
-    "Red Crystal": SFAQuestItemData(119, "Red Crystal", GameBit(0x02A4), ItemClassification.progression, used_count_bits=[GameBit(0x02AD)]),
-    "Green Crystal": SFAQuestItemData(120, "Green Crystal", GameBit(0x02A5), ItemClassification.progression, used_count_bits=[GameBit(0x02AE)]),
-    "Blue Crystal": SFAQuestItemData(121, "Blue Crystal", GameBit(0x02A6), ItemClassification.progression, used_count_bits=[GameBit(0x02AF)]),
-
+    "Red Crystal": SFAQuestItemData(
+        119, "Red Crystal", GameBit(0x02A4), ItemClassification.progression, used_count_bits=[GameBit(0x02AD)]
+    ),
+    "Green Crystal": SFAQuestItemData(
+        120, "Green Crystal", GameBit(0x02A5), ItemClassification.progression, used_count_bits=[GameBit(0x02AE)]
+    ),
+    "Blue Crystal": SFAQuestItemData(
+        121, "Blue Crystal", GameBit(0x02A6), ItemClassification.progression, used_count_bits=[GameBit(0x02AF)]
+    ),
+    "CloudRunner Flute": SFAItemData(122, "CloudRunner Flute", GameBit(0x02DE), ItemClassification.progression),
 }
 
 ITEM_SHOP: dict[str, SFAItemData] = {

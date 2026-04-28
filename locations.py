@@ -5,9 +5,9 @@ from enum import Enum, auto
 from typing import TYPE_CHECKING
 
 from BaseClasses import ItemClassification, Location
-from rule_builder.rules import Has, HasAllCounts, Rule, True_
+from rule_builder.rules import Has, HasAll, HasAllCounts, Rule, True_
 
-from .addresses import T0_ADDRESS
+from .addresses import T0_ADDRESS, T1_ADDRESS
 from .bit_helper import GameBit
 from .items import SFAItem
 from .macros import CanBuy, CanExplodeBombPlant, CanGrowMoonSeed
@@ -357,6 +357,18 @@ LOCATION_ANY: dict[str, SFALocationData] = {
         SFARegion.CRF_MAIN,
         Has("Freeze Blast") & Has("Staff Booster"),
     ),
+    "CRF: Rescue Queen CloudRunner": SFALocationData(
+        52,
+        GameBit(0x02CB),
+        SFARegion.CRF_POWERED,
+        Has("SharpClaw Disguise"),
+    ),
+    "CRF: Defeat Boss SharpClaw Race": SFALocationData(
+        53,
+        GameBit(0x012B, T1_ADDRESS),
+        SFARegion.CRF_POWERED,
+        HasAll("Fire Blaster", "Staff Booster", "CloudRunner Flute", "FireFly Lantern"),
+    ),
 }
 
 # Last id = 148
@@ -543,11 +555,15 @@ LOCATION_DIG_AND_BAFOMDAD: dict[str, SFALocationData] = {
         325, GameBit(0x0235), SFARegion.CC_OPEN, Has("Tricky (Progressive)")
     ),
     ## ClouRunner Fortress
-    "CRF: Cage BafomDad": SFALocationData(
-        326, GameBit(0x08C0), SFARegion.CRF_MAIN, True_()
-    ),
-    "CRF: Cell BafomDad": SFALocationData(
-        327, GameBit(0x08C4), SFARegion.CRF_MAIN, True_()
+    "CRF: Cage BafomDad": SFALocationData(326, GameBit(0x08C0), SFARegion.CRF_MAIN, True_()),
+    "CRF: Cell BafomDad": SFALocationData(327, GameBit(0x08C4), SFARegion.CRF_MAIN, True_()),
+    "CRF: BafomDad on Back Crates": SFALocationData(328, GameBit(0x08C1), SFARegion.CRF_POWERED, True_()),
+    "CRF: BafomDad near Boss Door": SFALocationData(329, GameBit(0x08BE), SFARegion.CRF_POWERED, True_()),
+    "CRF: BafomDad in Dark Room": SFALocationData(
+        330,
+        GameBit(0x08C3),
+        SFARegion.CRF_POWERED,
+        HasAll("Fire Blaster", "Staff Booster", "CloudRunner Flute", "FireFly Lantern"),
     ),
 }
 

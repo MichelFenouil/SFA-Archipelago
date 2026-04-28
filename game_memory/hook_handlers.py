@@ -6,7 +6,7 @@ from typing import TYPE_CHECKING, Literal
 from CommonClient import logger
 
 if TYPE_CHECKING:
-    from .SFAClient import SFAContext
+    from ..SFAClient import SFAContext
 
 
 # Hook signatures used by SFAHookHandlers.

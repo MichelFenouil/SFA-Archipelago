@@ -23,6 +23,16 @@ DINO_CAVE = GameFlag(0x003E, T3_ADDRESS)  # Dino horn cave detection
 KRAZOA_STATUE_2 = GameFlag(0x0525)  # Krazoa Statue 2 interaction
 CRF_ENTRANCE_RACE = GameFlag(0x02F9)  # CloudRunner Fortress race and cutscene
 CRF_PRISON_WIND = GameFlag(0x02B1)  # Prison wind draft direction (ON = Down, OFF = Up)
+CRF_QUEEN_CHILDREN_CHECK = GameFlag(0x0298)
+CRF_OPEN_BACK_PATH = [
+    GameFlag(0x008F, T1_ADDRESS, True),
+    GameFlag(0x0045, T1_ADDRESS, False),
+    GameFlag(0x0035, T1_ADDRESS, False),
+]
+CRF_OPEN_POST_BOSS = [
+    GameFlag(0x0130, T1_ADDRESS, False),
+    GameFlag(0x012D, T1_ADDRESS, False),
+]
 
 ## Global static flags ##
 
@@ -107,6 +117,7 @@ CRF_STATE_FLAGS: list[GameFlag] = [
     GameFlag(0x0115, T1_ADDRESS),  # Entrance Ring on target
     GameFlag(0x0299),  # Prison Guard Left
     GameFlag(0x0297),  # Explode Ceiling Cutscene
+    GameFlag(0x0093, T1_ADDRESS),  # Guard Cutscene post Power Key
 ]
 
 CUTSCENE_SKIP_FLAGS: list[GameFlag] = [
