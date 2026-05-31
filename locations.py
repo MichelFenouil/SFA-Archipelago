@@ -436,8 +436,8 @@ LOCATION_FUEL_CELL: dict[str, SFALocationData] = {
     "LFV: Entrance Booster Ledge Right": SFALocationData(126, GameBit(0x096B), SFARegion.LFV, Has("Staff Booster")),
     "LFV: Entrance Booster Ledge Left": SFALocationData(127, GameBit(0x096C), SFARegion.LFV, Has("Staff Booster")),
     ## Moon Mountain Pass
-    "MMP: Wind Draft Entrance Fuel Cell": SFALocationData(130, GameBit(0x0985), SFARegion.MMP, True_()),
-    "MMP: Wind Draft Exit Fuel Cell": SFALocationData(131, GameBit(0x097E), SFARegion.MMP, True_()),
+    "MMP: Entrance Wind Draft North Fuel Cell": SFALocationData(130, GameBit(0x0985), SFARegion.MMP, True_()),
+    "MMP: Entrance Wind Draft South Fuel Cell": SFALocationData(131, GameBit(0x097E), SFARegion.MMP, True_()),
     "MMP: Barrel Hill Fuel Cell": SFALocationData(132, GameBit(0x0961), SFARegion.MMP, True_()),
     "MMP: Behind Fort Fuel Cell": SFALocationData(139, GameBit(0x0966), SFARegion.MMP, Has("Moon Pass Key")),
     "MMP: Meteorite Area Fuel Cell": SFALocationData(149, GameBit(0x0977), SFARegion.MMP_METEORITE, True_()),
@@ -452,8 +452,8 @@ LOCATION_FUEL_CELL: dict[str, SFALocationData] = {
     "VFP: Freeze Blast Alcove Fuel Cell Right": SFALocationData(
         141, GameBit(0x0970), SFARegion.VFP, Has("Staff Booster") & Has("Freeze Blast")
     ),
-    # "VFP: Disguise Alcove Fuel Cell Left": SFALocationData(142, GameBit(0x0973), SFARegion.VFP, Has("Staff Booster") & Has("SharpClaw Disguise")),
-    # "VFP: Disguise Alcove Fuel Cell Right": SFALocationData(143, GameBit(0x0974), SFARegion.VFP, Has("Staff Booster") & Has("SharpClaw Disguise")),
+    "VFP: Disguise Alcove Fuel Cell Left": SFALocationData(142, GameBit(0x0973), SFARegion.VFP, Has("Staff Booster") & Has("SharpClaw Disguise")),
+    "VFP: Disguise Alcove Fuel Cell Right": SFALocationData(143, GameBit(0x0974), SFARegion.VFP, Has("Staff Booster") & Has("SharpClaw Disguise")),
     "VFP: Below Bridge Fuel Cell": SFALocationData(144, GameBit(0x098A), SFARegion.VFP, True_()),
     "VFP: Cheat Well Fuel Cell Left": SFALocationData(
         145, GameBit(0x097A), SFARegion.VFP_PAST_BRIDGE, CanGrowMoonSeed()
@@ -523,9 +523,9 @@ LOCATION_DIG_AND_BAFOMDAD: dict[str, SFALocationData] = {
     ),
     ## Volcano Force Point
     "VFP: BafomDad Cell": SFALocationData(312, GameBit(0x08C9), SFARegion.VFP, Has("Staff Booster")),
-    # "VFP: BafomDad Disguise Cell": SFALocationData(
-    #     313, GameBit(0x08CA), SFARegion.VFP, Has("Staff Booster") & Has("SharpClaw Disguise")
-    # ),
+    "VFP: BafomDad Disguise Cell": SFALocationData(
+        313, GameBit(0x08CA), SFARegion.VFP, Has("Staff Booster") & Has("SharpClaw Disguise")
+    ),
     "VFP: BafomDad Cheat Well": SFALocationData(314, GameBit(0x08CB), SFARegion.VFP_PAST_BRIDGE, CanGrowMoonSeed()),
     ## Moon Mountain Pass
     "MMP: BafomDad Ledge near Fort": SFALocationData(315, GameBit(0x08EE), SFARegion.MMP, CanGrowMoonSeed()),
