@@ -10,7 +10,7 @@ from rule_builder.rules import Has, HasAll, HasAllCounts, Rule, True_
 from .addresses import T0_ADDRESS, T1_ADDRESS
 from .bit_helper import GameBit
 from .items import SFAItem
-from .macros import CanBuy, CanExplodeBombPlant, CanGrowMoonSeed
+from .macros import CanBuy, CanExplodeBombPlant, CanGrowMoonSeed, CanGoDarkRoom
 from .regions import SFARegion
 
 if TYPE_CHECKING:
@@ -367,7 +367,7 @@ LOCATION_ANY: dict[str, SFALocationData] = {
         53,
         GameBit(0x012B, T1_ADDRESS),
         SFARegion.CRF_POWERED,
-        HasAll("Fire Blaster", "Staff Booster", "CloudRunner Flute", "FireFly Lantern"),
+        HasAll("Fire Blaster", "Staff Booster", "CloudRunner Flute") & CanGoDarkRoom(),
     ),
 }
 
@@ -534,7 +534,7 @@ LOCATION_DIG_AND_BAFOMDAD: dict[str, SFALocationData] = {
     "MMP: Cheat Well BafomDad": SFALocationData(318, GameBit(0x08F0), SFARegion.MMP_SHRINE, CanGrowMoonSeed()),
     ## Krazoa Palace
     "KP: Dark Room BafomDad": SFALocationData(
-        319, GameBit(0x08C7), SFARegion.KP_ENTRANCE, Has("FireFly Lantern")
+        319, GameBit(0x08C7), SFARegion.KP_ENTRANCE, CanGoDarkRoom()
     ),  # dark option
     ## LightFoot Village
     "LFV: BafomDad Entrance Booster Ledge": SFALocationData(320, GameBit(0x08C5), SFARegion.LFV, Has("Staff Booster")),
@@ -563,7 +563,7 @@ LOCATION_DIG_AND_BAFOMDAD: dict[str, SFALocationData] = {
         330,
         GameBit(0x08C3),
         SFARegion.CRF_POWERED,
-        HasAll("Fire Blaster", "Staff Booster", "CloudRunner Flute", "FireFly Lantern"),
+        HasAll("Fire Blaster", "Staff Booster", "CloudRunner Flute") & CanGoDarkRoom(),
     ),
 }
 

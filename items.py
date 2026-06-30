@@ -13,6 +13,7 @@ if TYPE_CHECKING:
     from .SFAClient import SFAContext
     from .world import SFAWorld
 
+UT_GLITCH_LOGIC = "UT Glitch Logic"
 
 class SFAItem(Item):
     """Item class for Star Fox Adventures."""
@@ -27,6 +28,7 @@ class SFAItemTags(Enum):
     STARTING_ITEM = auto()
     SKIP_ITEMPOOL = auto()
     SEED = auto()
+    DARK_ROOM = auto()
 
 
 @dataclass
@@ -188,7 +190,11 @@ def get_random_filler_item_name(world: SFAWorld) -> str:
 
 def create_item_classification(world: SFAWorld, name: str) -> SFAItem:
     """Create item with AP classification."""
+    if name == UT_GLITCH_LOGIC:
+        return SFAItem(name, ItemClassification.progression, None, world.player)
     data = SFAItemData.get_by_name(name)
+    if SFAItemTags.DARK_ROOM in data.tags and world.options.dark_rooms:
+        data.ap_classification = ItemClassification.useful
     return SFAItem(name, data.ap_classification, data.id, world.player)
 
 
@@ -407,7 +413,7 @@ ITEM_SHOP: dict[str, SFAItemData] = {
         "FireFly Lantern",
         GameBit(0x0717),
         ItemClassification.progression,
-        [SFAItemTags.SHOP],
+        [SFAItemTags.SHOP, SFAItemTags.DARK_ROOM],
     ),
     # Gives access to unimplemented area
     # "Snowhorn Artifact": SFAItemData(

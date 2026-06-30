@@ -6,6 +6,7 @@ from rule_builder.rules import Has
 from worlds.AutoWorld import World
 
 from .items import (
+    UT_GLITCH_LOGIC,
     SFAItem,
     create_all_items,
     create_item_classification,
@@ -34,6 +35,7 @@ class SFAWorld(World):
     options: SFAOptions  # Common mistake: This has to be a colon (:), not an equals sign (=).
 
     ut_can_gen_without_yaml = True
+    glitches_item_name = UT_GLITCH_LOGIC
 
     item_name_to_id = items_name_to_id_dict()
     location_name_to_id = locations_name_to_id_dict()
@@ -88,10 +90,12 @@ class SFAWorld(World):
             **self.options.as_dict(
                 "shop_locations",
                 "plant_shuffle",
+                "dark_rooms",
             ),
             "options": self.options.as_dict(
                 "shop_locations",
                 "plant_shuffle",
+                "dark_rooms",
             ),
         }
 

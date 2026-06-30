@@ -6,7 +6,7 @@ from typing import TYPE_CHECKING
 from BaseClasses import Region
 from rule_builder.rules import Has, HasAll, HasAllCounts, True_
 
-from .macros import CanBuy, CanExplodeBombPlant, CanGrowMoonSeed
+from .macros import CanBuy, CanExplodeBombPlant, CanGoDarkRoom, CanGrowMoonSeed
 
 if TYPE_CHECKING:
     from .world import SFAWorld
@@ -98,7 +98,7 @@ def connect_regions(world: SFAWorld) -> None:
     sh_well.connect(
         sh_well_bottom,
         "Descend to Well Bottom",
-        Has("Staff Booster") & CanExplodeBombPlant() & Has("FireFly Lantern"),
+        Has("Staff Booster") & CanExplodeBombPlant() & CanGoDarkRoom(),
     )
     sw_entrance.connect(sw_gate, "Pass SnowHorn Gate", Has("Gate Key"))
     thorntail_hollow.connect(lightfoot_village, "Access to LightFoot Village", Has("Staff"))
@@ -143,7 +143,7 @@ def connect_regions(world: SFAWorld) -> None:
     krazoa_palace_entrance.connect(
         krazoa_palace_main,
         "Enter Krazoa Palace Main Area",
-        Has("Fire Blaster") & Has("FireFly Lantern"),  # Possible 'dark option' to skip lantern
+        Has("Fire Blaster") & CanGoDarkRoom(),
     )
     # thorntail_hollow.connect(
     #     krazoa_palace_main,

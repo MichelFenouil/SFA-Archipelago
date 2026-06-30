@@ -34,12 +34,26 @@ class PlantShuffle(Toggle):
     default = True
 
 
+class DarkRoomLogic(Toggle):
+    """
+    Put Dark Rooms in logic without FireFly Lantern.
+
+    false: Dark Rooms require FireFly Lantern to access
+    true: Dark Rooms can be accessed without FireFly Lantern
+    """
+
+    display_name = "Dark Room Logic"
+
+    default = False
+
+
 @dataclass
 class SFAOptions(PerGameCommonOptions):
     """Star Fox Adventures options class."""
 
     shop_locations: ShopLocations
     plant_shuffle: PlantShuffle
+    dark_rooms: DarkRoomLogic
 
 
 option_groups = [

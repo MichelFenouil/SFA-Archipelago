@@ -40,6 +40,8 @@ CRF_OPEN_POST_BOSS = [
 FORCE_TRICKY = GameFlag(0x0847)  # Spawn Tricky
 FORCE_TRICKY_CALL = GameFlag(0x0849)  # Give Tricky call command
 
+TTH_WELL_OPEN = [GameFlag(0x00A1), GameFlag(0x00A2)]  # Open access to TTH Well without Lantern
+
 SAW_ITEM_FLAGS: list[GameFlag] = [
     GameFlag(0x0015),  # Saw Apple
     GameFlag(0x0020),  # Saw Bafomdad
@@ -145,6 +147,7 @@ STARTING_FLAGS: list[GameFlag] = [
     *VFP_STATE_FLAGS,
     *CC_STATE_FLAGS,
     *CRF_STATE_FLAGS,
+    *TTH_WELL_OPEN,
 ]
 
 CONSTANT_FLAGS: list[GameFlag] = [
