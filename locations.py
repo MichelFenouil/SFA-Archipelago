@@ -213,7 +213,7 @@ LOCATION_ANY: dict[str, SFALocationData] = {
     "SHW: Feed Alpine Root 2": SFACountLocationData(
         22, GameBit(0x0033, bit_size=3), SFARegion.SW_WATERSPOUT, Has("SHW Alpine Root", 2), count=2
     ),
-    "SHW: Rescue GateKeeper": SFALocationData(23, GameBit(0x0058), SFARegion.SW_ENTRANCE, True_()),
+    "SHW: Rescue GateKeeper": SFALocationData(23, GameBit(0x0058), SFARegion.SW_GATE, True_()),
     ## Thorntail Hollow
     "TTH Well: White GrubTub 1": SFALocationData(24, GameBit(0x00A8), SFARegion.TH_WELL_BOTTOM, True_()),
     "TTH Well: White GrubTub 2": SFALocationData(25, GameBit(0x00A7), SFARegion.TH_WELL_BOTTOM, True_()),
@@ -296,7 +296,7 @@ LOCATION_ANY: dict[str, SFALocationData] = {
     "MMP: Test of Combat": SFALocationData(
         42,
         GameBit(0x0537),
-        SFARegion.MMP_METEORITE,
+        SFARegion.MMP_SHRINE,
         Has("Freeze Blast") & Has("Tricky (Progressive)", 2) & Has("Fire Blaster"),
         [SFALocationTags.ACTIVE_ZONE],
     ),
@@ -442,9 +442,9 @@ LOCATION_FUEL_CELL: dict[str, SFALocationData] = {
     "MMP: Behind Fort Fuel Cell": SFALocationData(139, GameBit(0x0966), SFARegion.MMP, Has("Moon Pass Key")),
     "MMP: Meteorite Area Fuel Cell": SFALocationData(149, GameBit(0x0977), SFARegion.MMP_METEORITE, True_()),
     "MMP: Cheat Well near Combat Shrine Fuel Cell": SFALocationData(
-        150, GameBit(0x0978), SFARegion.MMP_METEORITE, CanGrowMoonSeed()
+        150, GameBit(0x0978), SFARegion.MMP_SHRINE, CanGrowMoonSeed()
     ),
-    "MMP: Beside Combat Shrine Fuel Cell": SFALocationData(151, GameBit(0x0979), SFARegion.MMP_METEORITE, True_()),
+    "MMP: Beside Combat Shrine Fuel Cell": SFALocationData(151, GameBit(0x0979), SFARegion.MMP_SHRINE, True_()),
     ## Volcano Force Point
     "VFP: Freeze Blast Alcove Fuel Cell Left": SFALocationData(
         140, GameBit(0x096F), SFARegion.VFP, Has("Staff Booster") & Has("Freeze Blast")
@@ -501,7 +501,7 @@ LOCATION_DIG_AND_BAFOMDAD: dict[str, SFALocationData] = {
     "SHW: Dig BafomDad near Entrance": SFALocationData(
         303, GameBit(0x08D3), SFARegion.SW_ENTRANCE, Has("Tricky (Progressive)")
     ),
-    "SHW: Dig in Cave past Gate": SFALocationData(307, GameBit(0x086E), SFARegion.SW_GATE, Has("Tricky (Progressive)")),
+    "SHW: Dig in Cave past Gate": SFALocationData(307, GameBit(0x08D2), SFARegion.SW_GATE, Has("Tricky (Progressive)")),
     "SHW: Dig Cave BafomDad near Entrance": SFALocationData(
         310, GameBit(0x08D4), SFARegion.SW_ENTRANCE, Has("Tricky (Progressive)")
     ),
@@ -531,7 +531,7 @@ LOCATION_DIG_AND_BAFOMDAD: dict[str, SFALocationData] = {
     "MMP: BafomDad Ledge near Fort": SFALocationData(315, GameBit(0x08EE), SFARegion.MMP, CanGrowMoonSeed()),
     "MMP: BafomDad in Moon Seed Zone": SFALocationData(316, GameBit(0x08ED), SFARegion.MMP, CanGrowMoonSeed()),
     "MMP: Meteorite Area BafomDad": SFALocationData(317, GameBit(0x08EF), SFARegion.MMP_METEORITE, True_()),
-    "MMP: Cheat Well BafomDad": SFALocationData(318, GameBit(0x08F0), SFARegion.MMP_METEORITE, CanGrowMoonSeed()),
+    "MMP: Cheat Well BafomDad": SFALocationData(318, GameBit(0x08F0), SFARegion.MMP_SHRINE, CanGrowMoonSeed()),
     ## Krazoa Palace
     "KP: Dark Room BafomDad": SFALocationData(
         319, GameBit(0x08C7), SFARegion.KP_ENTRANCE, Has("FireFly Lantern")

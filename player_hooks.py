@@ -11,6 +11,7 @@ from .game_flags import (
     CRF_OPEN_BACK_PATH,
     CRF_OPEN_POST_BOSS,
     CRF_PRISON_WIND,
+    CRF_QUEEN_BROKEN_PILLAR,
     CRF_QUEEN_CHILDREN_CHECK,
     DIM_OPEN_BIKE,
     DIM_OPEN_BLIZZARD,
@@ -222,6 +223,7 @@ async def _toggle_babies_quest(ctx: "SFAContext", zone_name: str) -> None:
         SFAItemData.get_by_name("Fire Blaster").id in ctx.received_items_id
         and SFAItemData.get_by_name("Staff Booster").id in ctx.received_items_id
         and SFAItemData.get_by_name("CloudRunner Flute").id in ctx.received_items_id
+        and CRF_QUEEN_BROKEN_PILLAR.get_bit()
     )
     CRF_QUEEN_CHILDREN_CHECK.set_bit(quest_condition)
 

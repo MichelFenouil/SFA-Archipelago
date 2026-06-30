@@ -26,6 +26,7 @@ class SFARegion(Enum):
     LFV = "LightFoot Village"
     MMP = "Moon Mountain Pass"
     MMP_METEORITE = "Moon Mountain Pass - Meteorite Area"
+    MMP_SHRINE = "Moon Mountain Pass - Krazoa Shrine"
     DIM_ENTRANCE = "DarkIce Mines - Entrance"
     DIM_FORT = "DarkIce Mines - SharpClaw Fort"
     DIM_BOTTOM = "DarkIce Mines - Bottom"
@@ -61,6 +62,7 @@ def connect_regions(world: SFAWorld) -> None:
     lightfoot_village = world.get_region(SFARegion.LFV.value)
     moon_mountain_pass = world.get_region(SFARegion.MMP.value)
     mmp_meteorite = world.get_region(SFARegion.MMP_METEORITE.value)
+    mmp_shrine = world.get_region(SFARegion.MMP_SHRINE.value)
     dim_entrance = world.get_region(SFARegion.DIM_ENTRANCE.value)
     dim_fort = world.get_region(SFARegion.DIM_FORT.value)
     dim_bottom = world.get_region(SFARegion.DIM_BOTTOM.value)
@@ -121,6 +123,11 @@ def connect_regions(world: SFAWorld) -> None:
     moon_mountain_pass.connect(vfp, "Access Volcano Force Point", Has("Moon Pass Key"))
     moon_mountain_pass.connect(
         mmp_meteorite, "Access Meteorite Area", Has("Moon Pass Key") & CanGrowMoonSeed() & CanExplodeBombPlant()
+    )
+    mmp_meteorite.connect(
+        mmp_shrine,
+        "Access behind Meteorite to Krazoa Shrine",
+        Has("Tricky (Progressive)", 2) & Has("Freeze Blast")
     )
     vfp.connect(vfp_past_bridge, "Cross VFP Bridge", Has("Fire SpellStone 1"))
     vfp_past_bridge.connect(

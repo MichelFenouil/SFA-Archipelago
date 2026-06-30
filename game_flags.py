@@ -24,6 +24,7 @@ KRAZOA_STATUE_2 = GameFlag(0x0525)  # Krazoa Statue 2 interaction
 CRF_ENTRANCE_RACE = GameFlag(0x02F9)  # CloudRunner Fortress race and cutscene
 CRF_PRISON_WIND = GameFlag(0x02B1)  # Prison wind draft direction (ON = Down, OFF = Up)
 CRF_QUEEN_CHILDREN_CHECK = GameFlag(0x0298)
+CRF_QUEEN_BROKEN_PILLAR = GameFlag(0x030C)  # Queen's broken pillar cutscene
 CRF_OPEN_BACK_PATH = [
     GameFlag(0x008F, T1_ADDRESS, True),
     GameFlag(0x0045, T1_ADDRESS, False),
