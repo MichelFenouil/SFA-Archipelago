@@ -10,7 +10,7 @@ from rule_builder.rules import Has, HasAll, HasAllCounts, Rule, True_
 from .addresses import T0_ADDRESS, T1_ADDRESS
 from .bit_helper import GameBit
 from .items import SFAItem
-from .macros import CanBuy, CanExplodeBombPlant, CanGrowMoonSeed, CanGoDarkRoom
+from .macros import CanBuy, CanExplodeBombPlant, CanGoDarkRoom, CanGrowMoonSeed
 from .regions import SFARegion
 
 if TYPE_CHECKING:
@@ -452,8 +452,12 @@ LOCATION_FUEL_CELL: dict[str, SFALocationData] = {
     "VFP: Freeze Blast Alcove Fuel Cell Right": SFALocationData(
         141, GameBit(0x0970), SFARegion.VFP, Has("Staff Booster") & Has("Freeze Blast")
     ),
-    "VFP: Disguise Alcove Fuel Cell Left": SFALocationData(142, GameBit(0x0973), SFARegion.VFP, Has("Staff Booster") & Has("SharpClaw Disguise")),
-    "VFP: Disguise Alcove Fuel Cell Right": SFALocationData(143, GameBit(0x0974), SFARegion.VFP, Has("Staff Booster") & Has("SharpClaw Disguise")),
+    "VFP: Disguise Alcove Fuel Cell Left": SFALocationData(
+        142, GameBit(0x0973), SFARegion.VFP, Has("Staff Booster") & Has("SharpClaw Disguise")
+    ),
+    "VFP: Disguise Alcove Fuel Cell Right": SFALocationData(
+        143, GameBit(0x0974), SFARegion.VFP, Has("Staff Booster") & Has("SharpClaw Disguise")
+    ),
     "VFP: Below Bridge Fuel Cell": SFALocationData(144, GameBit(0x098A), SFARegion.VFP, True_()),
     "VFP: Cheat Well Fuel Cell Left": SFALocationData(
         145, GameBit(0x097A), SFARegion.VFP_PAST_BRIDGE, CanGrowMoonSeed()

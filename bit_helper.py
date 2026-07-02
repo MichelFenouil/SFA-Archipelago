@@ -14,12 +14,14 @@ class GameBit:
     offset: int
     address: int
     bit_size: int
+    max_value: int
 
-    def __init__(self, offset: int, address: int = T2_ADDRESS, bit_size=1) -> None:
+    def __init__(self, offset: int, address: int = T2_ADDRESS, bit_size=1, max_value=1) -> None:
         """Initialize GameBit with address and offset."""
         self.offset = offset
         self.address = address
         self.bit_size = bit_size
+        self.max_value = max_value
 
     def get_bit(self) -> bool:
         """Read bit value from memory."""

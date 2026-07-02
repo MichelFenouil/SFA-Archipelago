@@ -15,6 +15,7 @@ if TYPE_CHECKING:
 
 UT_GLITCH_LOGIC = "UT Glitch Logic"
 
+
 class SFAItem(Item):
     """Item class for Star Fox Adventures."""
 
@@ -131,7 +132,7 @@ class SFAQuestItemData(SFACountItemData):
 
 
 @dataclass
-class SFAConsumableItemData(SFAItemData):
+class SFAResourceItemData(SFAItemData):
     """Data class for consumable items."""
 
     increment_amount: int = 1
@@ -163,14 +164,15 @@ class SFAPlanetItemData(SFAItemData):
 class SFALockedConsumableItemData(SFAItemData):
     """Data class for locked consumable items."""
 
-    set_amount: int = 1
+    max_amount: int = 1
 
-    def set_value(self, value: bool) -> None:
+    def set_value(self, value: int) -> None:
         """Set value for locked consumable item."""
-        if value:
-            self.game_bit.set_value(self.set_amount)
-        else:
-            self.game_bit.set_value(0)
+        # -1 set to max, 0 set to 0, anything else leaves to the game
+        if value == -1:
+            self.game_bit.set_value(self.max_amount)
+        elif value == 0:
+            self.game_bit.set_value(value)
 
 
 def items_name_to_id_dict() -> dict[str, int]:
@@ -254,7 +256,7 @@ def give_item_in_game(ctx: SFAContext, item: SFAItemData | None) -> bool:
         item.set_value(count)
         return True
 
-    if isinstance(item, SFAConsumableItemData):
+    if isinstance(item, SFAResourceItemData):
         item.set_value()
         return True
 
@@ -322,7 +324,7 @@ ITEM_INVENTORY: dict[str, SFAItemData] = {
         progressive_data=[GameBit(0x035B), GameBit(0x035C), GameBit(0x035D)],
     ),
     "Bomb Plant": SFALockedConsumableItemData(
-        101, "Bomb Plant", GameBit(0x0077, bit_size=3), ItemClassification.progression, [SFAItemTags.SEED], set_amount=7
+        101, "Bomb Plant", GameBit(0x0077, bit_size=3), ItemClassification.progression, [SFAItemTags.SEED], max_amount=7
     ),
     "SHW Alpine Root": SFAQuestItemData(
         102,
@@ -363,7 +365,7 @@ ITEM_INVENTORY: dict[str, SFAItemData] = {
     "Fire SpellStone 1": SFAItemData(113, "Fire SpellStone 1", GameBit(0x039E), ItemClassification.progression),
     "Moon Pass Key": SFAItemData(114, "Moon Pass Key", GameBit(0x017B), ItemClassification.progression),
     "Moon Seed": SFALockedConsumableItemData(
-        115, "Moon Seed", GameBit(0x01FE, bit_size=3), ItemClassification.progression, [SFAItemTags.SEED], set_amount=7
+        115, "Moon Seed", GameBit(0x01FE, bit_size=3), ItemClassification.progression, [SFAItemTags.SEED], max_amount=7
     ),
     "Krazoa Spirit 2": SFAItemData(116, "Krazoa Spirit 2", GameBit(0x0537), ItemClassification.progression),
     "Gold Bars": SFAQuestItemData(
@@ -391,6 +393,14 @@ ITEM_INVENTORY: dict[str, SFAItemData] = {
         121, "Blue Crystal", GameBit(0x02A6), ItemClassification.progression, used_count_bits=[GameBit(0x02AF)]
     ),
     "CloudRunner Flute": SFAItemData(122, "CloudRunner Flute", GameBit(0x02DE), ItemClassification.progression),
+    "FireFly": SFALockedConsumableItemData(
+        0,
+        "FireFly",
+        GameBit(0x071D, bit_size=5),
+        ItemClassification.progression,
+        [SFAItemTags.SKIP_ITEMPOOL],
+        max_amount=31,
+    ),  # Fake item to handle infinite consumables
 }
 
 ITEM_SHOP: dict[str, SFAItemData] = {
@@ -465,7 +475,7 @@ FILLER_ITEMS: dict[str, SFAItemData] = {
         ItemClassification.filler,
         max_count=255,
     ),
-    "Health Refill": SFAConsumableItemData(
+    "Health Refill": SFAResourceItemData(
         1002,
         "Health Refill",
         GameBit(0x0, PLAYER_CUR_HP, bit_size=8),
@@ -473,7 +483,7 @@ FILLER_ITEMS: dict[str, SFAItemData] = {
         increment_amount=4,
         max_amount_bit=GameBit(0x0, PLAYER_MAX_HP, bit_size=8),
     ),
-    "Magic Refill": SFAConsumableItemData(
+    "Magic Refill": SFAResourceItemData(
         1003,
         "Magic Refill",
         GameBit(0x0, PLAYER_CUR_MP, bit_size=8),

@@ -35,6 +35,8 @@ CRF_OPEN_POST_BOSS = [
     GameFlag(0x012D, T1_ADDRESS, False),
 ]
 
+TRICKY_FOOD_COUNT = GameBit(0x0, 0x803A32C0, bit_size=8, max_value=20)
+
 ## Global static flags ##
 
 FORCE_TRICKY = GameFlag(0x0847)  # Spawn Tricky

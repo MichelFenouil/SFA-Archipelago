@@ -16,6 +16,7 @@ from .items import (
 from .locations import create_all_locations, locations_name_to_id_dict
 from .options import SFAOptions
 from .regions import connect_regions, create_all_regions
+from .web_world import SFAWebWorld
 
 if TYPE_CHECKING:
     from Options import Option
@@ -30,6 +31,8 @@ class SFAWorld(World):
     game = "Star Fox Adventures"
 
     data_version = 1
+
+    web = SFAWebWorld()
 
     options_dataclass = SFAOptions
     options: SFAOptions  # Common mistake: This has to be a colon (:), not an equals sign (=).
@@ -87,15 +90,12 @@ class SFAWorld(World):
         """
         # If you need access to the player's chosen options on the client side, there is a helper for that.
         return {
-            **self.options.as_dict(
-                "shop_locations",
-                "plant_shuffle",
-                "dark_rooms",
-            ),
             "options": self.options.as_dict(
                 "shop_locations",
                 "plant_shuffle",
                 "dark_rooms",
+                "infinite_consumables",
+                "infinite_tricky_food",
             ),
         }
 

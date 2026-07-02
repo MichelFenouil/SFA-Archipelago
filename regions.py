@@ -125,9 +125,7 @@ def connect_regions(world: SFAWorld) -> None:
         mmp_meteorite, "Access Meteorite Area", Has("Moon Pass Key") & CanGrowMoonSeed() & CanExplodeBombPlant()
     )
     mmp_meteorite.connect(
-        mmp_shrine,
-        "Access behind Meteorite to Krazoa Shrine",
-        Has("Tricky (Progressive)", 2) & Has("Freeze Blast")
+        mmp_shrine, "Access behind Meteorite to Krazoa Shrine", Has("Tricky (Progressive)", 2) & Has("Freeze Blast")
     )
     vfp.connect(vfp_past_bridge, "Cross VFP Bridge", Has("Fire SpellStone 1"))
     vfp_past_bridge.connect(

@@ -2,6 +2,8 @@ from dataclasses import dataclass
 
 from Options import Choice, OptionGroup, PerGameCommonOptions, Toggle
 
+## Logic Options
+
 
 class ShopLocations(Choice):
     """
@@ -26,7 +28,7 @@ class PlantShuffle(Toggle):
     Shuffle plant items.
 
     Bomb Spores and Moon Seeds are locked at the beginning of the game,
-    and receiving the item unlocks the plant with infinite uses.
+    and receiving the item unlocks the plant.
     """
 
     display_name = "Shuffle Plant Items"
@@ -47,6 +49,29 @@ class DarkRoomLogic(Toggle):
     default = False
 
 
+## QoL Options
+
+
+class InfiniteConsumables(Toggle):
+    """
+    Always have max consumables once unlocked (seeds, fireflies, etc.).
+
+    Moon Seeds require Ground Quake to be collected without this option.
+    """
+
+    display_name = "Infinite Consumables"
+
+    default = False
+
+
+class InfiniteTrickyFood(Toggle):
+    """Always have max Tricky food."""
+
+    display_name = "Infinite Tricky Food"
+
+    default = False
+
+
 @dataclass
 class SFAOptions(PerGameCommonOptions):
     """Star Fox Adventures options class."""
@@ -54,11 +79,17 @@ class SFAOptions(PerGameCommonOptions):
     shop_locations: ShopLocations
     plant_shuffle: PlantShuffle
     dark_rooms: DarkRoomLogic
+    infinite_consumables: InfiniteConsumables
+    infinite_tricky_food: InfiniteTrickyFood
 
 
 option_groups = [
     OptionGroup(
         "Logic Options",
-        [ShopLocations],
+        [ShopLocations, PlantShuffle, DarkRoomLogic],
+    ),
+    OptionGroup(
+        "Quality of Life Options",
+        [InfiniteConsumables, InfiniteTrickyFood],
     ),
 ]

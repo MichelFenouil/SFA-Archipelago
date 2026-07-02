@@ -28,6 +28,7 @@ from .game_flags import (
     DINO_CAVE,
     MAGIC_CAVE_ACT_GAMEBIT,
     STARTING_FLAGS,
+    TRICKY_FOOD_COUNT,
 )
 from .game_memory.code_edit import remove_max_bafomdad_check
 from .game_memory.hook_handlers import SFAHookHandlers
@@ -38,6 +39,7 @@ from .items import (
     ITEM_TRICKY,
     USEFUL_ITEMS,
     SFAItemData,
+    SFAItemTags,
     SFALockedConsumableItemData,
     give_item_in_game,
 )
@@ -149,7 +151,7 @@ class SFAContext(SuperContext):
         """
         super().__init__(server_address, password)
         self.send_index: int = 0
-        self.syncing = False
+        self.syncing = True
         self.awaiting_bridge = False
         self.dolphin_sync_task: asyncio.Task[None] | None = None
         self.dolphin_status: str = CONNECTION_INITIAL_STATUS
@@ -186,6 +188,7 @@ class SFAContext(SuperContext):
 
         if cmd == "Connected":
             self.slot_data = args["slot_data"]
+            self.options = self.slot_data["options"]
         return
 
 
@@ -300,6 +303,7 @@ async def give_items(ctx: SFAContext):
     received_items = ctx.items_received
     if len(received_items) <= expected_idx:
         # There are no new items.
+        ctx.syncing = False
         return
 
     # Loop through items to give.
@@ -319,6 +323,9 @@ async def force_gameflags(ctx: SFAContext) -> None:
 
     :param ctx: The Star Fox Adventures context
     """
+    if ctx.syncing:
+        return
+
     # Set bitflags when starting save
     map_value = dme.read_byte(MAP_ID_ADDRESS)
     if ctx.stored_map != map_value and ctx.stored_map == MAIN_MENU_ID:
@@ -342,10 +349,20 @@ async def force_gameflags(ctx: SFAContext) -> None:
         dino_horn = SFAItemData.get_by_name("Dinosaur Horn")
         dino_horn.set_value(dino_horn.id in ctx.received_items_id)
 
-    if ctx.slot_data["plant_shuffle"]:
-        for item in ITEM_INVENTORY.values():
-            if isinstance(item, SFALockedConsumableItemData):
-                item.set_value(item.id in ctx.received_items_id)
+    if ctx.options["infinite_tricky_food"]:
+        TRICKY_FOOD_COUNT.set_value(TRICKY_FOOD_COUNT.max_value)
+
+    # Lock plants
+    # 0 = off, 1 = any, -1 = max
+    for item in ITEM_INVENTORY.values():
+        if isinstance(item, SFALockedConsumableItemData):
+            plant_value = 1
+            if ctx.options["infinite_consumables"]:
+                plant_value = -1
+            if ctx.options["plant_shuffle"] and SFAItemTags.SEED in item.tags:
+                if item.id not in ctx.received_items_id:
+                    plant_value = 0
+            item.set_value(plant_value)
 
 
 async def player_hooks_watcher(ctx: SFAContext) -> None:

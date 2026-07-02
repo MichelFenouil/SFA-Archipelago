@@ -4,10 +4,10 @@ from typing import TYPE_CHECKING, override
 from BaseClasses import CollectionState
 from NetUtils import JSONMessagePart
 from rule_builder.options import OptionFilter
-from rule_builder.rules import Has, HasAny, Rule, False_, True_
-from .items import UT_GLITCH_LOGIC
+from rule_builder.rules import Has, HasAny, Rule, True_
 
-from .options import PlantShuffle, DarkRoomLogic
+from .items import UT_GLITCH_LOGIC
+from .options import InfiniteConsumables, PlantShuffle
 
 if TYPE_CHECKING:
     from .world import SFAWorld
@@ -29,11 +29,12 @@ class CanGrowMoonSeed(Rule["SFAWorld"], game="Star Fox Adventures"):
     """Rule that checks if the player can grow a moon seed."""
 
     def _instantiate(self, world: "SFAWorld") -> Rule.Resolved:
-        plant_shuffle_rule = Has("Moon Seed", options=[OptionFilter(PlantShuffle, True)]) | Has(
-            "Ground Quake", options=[OptionFilter(PlantShuffle, False)]
+        plant_shuffle_rule = Has("Moon Seed", options=[OptionFilter(PlantShuffle, True)], filtered_resolution=True)
+        can_collect_seeds_rule = Has(
+            "Ground Quake", options=[OptionFilter(InfiniteConsumables, False)], filtered_resolution=True
         )
-        return (plant_shuffle_rule & Has("Tricky (Progressive)", count=2)).resolve(world)
-    
+        return (plant_shuffle_rule & can_collect_seeds_rule & Has("Tricky (Progressive)", count=2)).resolve(world)
+
 
 @dataclass()
 class CanGoDarkRoom(Rule["SFAWorld"], game="Star Fox Adventures"):
@@ -43,7 +44,7 @@ class CanGoDarkRoom(Rule["SFAWorld"], game="Star Fox Adventures"):
         if world.options.dark_rooms.value:
             return True_().resolve(world)
         return self.Resolved(player=world.player, caching_enabled=False)
-    
+
     class Resolved(Rule.Resolved):
         """Resolved version."""
 
