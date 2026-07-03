@@ -326,21 +326,10 @@ async def force_gameflags(ctx: SFAContext) -> None:
     if ctx.syncing:
         return
 
-    # Set bitflags when starting save
-    map_value = dme.read_byte(MAP_ID_ADDRESS)
-    if ctx.stored_map != map_value and ctx.stored_map == MAIN_MENU_ID:
-        logger.debug("Set starting flags")
-        set_on_or_bytes(ITEM_MAP_ADDRESS, ITEM_MAP_INIT_VALUE, 3)
-        set_on_or_bytes(SKIP_TUTO_ADDRESS, SKIP_TUTO_VALUE, 2)
-        for item in STARTING_FLAGS:
-            set_flag_bit(item.address, item.offset, item.state)
-        remove_max_bafomdad_check()
-        await sync_full_player_state(ctx)
-
     for item in CONSTANT_FLAGS:
         set_flag_bit(item.address, item.offset, item.state)
 
-    if map_value == ICE_MOUNTAIN_BOTTOM_ID:
+    if ctx.stored_map == ICE_MOUNTAIN_BOTTOM_ID:
         tricky_item = SFAItemData.get_by_name("Tricky (Progressive)")
         tricky_commands_flag = tricky_item.progressive_data[0]  # type: ignore
         tricky_commands_flag.set_bit(tricky_item.id in ctx.received_items_id)
@@ -365,6 +354,17 @@ async def force_gameflags(ctx: SFAContext) -> None:
             item.set_value(plant_value)
 
 
+async def set_starting_flags(ctx: SFAContext) -> None:
+    """Set all GameFlags when starting the game."""
+    logger.debug("Set starting flags")
+    set_on_or_bytes(ITEM_MAP_ADDRESS, ITEM_MAP_INIT_VALUE, 3)
+    set_on_or_bytes(SKIP_TUTO_ADDRESS, SKIP_TUTO_VALUE, 2)
+    for item in STARTING_FLAGS:
+        item.set_bit(item.state)
+    remove_max_bafomdad_check()
+    await sync_full_player_state(ctx)
+
+
 async def player_hooks_watcher(ctx: SFAContext) -> None:
     """
     Handle special map flags for certain locations.
@@ -373,6 +373,8 @@ async def player_hooks_watcher(ctx: SFAContext) -> None:
     """
     map_value = dme.read_byte(MAP_ID_ADDRESS)
     if ctx.stored_map != map_value:
+        if ctx.stored_map == MAIN_MENU_ID:
+            await set_starting_flags(ctx)
         logger.debug(f"Entering map {map_value:x}")
         await ctx.hooks.run_map_transition(map_value, ctx.stored_map)
         ctx.stored_map = map_value
