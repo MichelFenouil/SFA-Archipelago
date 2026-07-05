@@ -215,6 +215,7 @@ def sync_player_state(ctx: SFAContext):
     give_item_in_game(ctx, ITEM_INVENTORY["Green Crystal"])
     give_item_in_game(ctx, ITEM_INVENTORY["Blue Crystal"])
     give_item_in_game(ctx, ITEM_INVENTORY["CloudRunner Flute"])
+    give_item_in_game(ctx, ITEM_INVENTORY["Fire Gem"])
 
 
 async def sync_full_player_state(ctx: SFAContext):

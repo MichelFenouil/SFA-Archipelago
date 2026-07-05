@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass, field
 from enum import Enum, auto
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Literal
 
 from BaseClasses import Item, ItemClassification
 
@@ -109,22 +109,23 @@ class SFACountItemData(SFAItemData):
 class SFAQuestItemData(SFACountItemData):
     """Data class for quest items."""
 
-    max_count: int = 1
-    count_increment: int = 1
-    start_amount: int = 0
     used_count_bits: list[GameBit] = field(default_factory=lambda: [])
+    used_state: Literal["sum", "last"] = "sum"  # "sum" or "last"
 
     def set_value(self, value: int) -> None:
         """Set value for quest item."""
         if value > self.max_count:
             value = self.max_count
+
         used_count = 0
-        # Counter values will return total count, list of bits will return last checked bit
-        for index, bit in enumerate(self.used_count_bits):
-            used_value = bit.get_value()
-            if used_value == 0:
-                break
-            used_count = used_value * (index + 1)
+        if self.used_state == "sum":
+            used_count = sum(bit.get_value() for bit in self.used_count_bits)
+        if self.used_state == "last":
+            for index, bit in enumerate(self.used_count_bits):
+                used_value = bit.get_value()
+                if used_value > 0:
+                    used_count = index + 1
+
         value = self.start_amount + (value - used_count) * self.count_increment
         if value < 0:
             value = 0
@@ -351,6 +352,7 @@ ITEM_INVENTORY: dict[str, SFAItemData] = {
         ItemClassification.progression,
         max_count=2,
         used_count_bits=[GameBit(0x036C), GameBit(0x036D)],
+        used_state="last",
     ),
     "SharpClaw Fort Bridge Cogs": SFAProgressiveItemData(
         107,
@@ -401,6 +403,15 @@ ITEM_INVENTORY: dict[str, SFAItemData] = {
         [SFAItemTags.SKIP_ITEMPOOL],
         max_amount=31,
     ),  # Fake item to handle infinite consumables
+    "Fire Gem": SFAQuestItemData(
+        123,
+        "Fire Gem",
+        GameBit(0x025A, bit_size=2),
+        ItemClassification.progression,
+        max_count=2,
+        used_count_bits=[GameBit(0x269), GameBit(0x267)],
+        used_state="sum",
+    ),
 }
 
 ITEM_SHOP: dict[str, SFAItemData] = {

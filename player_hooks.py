@@ -3,7 +3,6 @@ from typing import TYPE_CHECKING
 
 import dolphin_memory_engine as dme
 from CommonClient import logger
-from .game_memory.code_edit import trigger_objgroup_load
 
 from .addresses import *  # noqa: F403
 from .bit_helper import GameBit, extract_bitflag_list, set_flag_bit, set_value_bytes, swap_endian
@@ -22,6 +21,7 @@ from .game_flags import (
     KRAZOA_STATUE_2,
     MAGIC_CAVE_ACT_GAMEBIT,
 )
+from .game_memory.code_edit import trigger_objgroup_load
 from .game_memory.hook_handlers import PlayerCoordZone
 from .game_memory.loaded_objects import get_all_loaded_objects, search_objects
 from .game_memory.memory_struct import ObjState
@@ -247,10 +247,14 @@ async def _close_back_path(ctx: "SFAContext", zone_name: str) -> None:
     if SFAItemData.get_by_name("SharpClaw Disguise").id not in ctx.received_items_id:
         CRF_OPEN_BACK_PATH[0].set_bit(False)
 
+
 async def _cc_act1_on(ctx: "SFAContext", zone_name: str) -> None:
     if zone_name != "CC_CLOUDRUNNER_CELL" and zone_name != "CC_HIGHTOP_QUEST":
         return
     CC_ACT_GAMEBIT.set_value(1)
+    objgroup_value = CC_OBJGROUP_VALUE.get_value()
+    trigger_objgroup_load(CAPE_CLAW_ID, objgroup_value)
+
 
 async def _cc_act1_off(ctx: "SFAContext", zone_name: str) -> None:
     if zone_name != "CC_CLOUDRUNNER_CELL" and zone_name != "CC_HIGHTOP_QUEST":
@@ -300,10 +304,8 @@ def register_default_special_hooks(ctx: "SFAContext") -> None:
     ctx.hooks.add_player_coord_transition(_prevent_softlock_on_back_path, "enter")
     ctx.hooks.add_player_coord_transition(_close_back_path, "leave")
     ctx.hooks.add_player_coord_zone(
-        PlayerCoordZone.square("CC_CLOUDRUNNER_CELL", 3800, 3570, -3230, -3770, CAPE_CLAW_ID)
+        PlayerCoordZone.square("CC_CLOUDRUNNER_CELL", 3800, 3300, -3100, -4100, CAPE_CLAW_ID)
     )
-    ctx.hooks.add_player_coord_zone(
-        PlayerCoordZone.square("CC_HIGHTOP_QUEST", 2880, 2340, -2300, -1870, CAPE_CLAW_ID)
-    )
+    ctx.hooks.add_player_coord_zone(PlayerCoordZone.square("CC_HIGHTOP_QUEST", 3600, 2340, -2500, -1870, CAPE_CLAW_ID))
     ctx.hooks.add_player_coord_transition(_cc_act1_on, "enter")
     ctx.hooks.add_player_coord_transition(_cc_act1_off, "leave")

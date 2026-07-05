@@ -311,14 +311,26 @@ LOCATION_ANY: dict[str, SFALocationData] = {
     "CC: Give HighTop Gold Bars": SFALocationData(
         44,
         GameBit(0x0242),
-        SFARegion.CC_OPEN,
-        Has("Gold Bars", 4) & (CanBuy(25) | Has("Staff Booster")),
+        SFARegion.CC_POST_QUEST,
+        True_(),
     ),
     "CC: Rescue CloudRunner": SFALocationData(
         45,
         GameBit(0x024A),
+        SFARegion.CC_POST_QUEST,
+        True_(),
+    ),
+    "CC: Fire Gem behind Waterfall": SFALocationData(
+        54,
+        GameBit(0x025F),
+        SFARegion.CC_POST_QUEST,
+        Has("SharpClaw Disguise") & Has("Tricky (Progressive)") & Has("Freeze Blast"),
+    ),
+    "CC: Fire Gem from LightFoot": SFALocationData(
+        55,
+        GameBit(0x0259),
         SFARegion.CC_OPEN,
-        Has("Gold Bars", 4) & (CanBuy(25) | Has("Staff Booster")),  # Requires quest to open door
+        True_(),
     ),
     ## CloudRunner Fortress
     "CRF: Entrance Platform Race": SFALocationData(
@@ -488,6 +500,8 @@ LOCATION_FUEL_CELL: dict[str, SFALocationData] = {
     "CC: Dig in Back Cave Fuel Cell": SFALocationData(
         157, GameBit(0x0965), SFARegion.CC_OPEN, Has("Tricky (Progressive)")
     ),
+    "CC: Poison Room Fuel Cell Left": SFALocationData(158, GameBit(0x0972), SFARegion.CC_POST_QUEST, True_()),
+    "CC: Poison Room Fuel Cell Right": SFALocationData(159, GameBit(0x0971), SFARegion.CC_POST_QUEST, True_()),
 }
 
 # Last id = 318
@@ -558,6 +572,7 @@ LOCATION_DIG_AND_BAFOMDAD: dict[str, SFALocationData] = {
     "CC: Dig Gold Bar near CloudRunner Cell": SFALocationData(
         325, GameBit(0x0235), SFARegion.CC_OPEN, Has("Tricky (Progressive)")
     ),
+    "CC: Poison Room BafomDad": SFALocationData(331, GameBit(0x08CC), SFARegion.CC_POST_QUEST, True_()),
     ## ClouRunner Fortress
     "CRF: Cage BafomDad": SFALocationData(326, GameBit(0x08C0), SFARegion.CRF_MAIN, True_()),
     "CRF: Cell BafomDad": SFALocationData(327, GameBit(0x08C4), SFARegion.CRF_MAIN, True_()),
