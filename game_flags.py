@@ -6,6 +6,9 @@ from .bit_helper import GameBit, GameFlag
 MAGIC_CAVE_ACT_GAMEBIT = GameBit(0x2, 0x803A3871, bit_size=4)
 MAGIC_CAVE_FLAG_ADDRESS = 0x803A3905
 
+CC_ACT_GAMEBIT = GameBit(0x072A, bit_size=4)
+CC_OBJGROUP_VALUE = GameBit(0x00E8, T3_ADDRESS, bit_size=32)
+
 KRAZOA_SPIRIT_1 = GameFlag(0x053C)
 DIM_OPEN_BLIZZARD = [
     GameFlag(0x03B3),  # Allow horn interaction

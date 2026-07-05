@@ -3,10 +3,13 @@ from typing import TYPE_CHECKING
 
 import dolphin_memory_engine as dme
 from CommonClient import logger
+from .game_memory.code_edit import trigger_objgroup_load
 
 from .addresses import *  # noqa: F403
 from .bit_helper import GameBit, extract_bitflag_list, set_flag_bit, set_value_bytes, swap_endian
 from .game_flags import (
+    CC_ACT_GAMEBIT,
+    CC_OBJGROUP_VALUE,
     CRF_ENTRANCE_RACE,
     CRF_OPEN_BACK_PATH,
     CRF_OPEN_POST_BOSS,
@@ -120,6 +123,9 @@ async def _handle_map_entry_state(ctx: "SFAContext", entered_map: int, from_map:
 
     if entered_map == COMBAT_SHRINE_ID:
         LOCATION_ANY["MMP: Test of Combat"].set_bit(False)
+
+    if entered_map == CAPE_CLAW_ID:
+        CC_ACT_GAMEBIT.set_value(2)
 
 
 async def _handle_krazoa_palace(ctx: "SFAContext", entered_map: int, from_map: int) -> None:
@@ -241,6 +247,18 @@ async def _close_back_path(ctx: "SFAContext", zone_name: str) -> None:
     if SFAItemData.get_by_name("SharpClaw Disguise").id not in ctx.received_items_id:
         CRF_OPEN_BACK_PATH[0].set_bit(False)
 
+async def _cc_act1_on(ctx: "SFAContext", zone_name: str) -> None:
+    if zone_name != "CC_CLOUDRUNNER_CELL" and zone_name != "CC_HIGHTOP_QUEST":
+        return
+    CC_ACT_GAMEBIT.set_value(1)
+
+async def _cc_act1_off(ctx: "SFAContext", zone_name: str) -> None:
+    if zone_name != "CC_CLOUDRUNNER_CELL" and zone_name != "CC_HIGHTOP_QUEST":
+        return
+    CC_ACT_GAMEBIT.set_value(2)
+    objgroup_value = CC_OBJGROUP_VALUE.get_value()
+    trigger_objgroup_load(CAPE_CLAW_ID, objgroup_value)
+
 
 def register_default_special_hooks(ctx: "SFAContext") -> None:
     """Register all hooks."""
@@ -281,3 +299,11 @@ def register_default_special_hooks(ctx: "SFAContext") -> None:
     )
     ctx.hooks.add_player_coord_transition(_prevent_softlock_on_back_path, "enter")
     ctx.hooks.add_player_coord_transition(_close_back_path, "leave")
+    ctx.hooks.add_player_coord_zone(
+        PlayerCoordZone.square("CC_CLOUDRUNNER_CELL", 3800, 3570, -3230, -3770, CAPE_CLAW_ID)
+    )
+    ctx.hooks.add_player_coord_zone(
+        PlayerCoordZone.square("CC_HIGHTOP_QUEST", 2880, 2340, -2300, -1870, CAPE_CLAW_ID)
+    )
+    ctx.hooks.add_player_coord_transition(_cc_act1_on, "enter")
+    ctx.hooks.add_player_coord_transition(_cc_act1_off, "leave")

@@ -215,8 +215,10 @@ class SFAHookHandlers:
         )
 
         for zone_name in entered:
+            logger.debug("Player entered zone: %s", zone_name)
             await self._run_player_coord_hooks(self.player_coord_enter_hooks, zone_name)
         for zone_name in left:
+            logger.debug("Player left zone: %s", zone_name)
             await self._run_player_coord_hooks(self.player_coord_leave_hooks, zone_name)
 
         self.active_player_coord_zones = active_now

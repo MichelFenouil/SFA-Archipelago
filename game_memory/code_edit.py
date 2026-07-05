@@ -1,7 +1,7 @@
 import dolphin_memory_engine as dme
 from CommonClient import logger
 
-from ..addresses import BAFOMDAD_MAX_CHECK_ADDRESS
+from ..addresses import BAFOMDAD_MAX_CHECK_ADDRESS, OBJGROUP_BIT_ARRAY, OBJGROUP_LOAD_CODE
 
 
 def remove_max_bafomdad_check():
@@ -16,3 +16,8 @@ def remove_max_bafomdad_check():
             f"Expected branch instruction not found at {hex(BAFOMDAD_MAX_CHECK_ADDRESS)}. \
             Found: {hex(bafomdad_branch_instruction)}. No changes made."
         )
+
+def trigger_objgroup_load(map: int, objgroup_value: int) -> None:
+    """Trigger an object group load by writing to the OBJGROUP_LOAD_CODE address."""
+    objgroup_trigger_address = OBJGROUP_LOAD_CODE + 4 * map
+    dme.write_bytes(objgroup_trigger_address, bytes.fromhex(f"{objgroup_value:x}"))
