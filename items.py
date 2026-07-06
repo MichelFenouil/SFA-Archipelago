@@ -317,6 +317,14 @@ ITEM_PLANET: dict[str, SFAItemData] = {
 }
 
 ITEM_INVENTORY: dict[str, SFAItemData] = {
+    "FireFly": SFALockedConsumableItemData(
+        0,
+        "FireFly",
+        GameBit(0x071D, bit_size=5),
+        ItemClassification.progression,
+        [SFAItemTags.SKIP_ITEMPOOL],
+        max_amount=31,
+    ),  # Fake item to handle infinite consumables
     "Scarab Bag (Progressive)": SFAProgressiveItemData(
         100,
         "Scarab Bag (Progressive)",
@@ -395,16 +403,9 @@ ITEM_INVENTORY: dict[str, SFAItemData] = {
         121, "Blue Crystal", GameBit(0x02A6), ItemClassification.progression, used_count_bits=[GameBit(0x02AF)]
     ),
     "CloudRunner Flute": SFAItemData(122, "CloudRunner Flute", GameBit(0x02DE), ItemClassification.progression),
-    "FireFly": SFALockedConsumableItemData(
-        0,
-        "FireFly",
-        GameBit(0x071D, bit_size=5),
-        ItemClassification.progression,
-        [SFAItemTags.SKIP_ITEMPOOL],
-        max_amount=31,
-    ),  # Fake item to handle infinite consumables
+    "Water SpellStone 1": SFAItemData(123, "Water SpellStone 1", GameBit(0x01C3), ItemClassification.progression),
     "Fire Gem": SFAQuestItemData(
-        123,
+        124,
         "Fire Gem",
         GameBit(0x025A, bit_size=2),
         ItemClassification.progression,

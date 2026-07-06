@@ -4,7 +4,7 @@ from enum import Enum
 from typing import TYPE_CHECKING
 
 from BaseClasses import Region
-from rule_builder.rules import Has, HasAll, HasAllCounts, True_
+from rule_builder.rules import CanReachLocation, Has, HasAll, HasAllCounts, True_
 
 from .macros import CanBuy, CanExplodeBombPlant, CanGoDarkRoom, CanGrowMoonSeed
 
@@ -41,6 +41,7 @@ class SFARegion(Enum):
     CRF_LANDING = "CloudRunner Fortress - Landing Pad"
     CRF_MAIN = "CloudRunner Fortress - Central Area"
     CRF_POWERED = "CloudRunner Fortress - With Power"
+    OFP_ENTRANCE = "Ocean Force Point - Entrance"
 
 
 def create_all_regions(world: SFAWorld) -> None:
@@ -78,6 +79,7 @@ def connect_regions(world: SFAWorld) -> None:
     cloudrunner_fortress_landing = world.get_region(SFARegion.CRF_LANDING.value)
     cloudrunner_fortress_main = world.get_region(SFARegion.CRF_MAIN.value)
     cloudrunner_fortress_powered = world.get_region(SFARegion.CRF_POWERED.value)
+    ofp_entrance = world.get_region(SFARegion.OFP_ENTRANCE.value)
 
     world_map.connect(thorntail_hollow, "Fly to Planet", Has("Dinosaur Planet Access"))
     thorntail_hollow.connect(
@@ -163,4 +165,17 @@ def connect_regions(world: SFAWorld) -> None:
         cloudrunner_fortress_powered,
         "Access CloudRunner Fortress Powered Area",
         HasAll("CRF Power Key", "Red Crystal", "Green Crystal", "Blue Crystal", "SharpClaw Disguise"),
+    )
+    cc_post_quest.connect(
+        ofp_entrance,
+        "Access Ocean Force Point",
+        CanReachLocation("CC: Fire Gem behind Waterfall")
+        & HasAllCounts(
+            {
+                "Tricky (Progressive)": 2,
+                "Fire Gem": 2,
+                "Fire Blaster": 1,
+                "Water SpellStone 1": 1,
+            }
+        ),
     )

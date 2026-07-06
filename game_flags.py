@@ -9,6 +9,8 @@ MAGIC_CAVE_FLAG_ADDRESS = 0x803A3905
 CC_ACT_GAMEBIT = GameBit(0x072A, bit_size=4)
 CC_OBJGROUP_VALUE = GameBit(0x00E8, T3_ADDRESS, bit_size=32)
 
+OFP_ACT_GAMEBIT = GameBit(0x0326, T1_ADDRESS, bit_size=4)
+
 KRAZOA_SPIRIT_1 = GameFlag(0x053C)
 DIM_OPEN_BLIZZARD = [
     GameFlag(0x03B3),  # Allow horn interaction

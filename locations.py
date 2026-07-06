@@ -381,6 +381,14 @@ LOCATION_ANY: dict[str, SFALocationData] = {
         SFARegion.CRF_POWERED,
         HasAll("Fire Blaster", "Staff Booster", "CloudRunner Flute") & CanGoDarkRoom(),
     ),
+    ## Ocean Force Point
+    "OFP: Insert Water SpellStone 1": SFALocationData(
+        56,
+        GameBit(0x05E9),
+        SFARegion.OFP_ENTRANCE,
+        HasAll("Water SpellStone 1", "Staff Booster", "SharpClaw Disguise", "Fire Blaster")
+        & Has("Tricky (Progressive)", 2),
+    ),
 }
 
 # Last id = 148
@@ -502,6 +510,17 @@ LOCATION_FUEL_CELL: dict[str, SFALocationData] = {
     ),
     "CC: Poison Room Fuel Cell Left": SFALocationData(158, GameBit(0x0972), SFARegion.CC_POST_QUEST, True_()),
     "CC: Poison Room Fuel Cell Right": SFALocationData(159, GameBit(0x0971), SFARegion.CC_POST_QUEST, True_()),
+    ## Ocean Force Point
+    "OFP: Small Platform Fuel Cell Left": SFALocationData(160, GameBit(0x096D), SFARegion.OFP_ENTRANCE, True_()),
+    "OFP: Small Platform Fuel Cell Right": SFALocationData(161, GameBit(0x096E), SFARegion.OFP_ENTRANCE, True_()),
+    "OFP: Warp Platform Fuel Cell Left": SFALocationData(162, GameBit(0x0988), SFARegion.OFP_ENTRANCE, True_()),
+    "OFP: Warp Platform Fuel Cell Right": SFALocationData(163, GameBit(0x0987), SFARegion.OFP_ENTRANCE, True_()),
+    "OFP: Booster Ledge Fuel Cell Left": SFALocationData(
+        164, GameBit(0x0975), SFARegion.OFP_ENTRANCE, Has("Staff Booster")
+    ),
+    "OFP: Booster Ledge Fuel Cell Right": SFALocationData(
+        165, GameBit(0x0976), SFARegion.OFP_ENTRANCE, Has("Staff Booster")
+    ),
 }
 
 # Last id = 318

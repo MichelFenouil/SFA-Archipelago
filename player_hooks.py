@@ -20,6 +20,7 @@ from .game_flags import (
     KRAZOA_SPIRIT_1,
     KRAZOA_STATUE_2,
     MAGIC_CAVE_ACT_GAMEBIT,
+    OFP_ACT_GAMEBIT,
 )
 from .game_memory.code_edit import trigger_objgroup_load
 from .game_memory.hook_handlers import PlayerCoordZone
@@ -127,6 +128,9 @@ async def _handle_map_entry_state(ctx: "SFAContext", entered_map: int, from_map:
     if entered_map == CAPE_CLAW_ID:
         CC_ACT_GAMEBIT.set_value(2)
 
+    if entered_map == OCEAN_FORCE_POINT_BEACH_ID:
+        OFP_ACT_GAMEBIT.set_value(1)
+
 
 async def _handle_krazoa_palace(ctx: "SFAContext", entered_map: int, from_map: int) -> None:
     if entered_map != KRAZOA_PALACE_ID:
@@ -187,7 +191,7 @@ async def _handle_test_of_combat_warppad(ctx: "SFAContext", zone_name: str) -> N
         dme.write_bytes(warppad.state_ptr + flag_e_offset, bytes.fromhex("01"))
 
 
-async def _handle_spellstone_door(ctx: "SFAContext", zone_name: str) -> None:
+async def _handle_fire_spellstone_door(ctx: "SFAContext", zone_name: str) -> None:
     if zone_name != "VFP_SPELLSTONE_DOOR_ZONE":
         return
     ITEM_INVENTORY["Fire SpellStone 1"].set_value(True)
@@ -279,7 +283,7 @@ def register_default_special_hooks(ctx: "SFAContext") -> None:
     ctx.hooks.add_player_coord_zone(
         PlayerCoordZone.square("VFP_SPELLSTONE_DOOR_ZONE", -17350, -17000, -420, -230, VOLCANO_FORCE_POINT_ID)
     )
-    ctx.hooks.add_player_coord_transition(_handle_spellstone_door, "enter")
+    ctx.hooks.add_player_coord_transition(_handle_fire_spellstone_door, "enter")
     ctx.hooks.add_player_coord_zone(PlayerCoordZone.circle("TTH_WARPSTONE", -5225, -1726, 100, THORNTAIL_HOLLOW_ID))
     ctx.hooks.add_player_coord_transition(_give_spirit_near_warpstone, "enter")
     ctx.hooks.add_player_coord_zone(

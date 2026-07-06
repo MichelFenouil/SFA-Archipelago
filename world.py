@@ -50,8 +50,8 @@ class SFAWorld(World):
     def create_regions(self) -> None:
         """Create regions and entrances for this world player."""
         create_all_regions(self)
-        connect_regions(self)
         create_all_locations(self)
+        connect_regions(self)
 
     def set_rules(self) -> None:
         """Create rules for this world player."""

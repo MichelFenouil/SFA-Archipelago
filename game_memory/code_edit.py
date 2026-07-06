@@ -21,6 +21,4 @@ def remove_max_bafomdad_check():
 def trigger_objgroup_load(map: int, objgroup_value: int) -> None:
     """Trigger an object group load by writing to the OBJGROUP_LOAD_CODE address."""
     objgroup_trigger_address = OBJGROUP_LOAD_CODE + 4 * map
-    dme.write_bytes(
-        objgroup_trigger_address, bytes.fromhex(f"{objgroup_value:08x}")
-    )
+    dme.write_bytes(objgroup_trigger_address, bytes.fromhex(f"{objgroup_value:08x}"))
