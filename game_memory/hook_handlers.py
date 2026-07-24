@@ -142,7 +142,7 @@ class SFAHookHandlers:
                 if asyncio.iscoroutine(result):
                     await result
             except Exception:
-                logger.exception("Map transition hook failed (%s -> %s)", entered_map, from_map)
+                logger.exception("Map transition hook failed (%x -> %x)", entered_map, from_map)
 
     def add_zone_transition(self, hook: ZoneTransitionHook, map_id: int | None) -> None:
         """Register a zone transition hook for a specific map or all maps."""

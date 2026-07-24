@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from collections.abc import Callable
 from dataclasses import dataclass, field
 from enum import Enum, auto
 from typing import TYPE_CHECKING, Literal
@@ -8,6 +9,7 @@ from BaseClasses import Item, ItemClassification
 
 from .addresses import PLAYER_CUR_HP, PLAYER_CUR_MP, PLAYER_MAX_HP, PLAYER_MAX_MP, SHOP_ID
 from .bit_helper import GameBit
+from .item_hooks import lfv_enable_circle_platform, lfv_enable_square_platform, lfv_enable_triangle_platform
 
 if TYPE_CHECKING:
     from .SFAClient import SFAContext
@@ -41,6 +43,7 @@ class SFAItemData:
     game_bit: GameBit
     ap_classification: ItemClassification
     tags: list[SFAItemTags] = field(default_factory=lambda: [])
+    post_hook: Callable[[SFAItemData], None] | None = None
 
     @classmethod
     def get_by_id(cls, id: int) -> SFAItemData | None:
@@ -268,6 +271,9 @@ def give_item_in_game(ctx: SFAContext, item: SFAItemData | None) -> bool:
 
     # All other items
     item.set_value(item.id in ctx.received_items_id)
+
+    if item.post_hook is not None:
+        item.post_hook(item)
     return True
 
 
@@ -412,6 +418,27 @@ ITEM_INVENTORY: dict[str, SFAItemData] = {
         max_count=2,
         used_count_bits=[GameBit(0x269), GameBit(0x267)],
         used_state="sum",
+    ),
+    "Triangle Block Platforms": SFAItemData(
+        125,
+        "Triangle Block Platforms",
+        GameBit(0x0),
+        ItemClassification.progression,
+        post_hook=lfv_enable_triangle_platform,
+    ),
+    "Square Block Platforms": SFAItemData(
+        126,
+        "Square Block Platforms",
+        GameBit(0x0),
+        ItemClassification.progression,
+        post_hook=lfv_enable_square_platform,
+    ),
+    "Circle Block Platforms": SFAItemData(
+        127,
+        "Circle Block Platforms",
+        GameBit(0x0),
+        ItemClassification.progression,
+        post_hook=lfv_enable_circle_platform,
     ),
 }
 

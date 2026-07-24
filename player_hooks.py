@@ -19,6 +19,8 @@ from .game_flags import (
     DIM_OPEN_BLIZZARD,
     KRAZOA_SPIRIT_1,
     KRAZOA_STATUE_2,
+    LFV_ACT_GAMEBIT,
+    LFV_GATE,
     MAGIC_CAVE_ACT_GAMEBIT,
     OFP_ACT_GAMEBIT,
 )
@@ -26,6 +28,7 @@ from .game_memory.code_edit import trigger_objgroup_load
 from .game_memory.hook_handlers import PlayerCoordZone
 from .game_memory.loaded_objects import get_all_loaded_objects, search_objects
 from .game_memory.memory_struct import ObjState
+from .item_hooks import lfv_disable_circle_platform, lfv_disable_square_platform, lfv_disable_triangle_platform
 from .items import ITEM_INVENTORY, ITEM_PLANET, ITEM_STAFF, SFAItemData, SFAProgressiveItemData, give_item_in_game
 from .locations import (
     LOCATION_ANY,
@@ -98,6 +101,15 @@ async def _handle_shop_transition(ctx: "SFAContext", entered_map: int, from_map:
         _set_special_location_state(ctx, loc_data, entered_map, from_map, SHOP_ID)
 
 
+def lfv_platform_on_entering(ctx) -> None: # noqa: D103
+    if SFAItemData.get_by_name("Triangle Block Platforms").id not in ctx.received_items_id:
+        lfv_disable_triangle_platform()
+    if SFAItemData.get_by_name("Square Block Platforms").id not in ctx.received_items_id:
+        lfv_disable_square_platform()
+    if SFAItemData.get_by_name("Circle Block Platforms").id not in ctx.received_items_id:
+        lfv_disable_circle_platform()
+
+
 async def _handle_map_entry_state(ctx: "SFAContext", entered_map: int, from_map: int) -> None:
     if entered_map == THORNTAIL_HOLLOW_ID:
         set_value_bytes(T2_ADDRESS, THORNTAIL_HOLLOW_ACT_OFFSET, 0x2, value_size=4)
@@ -130,6 +142,10 @@ async def _handle_map_entry_state(ctx: "SFAContext", entered_map: int, from_map:
 
     if entered_map == OCEAN_FORCE_POINT_BEACH_ID:
         OFP_ACT_GAMEBIT.set_value(1)
+
+    if entered_map == LIGHTFOOT_VILLAGE_ID:
+        LFV_ACT_GAMEBIT.set_value(6)
+        lfv_platform_on_entering(ctx)
 
 
 async def _handle_krazoa_palace(ctx: "SFAContext", entered_map: int, from_map: int) -> None:
@@ -268,6 +284,12 @@ async def _cc_act1_off(ctx: "SFAContext", zone_name: str) -> None:
     trigger_objgroup_load(CAPE_CLAW_ID, objgroup_value)
 
 
+async def _handle_lfv_gate(ctx: "SFAContext", zone_name: str) -> None:
+    if zone_name != "LFV_GATE":
+        return
+    LFV_GATE.set_bit(True)
+
+
 def register_default_special_hooks(ctx: "SFAContext") -> None:
     """Register all hooks."""
     ctx.hooks.add_map_transition(_sync_current_map)
@@ -313,3 +335,7 @@ def register_default_special_hooks(ctx: "SFAContext") -> None:
     ctx.hooks.add_player_coord_zone(PlayerCoordZone.square("CC_HIGHTOP_QUEST", 3600, 2340, -2500, -1870, CAPE_CLAW_ID))
     ctx.hooks.add_player_coord_transition(_cc_act1_on, "enter")
     ctx.hooks.add_player_coord_transition(_cc_act1_off, "leave")
+    ctx.hooks.add_player_coord_zone(
+        PlayerCoordZone.square("LFV_GATE", -1600, -1800, -3000, -2585, LIGHTFOOT_VILLAGE_ID)
+    )
+    ctx.hooks.add_player_coord_transition(_handle_lfv_gate, "enter")

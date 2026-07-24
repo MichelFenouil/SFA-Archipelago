@@ -23,7 +23,8 @@ class SFARegion(Enum):
     SW_GATE = "SnowHorn Wastes - Behind Gate"
     TH_WELL = "ThornTail Hollow - Well"
     TH_WELL_BOTTOM = "ThornTail Hollow - Dark Well Bottom"
-    LFV = "LightFoot Village"
+    LFV_ENTRANCE = "LightFoot Village - Entrance"
+    LFV_MAIN = "LightFoot Village - Main Area"
     MMP = "Moon Mountain Pass"
     MMP_METEORITE = "Moon Mountain Pass - Meteorite Area"
     MMP_SHRINE = "Moon Mountain Pass - Krazoa Shrine"
@@ -61,7 +62,8 @@ def connect_regions(world: SFAWorld) -> None:
     sh_well = world.get_region(SFARegion.TH_WELL.value)
     sh_well_bottom = world.get_region(SFARegion.TH_WELL_BOTTOM.value)
     sw_gate = world.get_region(SFARegion.SW_GATE.value)
-    lightfoot_village = world.get_region(SFARegion.LFV.value)
+    lfv_entrance = world.get_region(SFARegion.LFV_ENTRANCE.value)
+    lfv_main = world.get_region(SFARegion.LFV_MAIN.value)
     moon_mountain_pass = world.get_region(SFARegion.MMP.value)
     mmp_meteorite = world.get_region(SFARegion.MMP_METEORITE.value)
     mmp_shrine = world.get_region(SFARegion.MMP_SHRINE.value)
@@ -105,7 +107,8 @@ def connect_regions(world: SFAWorld) -> None:
         Has("Staff Booster") & CanExplodeBombPlant() & CanGoDarkRoom(),
     )
     sw_entrance.connect(sw_gate, "Pass SnowHorn Gate", Has("Gate Key"))
-    thorntail_hollow.connect(lightfoot_village, "Access to LightFoot Village", Has("Staff"))
+    thorntail_hollow.connect(lfv_entrance, "Access to LightFoot Village", Has("Staff"))
+    lfv_entrance.connect(lfv_main, "Enter LightFoot Village", True_())
     thorntail_hollow.connect(
         moon_mountain_pass,
         "Entrance to Moon Mountain Pass",
@@ -152,7 +155,7 @@ def connect_regions(world: SFAWorld) -> None:
     #     "Warp to Krazoa Palace Main Room",
     #     Has("Rock Candy") # & Has any other spirits
     # )
-    lightfoot_village.connect(cc_transition, "Access Cape Claw Transition", CanBuy(60))
+    lfv_entrance.connect(cc_transition, "Access Cape Claw Transition", CanBuy(60))
     cc_transition.connect(cc_open, "Access Cape Claw Open Area", True_())
     cc_open.connect(
         cc_post_quest, "Access Cape Claw Post Gold Bar Quest", Has("Gold Bars", 4) & (CanBuy(25) | Has("Staff Booster"))

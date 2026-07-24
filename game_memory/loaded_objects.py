@@ -2,7 +2,7 @@ import ctypes
 
 import dolphin_memory_engine as dme
 
-from .memory_struct import ObjData
+from .memory_struct import ObjData, ObjDef
 
 START_LOADED_REGISTRY = 0x803428F8
 
@@ -37,6 +37,15 @@ def search_objects(obj_list, def_no):
     sorted_obj_list = dict(sorted(obj_list.items(), key=lambda x: x[1].defNo))
     for obj in sorted_obj_list.values():
         if obj.defNo == def_no:
+            return obj
+    return None
+
+
+def get_object_by_id(obj_list, obj_id):
+    """Return the object matching the provided ID."""
+    for obj in obj_list.values():
+        id_offset = ObjDef.id.offset
+        if dme.read_word(obj.objDef_ptr + id_offset) == obj_id:
             return obj
     return None
 

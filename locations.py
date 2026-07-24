@@ -451,10 +451,24 @@ LOCATION_FUEL_CELL: dict[str, SFALocationData] = {
         138, GameBit(0x095C), SFARegion.SW_GATE, Has("Fire Blaster")
     ),
     ## LightFoot Village
-    "TTH: Entrance to LFV Fuel Cell Right": SFALocationData(124, GameBit(0x094A), SFARegion.LFV, Has("Staff")),
-    "TTH: Entrance to LFV Fuel Cell Left": SFALocationData(125, GameBit(0x094B), SFARegion.LFV, Has("Staff")),
-    "LFV: Entrance Booster Ledge Right": SFALocationData(126, GameBit(0x096B), SFARegion.LFV, Has("Staff Booster")),
-    "LFV: Entrance Booster Ledge Left": SFALocationData(127, GameBit(0x096C), SFARegion.LFV, Has("Staff Booster")),
+    "TTH: Entrance to LFV Fuel Cell Right": SFALocationData(124, GameBit(0x094A), SFARegion.LFV_ENTRANCE, Has("Staff")),
+    "TTH: Entrance to LFV Fuel Cell Left": SFALocationData(125, GameBit(0x094B), SFARegion.LFV_ENTRANCE, Has("Staff")),
+    "LFV: Entrance Booster Ledge Right": SFALocationData(
+        126, GameBit(0x096B), SFARegion.LFV_ENTRANCE, Has("Staff Booster")
+    ),
+    "LFV: Entrance Booster Ledge Left": SFALocationData(
+        127, GameBit(0x096C), SFARegion.LFV_ENTRANCE, Has("Staff Booster")
+    ),
+    "LFV: Forest near Chief Fuel Cell": SFALocationData(
+        166, GameBit(0x0969), SFARegion.LFV_MAIN, Has("Tricky (Progressive)", 2) & Has("Staff Booster")
+    ),
+    "LFV: Forest Cheat Well Fuel Cell": SFALocationData(167, GameBit(0x096A), SFARegion.LFV_MAIN, Has("Staff Booster")),
+    "LFV: Lone Hut Fuel Cell Left": SFALocationData(
+        168, GameBit(0x098C), SFARegion.LFV_MAIN, Has("Triangle Block Platforms")
+    ),
+    "LFV: Lone Hut Fuel Cell Right": SFALocationData(
+        169, GameBit(0x098B), SFARegion.LFV_MAIN, Has("Triangle Block Platforms")
+    ),
     ## Moon Mountain Pass
     "MMP: Entrance Wind Draft North Fuel Cell": SFALocationData(130, GameBit(0x0985), SFARegion.MMP, True_()),
     "MMP: Entrance Wind Draft South Fuel Cell": SFALocationData(131, GameBit(0x097E), SFARegion.MMP, True_()),
@@ -549,7 +563,7 @@ LOCATION_DIG_AND_BAFOMDAD: dict[str, SFALocationData] = {
         305, GameBit(0x08BA), SFARegion.TH, Has("Tricky (Progressive)")
     ),
     "TTH: Dig BafomDad in Entrance to LFV": SFALocationData(
-        306, GameBit(0x08BC), SFARegion.LFV, Has("Tricky (Progressive)")
+        306, GameBit(0x08BC), SFARegion.LFV_ENTRANCE, Has("Tricky (Progressive)")
     ),
     ## DarkIce Mines
     "DIM: Dig Alpine Root in Entrance Hut": SFALocationData(
@@ -574,7 +588,13 @@ LOCATION_DIG_AND_BAFOMDAD: dict[str, SFALocationData] = {
         319, GameBit(0x08C7), SFARegion.KP_ENTRANCE, CanGoDarkRoom()
     ),  # dark option
     ## LightFoot Village
-    "LFV: BafomDad Entrance Booster Ledge": SFALocationData(320, GameBit(0x08C5), SFARegion.LFV, Has("Staff Booster")),
+    "LFV: BafomDad Entrance Booster Ledge": SFALocationData(
+        320, GameBit(0x08C5), SFARegion.LFV_ENTRANCE, Has("Staff Booster")
+    ),
+    "LFV: Forest Cheat Well BafomDad": SFALocationData(332, GameBit(0x08C6), SFARegion.LFV_MAIN, Has("Staff Booster")),
+    "LFV: Dig Triangle Block": SFALocationData(333, GameBit(0x019C), SFARegion.LFV_MAIN, Has("Tricky (Progressive)")),
+    "LFV: Dig Square Block": SFALocationData(334, GameBit(0x019D), SFARegion.LFV_MAIN, Has("Tricky (Progressive)", 2)),
+    "LFV: Dig Circle Block": SFALocationData(335, GameBit(0x019E), SFARegion.LFV_MAIN, Has("Tricky (Progressive)")),
     ## Cape Claw
     "CC: Dig BafomDad middle of Water": SFALocationData(
         321, GameBit(0x08CF), SFARegion.CC_OPEN, Has("Tricky (Progressive)")
