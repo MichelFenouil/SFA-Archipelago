@@ -209,6 +209,7 @@ def sync_player_state(ctx: SFAContext):
     give_item_in_game(ctx, ITEM_INVENTORY["DIM Alpine Root"])
     give_item_in_game(ctx, ITEM_TRICKY["Tricky (Progressive)"])
     give_item_in_game(ctx, ITEM_INVENTORY["Krazoa Spirit 2"])
+    give_item_in_game(ctx, ITEM_INVENTORY["Krazoa Spirit 3"])
     give_item_in_game(ctx, ITEM_INVENTORY["Gold Bars"])
     give_item_in_game(ctx, ITEM_INVENTORY["CRF Power Key"])
     give_item_in_game(ctx, ITEM_INVENTORY["Red Crystal"])
@@ -280,6 +281,8 @@ async def locations_watcher(ctx):
 
     if ctx.stored_map == COMBAT_SHRINE_ID:
         _check_location_flag(ctx, LOCATION_ANY["MMP: Test of Combat"])
+    if ctx.stored_map == FEAR_SHRINE_ID:
+        _check_location_flag(ctx, LOCATION_ANY["LFV: Test of Fear"])
 
     locations_checked = ctx.locations_checked.difference(ctx.checked_locations)
     if locations_checked:

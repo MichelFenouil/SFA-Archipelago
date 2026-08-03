@@ -94,6 +94,8 @@ class SFAWorld(World):
                 "shop_locations",
                 "plant_shuffle",
                 "dark_rooms",
+                "lightfoot_entrance",
+                "lightfoot_quests",
                 "infinite_consumables",
                 "infinite_tricky_food",
             ),

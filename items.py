@@ -213,6 +213,8 @@ def create_all_items(world: SFAWorld) -> None:
             continue
         if SFAItemTags.SEED in data.tags and not world.options.plant_shuffle:
             continue
+        if data.name == "LightFoot Village Gate" and world.options.lightfoot_entrance == "always_open":
+            continue
         if SFAItemTags.STARTING_ITEM in data.tags:
             world.push_precollected(world.create_item(name))
         elif isinstance(data, SFACountItemData):
@@ -384,6 +386,7 @@ ITEM_INVENTORY: dict[str, SFAItemData] = {
         115, "Moon Seed", GameBit(0x01FE, bit_size=3), ItemClassification.progression, [SFAItemTags.SEED], max_amount=7
     ),
     "Krazoa Spirit 2": SFAItemData(116, "Krazoa Spirit 2", GameBit(0x0537), ItemClassification.progression),
+    "Krazoa Spirit 3": SFAItemData(129, "Krazoa Spirit 3", GameBit(0x053A), ItemClassification.progression),
     "Gold Bars": SFAQuestItemData(
         117,
         "Gold Bars",
@@ -419,22 +422,23 @@ ITEM_INVENTORY: dict[str, SFAItemData] = {
         used_count_bits=[GameBit(0x269), GameBit(0x267)],
         used_state="sum",
     ),
+    "LightFoot Village Gate": SFAItemData(125, "LightFoot Village Gate", GameBit(0x0), ItemClassification.progression),
     "Triangle Block Platforms": SFAItemData(
-        125,
+        126,
         "Triangle Block Platforms",
         GameBit(0x0),
         ItemClassification.progression,
         post_hook=lfv_enable_triangle_platform,
     ),
     "Square Block Platforms": SFAItemData(
-        126,
+        127,
         "Square Block Platforms",
         GameBit(0x0),
         ItemClassification.progression,
         post_hook=lfv_enable_square_platform,
     ),
     "Circle Block Platforms": SFAItemData(
-        127,
+        128,
         "Circle Block Platforms",
         GameBit(0x0),
         ItemClassification.progression,

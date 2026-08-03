@@ -28,7 +28,14 @@ from .game_memory.code_edit import trigger_objgroup_load
 from .game_memory.hook_handlers import PlayerCoordZone
 from .game_memory.loaded_objects import get_all_loaded_objects, search_objects
 from .game_memory.memory_struct import ObjState
-from .item_hooks import lfv_disable_circle_platform, lfv_disable_square_platform, lfv_disable_triangle_platform
+from .item_hooks import (
+    lfv_disable_circle_platform,
+    lfv_disable_square_platform,
+    lfv_disable_triangle_platform,
+    lfv_enable_circle_platform,
+    lfv_enable_square_platform,
+    lfv_enable_triangle_platform,
+)
 from .items import ITEM_INVENTORY, ITEM_PLANET, ITEM_STAFF, SFAItemData, SFAProgressiveItemData, give_item_in_game
 from .locations import (
     LOCATION_ANY,
@@ -101,7 +108,7 @@ async def _handle_shop_transition(ctx: "SFAContext", entered_map: int, from_map:
         _set_special_location_state(ctx, loc_data, entered_map, from_map, SHOP_ID)
 
 
-def lfv_platform_on_entering(ctx) -> None: # noqa: D103
+def lfv_platform_on_entering(ctx) -> None:  # noqa: D103
     if SFAItemData.get_by_name("Triangle Block Platforms").id not in ctx.received_items_id:
         lfv_disable_triangle_platform()
     if SFAItemData.get_by_name("Square Block Platforms").id not in ctx.received_items_id:
@@ -136,6 +143,8 @@ async def _handle_map_entry_state(ctx: "SFAContext", entered_map: int, from_map:
 
     if entered_map == COMBAT_SHRINE_ID:
         LOCATION_ANY["MMP: Test of Combat"].set_bit(False)
+    if entered_map == FEAR_SHRINE_ID:
+        LOCATION_ANY["LFV: Test of Fear"].set_bit(False)
 
     if entered_map == CAPE_CLAW_ID:
         CC_ACT_GAMEBIT.set_value(2)
@@ -202,6 +211,28 @@ async def _handle_test_of_combat_warppad(ctx: "SFAContext", zone_name: str) -> N
         return
     flag_e_offset = ObjState.flagE.offset
     if LOCATION_ANY["MMP: Test of Combat"].id in ctx.checked_locations:
+        dme.write_bytes(warppad.state_ptr + flag_e_offset, bytes.fromhex("20"))
+    else:
+        dme.write_bytes(warppad.state_ptr + flag_e_offset, bytes.fromhex("01"))
+
+
+async def _handle_test_of_fear_warppad(ctx: "SFAContext", zone_name: str) -> None:
+    # TODO: Improve get_objects to find all loaded objects
+    if zone_name != "LFV_TEST_OF_FEAR_WARPPAD":
+        return
+    warppad = None
+    tries = 0
+    while True:
+        object_list = get_all_loaded_objects()
+        warppad = search_objects(object_list, 0xEC)
+        if warppad is not None:
+            break
+        if tries >= 10:
+            return
+        tries += 1
+        await asyncio.sleep(0.5)
+    flag_e_offset = ObjState.flagE.offset
+    if LOCATION_ANY["LFV: Test of Fear"].id in ctx.checked_locations:
         dme.write_bytes(warppad.state_ptr + flag_e_offset, bytes.fromhex("20"))
     else:
         dme.write_bytes(warppad.state_ptr + flag_e_offset, bytes.fromhex("01"))
@@ -287,7 +318,40 @@ async def _cc_act1_off(ctx: "SFAContext", zone_name: str) -> None:
 async def _handle_lfv_gate(ctx: "SFAContext", zone_name: str) -> None:
     if zone_name != "LFV_GATE":
         return
-    LFV_GATE.set_bit(True)
+    if (
+        ctx.options["lightfoot_entrance"] == "always_open"
+        or SFAItemData.get_by_name("LightFoot Village Gate").id in ctx.received_items_id
+    ):
+        LFV_GATE.set_bit(True)
+    elif ctx.options["lightfoot_entrance"] == "ap_item":
+        LFV_GATE.set_bit(False)
+
+
+async def _handle_circle_platform(ctx: "SFAContext", zone_name: str) -> None:
+    if zone_name != "LFV_CIRCLE_PLATFORM":
+        return
+    if SFAItemData.get_by_name("Circle Block Platforms").id not in ctx.received_items_id:
+        lfv_disable_circle_platform()
+    else:
+        lfv_enable_circle_platform(None)
+
+
+async def _handle_square_platform(ctx: "SFAContext", zone_name: str) -> None:
+    if zone_name != "LFV_SQUARE_PLATFORM":
+        return
+    if SFAItemData.get_by_name("Square Block Platforms").id not in ctx.received_items_id:
+        lfv_disable_square_platform()
+    else:
+        lfv_enable_square_platform(None)
+
+
+async def _handle_triangle_platform(ctx: "SFAContext", zone_name: str) -> None:
+    if zone_name != "LFV_TRIANGLE_PLATFORM":
+        return
+    if SFAItemData.get_by_name("Triangle Block Platforms").id not in ctx.received_items_id:
+        lfv_disable_triangle_platform()
+    else:
+        lfv_enable_triangle_platform(None)
 
 
 def register_default_special_hooks(ctx: "SFAContext") -> None:
@@ -339,3 +403,19 @@ def register_default_special_hooks(ctx: "SFAContext") -> None:
         PlayerCoordZone.square("LFV_GATE", -1600, -1800, -3000, -2585, LIGHTFOOT_VILLAGE_ID)
     )
     ctx.hooks.add_player_coord_transition(_handle_lfv_gate, "enter")
+    ctx.hooks.add_player_coord_zone(
+        PlayerCoordZone.circle("LFV_TEST_OF_FEAR_WARPPAD", -1600, -960, 50, LIGHTFOOT_VILLAGE_ID)
+    )
+    ctx.hooks.add_player_coord_transition(_handle_test_of_fear_warppad, "enter")
+    ctx.hooks.add_player_coord_zone(
+        PlayerCoordZone.circle("LFV_CIRCLE_PLATFORM", -500, -1750, 800, LIGHTFOOT_VILLAGE_ID)
+    )
+    ctx.hooks.add_player_coord_transition(_handle_circle_platform, "enter")
+    ctx.hooks.add_player_coord_zone(
+        PlayerCoordZone.circle("LFV_SQUARE_PLATFORM", -2000, -1600, 800, LIGHTFOOT_VILLAGE_ID)
+    )
+    ctx.hooks.add_player_coord_transition(_handle_square_platform, "enter")
+    ctx.hooks.add_player_coord_zone(
+        PlayerCoordZone.circle("LFV_TRIANGLE_PLATFORM", -900, -1300, 800, LIGHTFOOT_VILLAGE_ID)
+    )
+    ctx.hooks.add_player_coord_transition(_handle_triangle_platform, "enter")

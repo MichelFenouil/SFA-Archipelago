@@ -4,9 +4,13 @@ from enum import Enum
 from typing import TYPE_CHECKING
 
 from BaseClasses import Region
+from rule_builder.options import OptionFilter
 from rule_builder.rules import CanReachLocation, Has, HasAll, HasAllCounts, True_
 
+from worlds.sfa.items import UT_GLITCH_LOGIC
+
 from .macros import CanBuy, CanExplodeBombPlant, CanGoDarkRoom, CanGrowMoonSeed
+from .options import LightfootEntrance
 
 if TYPE_CHECKING:
     from .world import SFAWorld
@@ -108,7 +112,13 @@ def connect_regions(world: SFAWorld) -> None:
     )
     sw_entrance.connect(sw_gate, "Pass SnowHorn Gate", Has("Gate Key"))
     thorntail_hollow.connect(lfv_entrance, "Access to LightFoot Village", Has("Staff"))
-    lfv_entrance.connect(lfv_main, "Enter LightFoot Village", True_())
+    lfv_entrance.connect(
+        lfv_main,
+        "Enter LightFoot Village",
+        Has("LightFoot Village Gate")
+        | OptionFilter(LightfootEntrance, "always_open")
+        | Has(UT_GLITCH_LOGIC, options=[OptionFilter(LightfootEntrance, "vanilla")]),
+    )
     thorntail_hollow.connect(
         moon_mountain_pass,
         "Entrance to Moon Mountain Pass",

@@ -28,6 +28,7 @@ class SFALocationTags(Enum):
 
     MAP = auto()
     ACTIVE_ZONE = auto()
+    SIDE_QUEST = auto()
     CUTSCENE = auto()  # Not yet used
 
 
@@ -93,6 +94,8 @@ def create_regular_locations(world: SFAWorld) -> None:
         if world.options.shop_locations == "nothing" and loc_data in LOCATION_SHOP.values():
             continue
         if world.options.shop_locations == "no_map" and SFALocationTags.MAP in loc_data.tags:
+            continue
+        if world.options.lightfoot_quests is False and SFALocationTags.SIDE_QUEST in loc_data.tags:
             continue
 
         region = world.get_region(loc_data.region.value)
@@ -388,6 +391,49 @@ LOCATION_ANY: dict[str, SFALocationData] = {
         SFARegion.OFP_ENTRANCE,
         HasAll("Water SpellStone 1", "Staff Booster", "SharpClaw Disguise", "Fire Blaster")
         & Has("Tricky (Progressive)", 2),
+    ),
+    ## LightFoot Village
+    "LFV: Entrance Baby Quest": SFALocationData(
+        57,
+        GameBit(0x01AB),
+        SFARegion.LFV_MAIN,
+        Has("Circle Block Platforms") & Has("Staff Booster"),
+        [SFALocationTags.SIDE_QUEST],
+    ),
+    "LFV: Forest Baby Quest": SFALocationData(
+        58,
+        GameBit(0x01AC),
+        SFARegion.LFV_MAIN,
+        Has("Staff Booster") & Has("Tricky (Progressive)", 2),
+        [SFALocationTags.SIDE_QUEST],
+    ),
+    "LFV: Underground Baby Quest": SFALocationData(
+        59,
+        GameBit(0x01AD),
+        SFARegion.LFV_MAIN,
+        True_(),
+        [SFALocationTags.SIDE_QUEST],
+    ),
+    "LFV: Tracking Test": SFALocationData(
+        60,
+        GameBit(0x0143, bit_size=16),
+        SFARegion.LFV_MAIN,
+        Has("Staff Booster") & Has("Circle Block Platforms"),
+        [SFALocationTags.SIDE_QUEST],
+    ),
+    "LFV: Test of Strength": SFALocationData(
+        61,
+        GameBit(0x010F, bit_size=16),
+        SFARegion.LFV_MAIN,
+        Has("Staff Booster") & Has("Circle Block Platforms"),
+        [SFALocationTags.SIDE_QUEST],
+    ),
+    "LFV: Test of Fear": SFALocationData(
+        62,
+        GameBit(0x053A),
+        SFARegion.LFV_MAIN,
+        HasAll("Fire Blaster", "Staff Booster"),
+        [SFALocationTags.ACTIVE_ZONE],
     ),
 }
 

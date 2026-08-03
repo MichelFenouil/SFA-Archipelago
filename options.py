@@ -49,6 +49,32 @@ class DarkRoomLogic(Toggle):
     default = False
 
 
+class LightfootEntrance(Choice):
+    """
+    Choose how to shuffle the entrance to LightFoot Village.
+
+    vanilla: Gate can be opened out of logic with vanilla tree code, AP item will open the gate for logic
+    always_open: Gate is always open, no code required
+    ap_item: Gate stays closed and can only be opened with the AP item
+    """
+
+    display_name = "LightFoot Village Entrance"
+
+    option_vanilla = "vanilla"
+    option_always_open = "always_open"
+    option_ap_item = "ap_item"
+
+    default = "vanilla"
+
+
+class LightfootQuests(Toggle):
+    """Put LightFoot Village tests and side quests in logic."""
+
+    display_name = "LightFoot Village Quests"
+
+    default = False
+
+
 ## QoL Options
 
 
@@ -79,6 +105,9 @@ class SFAOptions(PerGameCommonOptions):
     shop_locations: ShopLocations
     plant_shuffle: PlantShuffle
     dark_rooms: DarkRoomLogic
+    lightfoot_entrance: LightfootEntrance
+    lightfoot_quests: LightfootQuests
+
     infinite_consumables: InfiniteConsumables
     infinite_tricky_food: InfiniteTrickyFood
 
@@ -86,7 +115,7 @@ class SFAOptions(PerGameCommonOptions):
 option_groups = [
     OptionGroup(
         "Logic Options",
-        [ShopLocations, PlantShuffle, DarkRoomLogic],
+        [ShopLocations, PlantShuffle, DarkRoomLogic, LightfootEntrance, LightfootQuests],
     ),
     OptionGroup(
         "Quality of Life Options",
