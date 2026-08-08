@@ -8,6 +8,8 @@ T3_ADDRESS = 0x803A3880
 ACT_BIT_ARRAY = 0x80311720  # offset = 2*map_id
 OBJGROUP_BIT_ARRAY = 0x80311810  # offset = 2*map_id
 OBJGROUP_LOAD_CODE = 0x803A2FBC  # offset = 4*map_id
+CURRENT_MAP_ADDRESS = 0x803DD494
+CURRENT_ACT_ADDRESS = 0x803DD495
 
 ## Map specific values ##
 

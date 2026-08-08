@@ -310,6 +310,12 @@ LOCATION_ANY: dict[str, SFALocationData] = {
         SFARegion.KP_MAIN,
         Has("Krazoa Spirit 2"),  # & Has any other spirits
     ),
+    "KP: Release Spirit 3": SFALocationData(
+        63,
+        GameBit(0x052A),
+        SFARegion.KP_MAIN,
+        Has("Krazoa Spirit 3") & Has("SharpClaw Disguise"),
+    ),
     ## Cape Claw
     "CC: Give HighTop Gold Bars": SFALocationData(
         44,

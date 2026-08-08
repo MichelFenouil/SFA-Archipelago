@@ -24,6 +24,8 @@ class PlayerCoordZone:
     map_id: int | None = None
     min_x: float | None = None
     max_x: float | None = None
+    min_y: float | None = None
+    max_y: float | None = None
     min_z: float | None = None
     max_z: float | None = None
     center_x: float | None = None
@@ -38,6 +40,7 @@ class PlayerCoordZone:
         z1: float,
         z2: float,
         map_id: int | None = None,
+        y: float | None = None,
     ) -> "PlayerCoordZone":
         """Create a square zone from two X bounds and two Z bounds."""
         return PlayerCoordZone(
@@ -48,6 +51,8 @@ class PlayerCoordZone:
             max_x=max(x1, x2),
             min_z=min(z1, z2),
             max_z=max(z1, z2),
+            min_y=y - 1 if y is not None else None,
+            max_y=y + 1 if y is not None else None,
         )
 
     @staticmethod
@@ -57,6 +62,7 @@ class PlayerCoordZone:
         center_z: float,
         radius: float,
         map_id: int | None = None,
+        y: float | None = None,
     ) -> "PlayerCoordZone":
         """Create a circular zone from center coordinates and radius."""
         return PlayerCoordZone(
@@ -66,9 +72,11 @@ class PlayerCoordZone:
             center_x=center_x,
             center_z=center_z,
             radius=abs(radius),
+            min_y=y - 1 if y is not None else None,
+            max_y=y + 1 if y is not None else None,
         )
 
-    def contains(self, x: float, z: float, map_id: int) -> bool:
+    def contains(self, x: float, y: float, z: float, map_id: int) -> bool:
         """Return whether the provided coordinates are inside this zone."""
         if self.map_id is not None and self.map_id != map_id:
             return False
@@ -79,7 +87,11 @@ class PlayerCoordZone:
             assert (
                 self.min_x is not None and self.max_x is not None and self.min_z is not None and self.max_z is not None
             )
-            return self.min_x <= x <= self.max_x and self.min_z <= z <= self.max_z
+            return (
+                self.min_x <= x <= self.max_x
+                and self.min_z <= z <= self.max_z
+                and (self.min_y is None or self.max_y is None or self.min_y <= y <= self.max_y)
+            )
 
         if self.zone_type == "circle":
             if None in (self.center_x, self.center_z, self.radius):
@@ -87,7 +99,9 @@ class PlayerCoordZone:
             assert self.center_x is not None and self.center_z is not None and self.radius is not None
             dx = x - self.center_x
             dz = z - self.center_z
-            return dx * dx + dz * dz <= self.radius * self.radius
+            return dx * dx + dz * dz <= self.radius * self.radius and (
+                self.min_y is None or self.max_y is None or self.min_y <= y <= self.max_y
+            )
 
         logger.warning("Unknown player coord zone type: %s", self.zone_type)
         return False
@@ -101,11 +115,12 @@ class ZoneTransitionEvaluator:
         zones: dict[str, PlayerCoordZone],
         active_zones: set[str],
         x: float,
+        y: float,
         z: float,
         map_id: int,
     ) -> tuple[set[str], set[str], set[str]]:
         """Evaluate zone transitions for the current position and map."""
-        active_now = {zone_name for zone_name, zone in zones.items() if zone.contains(x, z, map_id)}
+        active_now = {zone_name for zone_name, zone in zones.items() if zone.contains(x, y, z, map_id)}
         entered = active_now.difference(active_zones)
         left = active_zones.difference(active_now)
         return active_now, entered, left
@@ -210,6 +225,7 @@ class SFAHookHandlers:
             self.player_coord_zones,
             self.active_player_coord_zones,
             x,
+            y,
             z,
             map_id,
         )

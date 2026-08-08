@@ -5,7 +5,7 @@ from typing import TYPE_CHECKING
 
 from BaseClasses import Region
 from rule_builder.options import OptionFilter
-from rule_builder.rules import CanReachLocation, Has, HasAll, HasAllCounts, True_
+from rule_builder.rules import CanReachLocation, Has, HasAll, HasAllCounts, HasAny, True_
 
 from worlds.sfa.items import UT_GLITCH_LOGIC
 
@@ -154,6 +154,11 @@ def connect_regions(world: SFAWorld) -> None:
         krazoa_palace_entrance,
         "Warp to Krazoa Palace with Spirit 2",
         Has("Rock Candy") & Has("Krazoa Spirit 2"),
+    )
+    thorntail_hollow.connect(
+        krazoa_palace_main,
+        "Warp to Krazoa Palace Main Room with any other Spirit",
+        Has("Rock Candy") & HasAny("Krazoa Spirit 3"),
     )
     krazoa_palace_entrance.connect(
         krazoa_palace_main,

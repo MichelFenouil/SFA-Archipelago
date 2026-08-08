@@ -17,6 +17,8 @@ from .game_flags import (
     CRF_QUEEN_CHILDREN_CHECK,
     DIM_OPEN_BIKE,
     DIM_OPEN_BLIZZARD,
+    KP_ACT_GAMEBIT,
+    KP_OBJGROUP_VALUE,
     KRAZOA_SPIRIT_1,
     KRAZOA_STATUE_2,
     LFV_ACT_GAMEBIT,
@@ -247,13 +249,44 @@ async def _handle_fire_spellstone_door(ctx: "SFAContext", zone_name: str) -> Non
 async def _give_spirit_near_warpstone(ctx: "SFAContext", zone_name: str) -> None:
     if zone_name != "TTH_WARPSTONE":
         return
-    krazoa_spirit = SFAItemData.get_by_name("Krazoa Spirit 2")
-    if krazoa_spirit.id in ctx.received_items_id:
-        if LOCATION_ANY["KP: Release Spirit 2"].id not in ctx.checked_locations:
-            SFAItemData.get_by_name("Krazoa Spirit 2").set_value(True)
-            KRAZOA_STATUE_2.set_bit(True)
+    krazoa_spirit_2 = SFAItemData.get_by_name("Krazoa Spirit 2")
+    krazoa_spirit_3 = SFAItemData.get_by_name("Krazoa Spirit 3")
+
+    if krazoa_spirit_2.id in ctx.received_items_id:
         if LOCATION_TABLE["KP: Dark Room BafomDad"].id not in ctx.checked_locations:
-            SFAItemData.get_by_name("Krazoa Spirit 2").set_value(True)
+            krazoa_spirit_2.set_value(True)
+            krazoa_spirit_3.set_value(False)
+            return
+
+        if LOCATION_ANY["KP: Release Spirit 2"].id not in ctx.checked_locations:
+            krazoa_spirit_2.set_value(True)
+
+    if krazoa_spirit_3.id in ctx.received_items_id:
+        krazoa_spirit_3.set_value(True)
+
+
+async def _handle_spirit_2(ctx: "SFAContext", zone_name: str) -> None:
+    if zone_name != "KP_SPIRIT_2":
+        return
+    act = 2
+    spirit = SFAItemData.get_by_name("Krazoa Spirit 2")
+    if spirit.id in ctx.received_items_id:
+        spirit.set_value(True)
+        KP_ACT_GAMEBIT.set_value(act)
+        KRAZOA_STATUE_2.set_bit(True)
+        trigger_objgroup_load(KRAZOA_PALACE_ID, act, KP_OBJGROUP_VALUE.get_value())
+
+
+async def _handle_spirit_3(ctx: "SFAContext", zone_name: str) -> None:
+    if zone_name != "KP_SPIRIT_3":
+        return
+    act = 3
+    spirit = SFAItemData.get_by_name("Krazoa Spirit 3")
+    if spirit.id in ctx.received_items_id:
+        spirit.set_value(True)
+        KP_ACT_GAMEBIT.set_value(act)
+        objgroup_value = KP_OBJGROUP_VALUE.get_value()
+        trigger_objgroup_load(KRAZOA_PALACE_ID, act, objgroup_value)
 
 
 async def _show_race_ring(ctx: "SFAContext", zone_name: str) -> None:
@@ -302,17 +335,19 @@ async def _close_back_path(ctx: "SFAContext", zone_name: str) -> None:
 async def _cc_act1_on(ctx: "SFAContext", zone_name: str) -> None:
     if zone_name != "CC_CLOUDRUNNER_CELL" and zone_name != "CC_HIGHTOP_QUEST":
         return
-    CC_ACT_GAMEBIT.set_value(1)
+    act = 1
+    CC_ACT_GAMEBIT.set_value(act)
     objgroup_value = CC_OBJGROUP_VALUE.get_value()
-    trigger_objgroup_load(CAPE_CLAW_ID, objgroup_value)
+    trigger_objgroup_load(CAPE_CLAW_ID, act, objgroup_value)
 
 
 async def _cc_act1_off(ctx: "SFAContext", zone_name: str) -> None:
     if zone_name != "CC_CLOUDRUNNER_CELL" and zone_name != "CC_HIGHTOP_QUEST":
         return
-    CC_ACT_GAMEBIT.set_value(2)
+    act = 2
+    CC_ACT_GAMEBIT.set_value(act)
     objgroup_value = CC_OBJGROUP_VALUE.get_value()
-    trigger_objgroup_load(CAPE_CLAW_ID, objgroup_value)
+    trigger_objgroup_load(CAPE_CLAW_ID, act, objgroup_value)
 
 
 async def _handle_lfv_gate(ctx: "SFAContext", zone_name: str) -> None:
@@ -419,3 +454,7 @@ def register_default_special_hooks(ctx: "SFAContext") -> None:
         PlayerCoordZone.circle("LFV_TRIANGLE_PLATFORM", -900, -1300, 800, LIGHTFOOT_VILLAGE_ID)
     )
     ctx.hooks.add_player_coord_transition(_handle_triangle_platform, "enter")
+    ctx.hooks.add_player_coord_zone(PlayerCoordZone.circle("KP_SPIRIT_2", 12330, 2700, 100, KRAZOA_PALACE_ID, y=719))
+    ctx.hooks.add_player_coord_transition(_handle_spirit_2, "enter")
+    ctx.hooks.add_player_coord_zone(PlayerCoordZone.circle("KP_SPIRIT_3", 12390, 2780, 100, KRAZOA_PALACE_ID, y=484))
+    ctx.hooks.add_player_coord_transition(_handle_spirit_3, "enter")
