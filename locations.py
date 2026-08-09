@@ -5,7 +5,9 @@ from enum import Enum, auto
 from typing import TYPE_CHECKING
 
 from BaseClasses import ItemClassification, Location
+from rule_builder.options import OptionFilter
 from rule_builder.rules import Has, HasAll, HasAllCounts, Rule, True_
+from .options import LightfootQuests
 
 from .addresses import T0_ADDRESS, T1_ADDRESS
 from .bit_helper import GameBit
@@ -95,7 +97,7 @@ def create_regular_locations(world: SFAWorld) -> None:
             continue
         if world.options.shop_locations == "no_map" and SFALocationTags.MAP in loc_data.tags:
             continue
-        if world.options.lightfoot_quests is False and SFALocationTags.SIDE_QUEST in loc_data.tags:
+        if world.options.lightfoot_quests == 0 and SFALocationTags.SIDE_QUEST in loc_data.tags:
             continue
 
         region = world.get_region(loc_data.region.value)
@@ -403,35 +405,35 @@ LOCATION_ANY: dict[str, SFALocationData] = {
         57,
         GameBit(0x01AB),
         SFARegion.LFV_MAIN,
-        Has("Circle Block Platforms") & Has("Staff Booster"),
+        HasAll("Circle Block Platforms", "Staff Booster", options=[OptionFilter(LightfootQuests, True)]),
         [SFALocationTags.SIDE_QUEST],
     ),
     "LFV: Forest Baby Quest": SFALocationData(
         58,
         GameBit(0x01AC),
         SFARegion.LFV_MAIN,
-        Has("Staff Booster") & Has("Tricky (Progressive)", 2),
+        Has("Staff Booster", options=[OptionFilter(LightfootQuests, True)]) & Has("Tricky (Progressive)", 2),
         [SFALocationTags.SIDE_QUEST],
     ),
     "LFV: Underground Baby Quest": SFALocationData(
         59,
         GameBit(0x01AD),
         SFARegion.LFV_MAIN,
-        True_(),
+        True_(options=[OptionFilter(LightfootQuests, True)]),
         [SFALocationTags.SIDE_QUEST],
     ),
     "LFV: Tracking Test": SFALocationData(
         60,
         GameBit(0x0143, bit_size=16),
         SFARegion.LFV_MAIN,
-        Has("Staff Booster") & Has("Circle Block Platforms"),
+        HasAll("Staff Booster", "Circle Block Platforms", "Square Block Platforms", options=[OptionFilter(LightfootQuests, True)]),
         [SFALocationTags.SIDE_QUEST],
     ),
     "LFV: Test of Strength": SFALocationData(
         61,
         GameBit(0x010F, bit_size=16),
         SFARegion.LFV_MAIN,
-        Has("Staff Booster") & Has("Circle Block Platforms"),
+        HasAll("Staff Booster", "Circle Block Platforms", options=[OptionFilter(LightfootQuests, True)]),
         [SFALocationTags.SIDE_QUEST],
     ),
     "LFV: Test of Fear": SFALocationData(

@@ -182,7 +182,7 @@ def connect_regions(world: SFAWorld) -> None:
     cloudrunner_fortress_main.connect(
         cloudrunner_fortress_powered,
         "Access CloudRunner Fortress Powered Area",
-        HasAll("CRF Power Key", "Red Crystal", "Green Crystal", "Blue Crystal", "SharpClaw Disguise"),
+        HasAll("CRF Power Key", "SharpClaw Disguise") & Has("CRF Light Gems", 3),
     )
     cc_post_quest.connect(
         ofp_entrance,

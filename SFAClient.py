@@ -212,9 +212,7 @@ def sync_player_state(ctx: SFAContext):
     give_item_in_game(ctx, ITEM_INVENTORY["Krazoa Spirit 3"])
     give_item_in_game(ctx, ITEM_INVENTORY["Gold Bars"])
     give_item_in_game(ctx, ITEM_INVENTORY["CRF Power Key"])
-    give_item_in_game(ctx, ITEM_INVENTORY["Red Crystal"])
-    give_item_in_game(ctx, ITEM_INVENTORY["Green Crystal"])
-    give_item_in_game(ctx, ITEM_INVENTORY["Blue Crystal"])
+    give_item_in_game(ctx, ITEM_INVENTORY["CRF Light Gems"])
     give_item_in_game(ctx, ITEM_INVENTORY["CloudRunner Flute"])
     give_item_in_game(ctx, ITEM_INVENTORY["Fire Gem"])
 
