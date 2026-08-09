@@ -402,15 +402,13 @@ ITEM_INVENTORY: dict[str, SFAItemData] = {
         ItemClassification.progression,
         used_count_bits=[GameBit(0x02BF)],
     ),
-    "Red Crystal": SFAQuestItemData(
-        119, "Red Crystal", GameBit(0x02A4), ItemClassification.progression, used_count_bits=[GameBit(0x02AD)]
-    ),
-    "Green Crystal": SFAQuestItemData(
-        120, "Green Crystal", GameBit(0x02A5), ItemClassification.progression, used_count_bits=[GameBit(0x02AE)]
-    ),
-    "Blue Crystal": SFAQuestItemData(
-        121, "Blue Crystal", GameBit(0x02A6), ItemClassification.progression, used_count_bits=[GameBit(0x02AF)]
-    ),
+    "CRF Light Gems": SFAProgressiveItemData(
+        119,
+        "CRF Light Gems",
+        None,
+        ItemClassification.progression,
+        progressive_data=[GameBit(0x02A4), GameBit(0x02A5), GameBit(0x02A6)],
+    ), # Used bits are 0x02AD, 0x02AE, 0x02AF
     "CloudRunner Flute": SFAItemData(122, "CloudRunner Flute", GameBit(0x02DE), ItemClassification.progression),
     "Water SpellStone 1": SFAItemData(123, "Water SpellStone 1", GameBit(0x01C3), ItemClassification.progression),
     "Fire Gem": SFAQuestItemData(
