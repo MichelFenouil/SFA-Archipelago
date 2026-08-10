@@ -621,10 +621,10 @@ LOCATION_DIG_AND_BAFOMDAD: dict[str, SFALocationData] = {
     ),
     ## DarkIce Mines
     "DIM: Dig Alpine Root in Entrance Hut": SFALocationData(
-        308, GameBit(0x037C), SFARegion.DIM_ENTRANCE, Has("Tricky (Progressive)")
+        308, GameBit(0x037C), SFARegion.DIM_ENTRANCE, Has("Tricky (Progressive)", 2)
     ),
     "DIM: Dig Alpine Root in Boulder Path": SFALocationData(
-        309, GameBit(0x037D), SFARegion.DIM_ENTRANCE, Has("Tricky (Progressive)")
+        309, GameBit(0x037D), SFARegion.DIM_ENTRANCE, Has("Tricky (Progressive)", 2) & Has("Entrance Bridge Cog")
     ),
     ## Volcano Force Point
     "VFP: BafomDad Cell": SFALocationData(312, GameBit(0x08C9), SFARegion.VFP, Has("Staff Booster")),
