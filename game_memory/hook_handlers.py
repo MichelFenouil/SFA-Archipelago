@@ -1,4 +1,5 @@
 import asyncio
+from asyncio import Task
 from collections.abc import Awaitable, Callable
 from dataclasses import dataclass
 from typing import TYPE_CHECKING, Literal
@@ -40,7 +41,8 @@ class PlayerCoordZone:
         z1: float,
         z2: float,
         map_id: int | None = None,
-        y: float | None = None,
+        min_y: float | None = None,
+        max_y: float | None = None,
     ) -> "PlayerCoordZone":
         """Create a square zone from two X bounds and two Z bounds."""
         return PlayerCoordZone(
@@ -51,8 +53,8 @@ class PlayerCoordZone:
             max_x=max(x1, x2),
             min_z=min(z1, z2),
             max_z=max(z1, z2),
-            min_y=y - 1 if y is not None else None,
-            max_y=y + 1 if y is not None else None,
+            min_y=min_y,
+            max_y=max_y,
         )
 
     @staticmethod
@@ -62,7 +64,8 @@ class PlayerCoordZone:
         center_z: float,
         radius: float,
         map_id: int | None = None,
-        y: float | None = None,
+        min_y: float | None = None,
+        max_y: float | None = None,
     ) -> "PlayerCoordZone":
         """Create a circular zone from center coordinates and radius."""
         return PlayerCoordZone(
@@ -72,8 +75,8 @@ class PlayerCoordZone:
             center_x=center_x,
             center_z=center_z,
             radius=abs(radius),
-            min_y=y - 1 if y is not None else None,
-            max_y=y + 1 if y is not None else None,
+            min_y=min_y,
+            max_y=max_y,
         )
 
     def contains(self, x: float, y: float, z: float, map_id: int) -> bool:
@@ -81,17 +84,15 @@ class PlayerCoordZone:
         if self.map_id is not None and self.map_id != map_id:
             return False
 
+        y_check = self.min_y is None or self.max_y is None or self.min_y <= y <= self.max_y
+
         if self.zone_type == "square":
             if None in (self.min_x, self.max_x, self.min_z, self.max_z):
                 return False
             assert (
                 self.min_x is not None and self.max_x is not None and self.min_z is not None and self.max_z is not None
             )
-            return (
-                self.min_x <= x <= self.max_x
-                and self.min_z <= z <= self.max_z
-                and (self.min_y is None or self.max_y is None or self.min_y <= y <= self.max_y)
-            )
+            return self.min_x <= x <= self.max_x and self.min_z <= z <= self.max_z and y_check
 
         if self.zone_type == "circle":
             if None in (self.center_x, self.center_z, self.radius):
@@ -99,9 +100,7 @@ class PlayerCoordZone:
             assert self.center_x is not None and self.center_z is not None and self.radius is not None
             dx = x - self.center_x
             dz = z - self.center_z
-            return dx * dx + dz * dz <= self.radius * self.radius and (
-                self.min_y is None or self.max_y is None or self.min_y <= y <= self.max_y
-            )
+            return dx * dx + dz * dz <= self.radius * self.radius and y_check
 
         logger.warning("Unknown player coord zone type: %s", self.zone_type)
         return False
@@ -135,9 +134,11 @@ class SFAHookHandlers:
         self.map_transition_hooks: list[MapTransitionHook] = []
         self.zone_transition_hooks: dict[int | None, list[ZoneTransitionHook]] = {}
         self.player_coord_zones: dict[str, PlayerCoordZone] = {}
-        self.active_player_coord_zones: set[str] = set()
-        self.player_coord_enter_hooks: list[PlayerCoordHook] = []
-        self.player_coord_leave_hooks: list[PlayerCoordHook] = []
+        self.list_active_zones: set[str] = set()
+        self.player_coord_enter_hooks: dict[str, PlayerCoordHook] = {}
+        self.player_coord_leave_hooks: dict[str, PlayerCoordHook] = {}
+        self.player_active_coord_hooks: dict[str, PlayerCoordHook] = {}
+        self.running_tasks: dict[str, Task[PlayerCoordHook]] = {}
 
     def add_map_transition(self, hook: MapTransitionHook) -> None:
         """Register a map transition hook if it has not already been added."""
@@ -203,52 +204,68 @@ class SFAHookHandlers:
     def remove_player_coord_zone(self, zone_name: str) -> None:
         """Remove a registered player-coordinate zone and its active state."""
         self.player_coord_zones.pop(zone_name, None)
-        self.active_player_coord_zones.discard(zone_name)
+        self.list_active_zones.discard(zone_name)
 
-    def add_player_coord_transition(self, hook: PlayerCoordHook, trigger: Literal["enter", "leave"]) -> None:
+    def add_player_coord_transition(
+        self, hook: PlayerCoordHook, name: str, trigger: Literal["enter", "leave", "active"]
+    ) -> None:
         """Register a player-coordinate transition hook for enter or leave events."""
         if trigger == "enter" and hook not in self.player_coord_enter_hooks:
-            self.player_coord_enter_hooks.append(hook)
+            self.player_coord_enter_hooks[name] = hook
         elif trigger == "leave" and hook not in self.player_coord_leave_hooks:
-            self.player_coord_leave_hooks.append(hook)
+            self.player_coord_leave_hooks[name] = hook
+        elif trigger == "active" and hook not in self.player_active_coord_hooks:
+            self.player_active_coord_hooks[name] = hook
 
-    def remove_player_coord_transition(self, hook: PlayerCoordHook) -> None:
+    def remove_player_coord_transition(self, name: str) -> None:
         """Remove a player-coordinate transition hook from all trigger lists."""
-        if hook in self.player_coord_enter_hooks:
-            self.player_coord_enter_hooks.remove(hook)
-        if hook in self.player_coord_leave_hooks:
-            self.player_coord_leave_hooks.remove(hook)
+        self.player_coord_enter_hooks.pop(name, None)
+        self.player_coord_leave_hooks.pop(name, None)
+        self.player_active_coord_hooks.pop(name, None)
 
     async def update_player_coord_transitions(self, x: float, y: float, z: float, map_id: int) -> None:
         """Evaluate zone transitions and dispatch enter/leave hooks."""
         active_now, entered, left = ZoneTransitionEvaluator.evaluate(
             self.player_coord_zones,
-            self.active_player_coord_zones,
+            self.list_active_zones,
             x,
             y,
             z,
             map_id,
         )
-
         for zone_name in entered:
             logger.debug("Player entered zone: %s", zone_name)
             await self._run_player_coord_hooks(self.player_coord_enter_hooks, zone_name)
+            # Start active hooks
+            start_active = self.player_active_coord_hooks.get(zone_name)
+            if start_active is not None:
+                logger.debug("Starting active task: %s", start_active)
+                result = start_active(self.ctx, zone_name)
+                if asyncio.iscoroutine(result):
+                    self.running_tasks[zone_name] = asyncio.create_task(result)
         for zone_name in left:
             logger.debug("Player left zone: %s", zone_name)
             await self._run_player_coord_hooks(self.player_coord_leave_hooks, zone_name)
+            # End active hooks
+            if zone_name in self.running_tasks:
+                task = self.running_tasks.pop(zone_name)
+                logger.debug("Cancelling active task: %s", task)
+                task.cancel()
 
-        self.active_player_coord_zones = active_now
+        self.list_active_zones = active_now
 
     async def _run_player_coord_hooks(
         self,
-        hooks: list[PlayerCoordHook],
+        hooks: dict[str, PlayerCoordHook],
         zone_name: str,
     ) -> None:
         """Execute the provided player-coordinate hooks for a single zone name."""
-        for hook in list(hooks):
-            try:
+        try:
+            hook = hooks.get(zone_name)
+            logger.debug(f"Running player coord hook for zone: {zone_name}, hook: {hook}")
+            if hook is not None:
                 result = hook(self.ctx, zone_name)
                 if asyncio.iscoroutine(result):
                     await result
-            except Exception:
-                logger.exception("Player coord transition hook failed for zone '%s'", zone_name)
+        except Exception:
+            logger.exception("Player coord transition hook failed for zone '%s'", zone_name)

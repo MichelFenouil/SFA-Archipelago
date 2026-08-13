@@ -377,6 +377,7 @@ ITEM_INVENTORY: dict[str, SFAItemData] = {
         ItemClassification.progression,
         progressive_data=[GameBit(0x0371), GameBit(0x0373), GameBit(0x0375)],
     ),
+    "DIM Shackle Key": SFAItemData(108, "DIM Shackle Key", GameBit(0x0365), ItemClassification.progression),
     "Dinosaur Horn": SFAItemData(110, "Dinosaur Horn", GameBit(0x03A0), ItemClassification.progression),
     # "Cell Silver Key": SFAItemData(111, 0x03DC, SFAItemType.INVENTORY, ItemClassification.progression),
     # "DIM Gold Key": 112
@@ -408,7 +409,7 @@ ITEM_INVENTORY: dict[str, SFAItemData] = {
         None,
         ItemClassification.progression,
         progressive_data=[GameBit(0x02A4), GameBit(0x02A5), GameBit(0x02A6)],
-    ), # Used bits are 0x02AD, 0x02AE, 0x02AF
+    ),  # Used bits are 0x02AD, 0x02AE, 0x02AF
     "CloudRunner Flute": SFAItemData(122, "CloudRunner Flute", GameBit(0x02DE), ItemClassification.progression),
     "Water SpellStone 1": SFAItemData(123, "Water SpellStone 1", GameBit(0x01C3), ItemClassification.progression),
     "Fire Gem": SFAQuestItemData(

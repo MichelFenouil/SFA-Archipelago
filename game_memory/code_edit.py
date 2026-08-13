@@ -1,6 +1,6 @@
 import dolphin_memory_engine as dme
 
-from ..addresses import BAFOMDAD_MAX_CHECK_ADDRESS, CURRENT_ACT_ADDRESS, OBJGROUP_LOAD_CODE
+from ..addresses import BAFOMDAD_MAX_CHECK_ADDRESS, CURRENT_ACT_ADDRESS, CURRENT_OBJGROUP_ADDRESS, OBJGROUP_LOAD_CODE
 
 # from CommonClient import logger
 from .loaded_objects import get_object_by_id
@@ -27,6 +27,7 @@ def trigger_objgroup_load(map: int, act: int, objgroup_value: int) -> None:
     act_trigger_address = CURRENT_ACT_ADDRESS
     objgroup_trigger_address = OBJGROUP_LOAD_CODE + 4 * map
     # logger.debug(f"Triggering objgroup at address {objgroup_trigger_address:x}")
+    dme.write_bytes(CURRENT_OBJGROUP_ADDRESS, bytes.fromhex(f"{objgroup_value:08x}"))
     dme.write_bytes(act_trigger_address, bytes.fromhex(f"{act:02x}"))
     dme.write_bytes(objgroup_trigger_address, bytes.fromhex(f"{objgroup_value:08x}"))
 

@@ -7,12 +7,12 @@ from typing import TYPE_CHECKING
 from BaseClasses import ItemClassification, Location
 from rule_builder.options import OptionFilter
 from rule_builder.rules import Has, HasAll, HasAllCounts, Rule, True_
-from .options import LightfootQuests
 
 from .addresses import T0_ADDRESS, T1_ADDRESS
 from .bit_helper import GameBit
 from .items import SFAItem
 from .macros import CanBuy, CanExplodeBombPlant, CanGoDarkRoom, CanGrowMoonSeed
+from .options import LightfootQuests
 from .regions import SFARegion
 
 if TYPE_CHECKING:
@@ -247,7 +247,7 @@ LOCATION_ANY: dict[str, SFALocationData] = {
     ),
     ## DarkIce Mines
     "DIM: Release Entrance SnowHorn": SFALocationData(
-        32, GameBit(0x0366), SFARegion.DIM_ENTRANCE, Has("Tricky (Progressive)")
+        32, GameBit(0x0366), SFARegion.DIM_ENTRANCE, Has("Tricky (Progressive)") & Has("DIM Shackle Key")
     ),
     "DIM: Rescue Injured SnowHorn": SFALocationData(
         33, GameBit(0x036B), SFARegion.DIM_ENTRANCE, Has("Entrance Bridge Cog")
@@ -271,6 +271,13 @@ LOCATION_ANY: dict[str, SFALocationData] = {
         GameBit(0x03BC),
         SFARegion.DIM_FORT,
         Has("Fire Blaster") & HasAllCounts({"SharpClaw Fort Bridge Cogs": 3, "Tricky (Progressive)": 2}),
+    ),
+    "DIM: Shackle Key Chest": SFALocationData(
+        39,
+        GameBit(0x0365),
+        SFARegion.DIM_ENTRANCE,
+        Has("Tricky (Progressive)"),
+        tags=[SFALocationTags.ACTIVE_ZONE],
     ),
     # "DIM: Get Silver Key": SFALinkedLocationData(
     #     39,
@@ -426,7 +433,12 @@ LOCATION_ANY: dict[str, SFALocationData] = {
         60,
         GameBit(0x0143, bit_size=16),
         SFARegion.LFV_MAIN,
-        HasAll("Staff Booster", "Circle Block Platforms", "Square Block Platforms", options=[OptionFilter(LightfootQuests, True)]),
+        HasAll(
+            "Staff Booster",
+            "Circle Block Platforms",
+            "Square Block Platforms",
+            options=[OptionFilter(LightfootQuests, True)],
+        ),
         [SFALocationTags.SIDE_QUEST],
     ),
     "LFV: Test of Strength": SFALocationData(

@@ -6,7 +6,6 @@ from typing import ClassVar
 import dolphin_memory_engine as dme
 import Utils
 from CommonClient import (
-    ClientCommandProcessor,
     ClientStatus,
     get_base_parser,
     gui_enabled,
@@ -55,10 +54,16 @@ from .player_hooks import register_default_special_hooks
 
 TRACKER_LOADED = False
 try:
-    from worlds.tracker.TrackerClient import TrackerGameContext as SuperContext
+    from worlds.tracker.TrackerClient import (
+        TrackerCommandProcessor as SuperCommandProcessor,
+    )
+    from worlds.tracker.TrackerClient import (
+        TrackerGameContext as SuperContext,
+    )
 
     TRACKER_LOADED = True
 except ModuleNotFoundError:
+    from CommonClient import ClientCommandProcessor as SuperCommandProcessor
     from CommonClient import CommonContext as SuperContext
 
 CONNECTION_REFUSED_GAME_STATUS = (
@@ -74,7 +79,7 @@ CONNECTION_CONNECTED_STATUS = "Dolphin connected successfully."
 CONNECTION_INITIAL_STATUS = "Dolphin connection has not been initiated."
 
 
-class SFACommandProcessor(ClientCommandProcessor):
+class SFACommandProcessor(SuperCommandProcessor):
     """
     Command Processor for The Wind Waker client commands.
 
@@ -281,6 +286,9 @@ async def locations_watcher(ctx):
         _check_location_flag(ctx, LOCATION_ANY["MMP: Test of Combat"])
     if ctx.stored_map == FEAR_SHRINE_ID:
         _check_location_flag(ctx, LOCATION_ANY["LFV: Test of Fear"])
+
+    if "DIM_SHACKLE_CHEST" in ctx.hooks.list_active_zones:
+        _check_location_flag(ctx, LOCATION_ANY["DIM: Shackle Key Chest"])
 
     locations_checked = ctx.locations_checked.difference(ctx.checked_locations)
     if locations_checked:

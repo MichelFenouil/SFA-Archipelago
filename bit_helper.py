@@ -51,6 +51,36 @@ class GameFlag(GameBit):
     state: bool = True
 
 
+def get_bit(value, n):
+    """Return value of n-th bit."""
+    return (value >> n & 1) != 0
+
+
+def set_bit(value, n):
+    """Set n-th bit of value to 1."""
+    return value | (1 << n)
+
+
+def clear_bit(value, n):
+    """Set n-th bit of value to 0."""
+    return value & ~(1 << n)
+
+
+def n_lsb(x):
+    """Return a number with exactly x bits of 1."""
+    return (1 << x) - 1
+
+
+def n_to_m(n, m):
+    """Set bits from n to m to 1, where n > m."""
+    return n_lsb(n) & ~n_lsb(m)
+
+
+def set_bits(input, n, m, value):
+    """Set bits from n to m in x to pat."""
+    return (input & ~n_to_m(n, m)) | (value << m)
+
+
 def extract_bitflag_list(input_bytes: int) -> list[int]:
     """
     Extract list of True flags in the input.
@@ -192,6 +222,8 @@ def set_value_bytes(
     cache_byte = int.from_bytes(cache_byte, byteorder=endian)
     updated_byte = update_bits(cache_byte, bit_position, value, value_size)
     # logger.debug(f"Writing byte: {updated_byte:b}")
+    # TODO: refactor bit manipulations
+    # updated_byte = set_bits(cache_byte, bit_position + value_size - 1, bit_position, value)
     dme.write_bytes(byte_address, updated_byte.to_bytes(nb_bytes, endian))
 
 
