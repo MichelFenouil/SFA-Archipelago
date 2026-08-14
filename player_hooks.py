@@ -40,7 +40,15 @@ from .item_hooks import (
     lfv_enable_square_platform,
     lfv_enable_triangle_platform,
 )
-from .items import ITEM_INVENTORY, ITEM_PLANET, ITEM_STAFF, SFAItemData, SFAProgressiveItemData, give_item_in_game
+from .items import (
+    ITEM_INVENTORY,
+    ITEM_PLANET,
+    ITEM_STAFF,
+    SFAItemData,
+    SFAProgressiveItemData,
+    SFAQuestItemData,
+    give_item_in_game,
+)
 from .locations import (
     LOCATION_ANY,
     LOCATION_SHOP,
@@ -415,6 +423,30 @@ async def _leave_dim_silver_key(ctx: "SFAContext", zone_name: str) -> None:
     item.set_value(item.id in ctx.received_items_id)
 
 
+async def _hide_shw_alpine_root(ctx: "SFAContext", zone_name: str) -> None:
+    item = SFAItemData.get_by_name("SHW Alpine Root")
+    assert isinstance(item, SFAQuestItemData)
+    item.set_value(0)
+
+
+async def _show_shw_alpine_root(ctx: "SFAContext", zone_name: str) -> None:
+    item = SFAItemData.get_by_name("SHW Alpine Root")
+    assert isinstance(item, SFAQuestItemData)
+    item.set_value(ctx.received_items_id.count(item.id))
+
+
+async def _hide_dim_alpine_root(ctx: "SFAContext", zone_name: str) -> None:
+    item = SFAItemData.get_by_name("DIM Alpine Root")
+    assert isinstance(item, SFAQuestItemData)
+    item.set_value(0)
+
+
+async def _show_dim_alpine_root(ctx: "SFAContext", zone_name: str) -> None:
+    item = SFAItemData.get_by_name("DIM Alpine Root")
+    assert isinstance(item, SFAQuestItemData)
+    item.set_value(ctx.received_items_id.count(item.id))
+
+
 def register_default_special_hooks(ctx: "SFAContext") -> None:
     """Register all hooks."""
     ctx.hooks.add_map_transition(_sync_current_map)
@@ -511,3 +543,9 @@ def register_default_special_hooks(ctx: "SFAContext") -> None:
     )
     ctx.hooks.add_player_coord_transition(_handle_dim_silver_key, "DIM_SILVER_KEY", "enter")
     ctx.hooks.add_player_coord_transition(_leave_dim_silver_key, "DIM_SILVER_KEY", "leave")
+    ctx.hooks.add_player_coord_zone(PlayerCoordZone.circle("DIM_ALPINE_ROOT", -7300, 12930, 500, DARKICE_TOP_ID))
+    ctx.hooks.add_player_coord_transition(_hide_shw_alpine_root, "DIM_ALPINE_ROOT", "enter")
+    ctx.hooks.add_player_coord_transition(_show_shw_alpine_root, "DIM_ALPINE_ROOT", "leave")
+    ctx.hooks.add_player_coord_zone(PlayerCoordZone.circle("SHW_ALPINE_ROOT", -3030, 2000, 500, SNOWHORN_WASTES_ID))
+    ctx.hooks.add_player_coord_transition(_hide_dim_alpine_root, "SHW_ALPINE_ROOT", "enter")
+    ctx.hooks.add_player_coord_transition(_show_dim_alpine_root, "SHW_ALPINE_ROOT", "leave")
