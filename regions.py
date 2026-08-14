@@ -135,7 +135,10 @@ def connect_regions(world: SFAWorld) -> None:
     dim_fort.connect(
         dim_bottom,
         "Descend to DarkIce Mines Bottom",
-        HasAll("Dinosaur Horn", "Staff Booster"),
+        HasAll("Dinosaur Horn", "Staff Booster")
+        & HasAllCounts(
+            {"Fire Blaster": 1, "Tricky (Progressive)": 2, "DIM Gold Key": 1}
+        ),  # Additional logic to ensure player can reach Boss
     )
     moon_mountain_pass.connect(vfp, "Access Volcano Force Point", Has("Moon Pass Key"))
     moon_mountain_pass.connect(

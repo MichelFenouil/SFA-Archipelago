@@ -289,6 +289,10 @@ async def locations_watcher(ctx):
 
     if "DIM_SHACKLE_CHEST" in ctx.hooks.list_active_zones:
         _check_location_flag(ctx, LOCATION_ANY["DIM: Shackle Key Chest"])
+    if "DIM_SILVER_KEY" in ctx.hooks.list_active_zones:
+        _check_location_flag(ctx, LOCATION_ANY["DIM: Silver Key Chest"])
+    if "DIM_GOLD_KEY" in ctx.hooks.list_active_zones:
+        _check_location_flag(ctx, LOCATION_ANY["DIM: Gold Key Chest"])
 
     locations_checked = ctx.locations_checked.difference(ctx.checked_locations)
     if locations_checked:

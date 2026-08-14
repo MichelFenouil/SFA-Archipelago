@@ -379,8 +379,8 @@ ITEM_INVENTORY: dict[str, SFAItemData] = {
     ),
     "DIM Shackle Key": SFAItemData(108, "DIM Shackle Key", GameBit(0x0365), ItemClassification.progression),
     "Dinosaur Horn": SFAItemData(110, "Dinosaur Horn", GameBit(0x03A0), ItemClassification.progression),
-    # "Cell Silver Key": SFAItemData(111, 0x03DC, SFAItemType.INVENTORY, ItemClassification.progression),
-    # "DIM Gold Key": 112
+    "DIM Silver Key": SFAItemData(111, "DIM Silver Key", GameBit(0x03DC), ItemClassification.progression),
+    "DIM Gold Key": SFAItemData(112, "DIM Gold Key", GameBit(0x03DA), ItemClassification.progression),
     "Fire SpellStone 1": SFAItemData(113, "Fire SpellStone 1", GameBit(0x039E), ItemClassification.progression),
     "Moon Pass Key": SFAItemData(114, "Moon Pass Key", GameBit(0x017B), ItemClassification.progression),
     "Moon Seed": SFALockedConsumableItemData(

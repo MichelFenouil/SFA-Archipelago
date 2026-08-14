@@ -15,6 +15,7 @@ from .game_flags import (
     CRF_PRISON_WIND,
     CRF_QUEEN_BROKEN_PILLAR,
     CRF_QUEEN_CHILDREN_CHECK,
+    DIM_BOTTOM_OBJGROUP_VALUE,
     DIM_OBJGROUP_VALUE,
     DIM_OPEN_BIKE,
     DIM_OPEN_BLIZZARD,
@@ -376,6 +377,44 @@ async def _leave_dim_shackle_key(ctx: "SFAContext", zone_name: str) -> None:
     item.set_value(item.id in ctx.received_items_id)
 
 
+async def _handle_dim_gold_key(ctx: "SFAContext", zone_name: str) -> None:
+    location = LOCATION_ANY["DIM: Gold Key Chest"]
+    location.set_bit(location.id in ctx.checked_locations)
+    value = DIM_BOTTOM_OBJGROUP_VALUE.get_value()
+    # Clear bit then set it again to refresh Chest
+    value = clear_bit(value, 0)
+    DIM_BOTTOM_OBJGROUP_VALUE.set_value(value)
+    trigger_objgroup_load(DARKICE_BOTTOM_ID, 0, value)
+    await asyncio.sleep(0.1)
+    value = set_bit(value, 0)
+    DIM_BOTTOM_OBJGROUP_VALUE.set_value(value)
+    trigger_objgroup_load(DARKICE_BOTTOM_ID, 0, value)
+
+
+async def _leave_dim_gold_key(ctx: "SFAContext", zone_name: str) -> None:
+    item = SFAItemData.get_by_name("DIM Gold Key")
+    item.set_value(item.id in ctx.received_items_id)
+
+
+async def _handle_dim_silver_key(ctx: "SFAContext", zone_name: str) -> None:
+    location = LOCATION_ANY["DIM: Silver Key Chest"]
+    location.set_bit(location.id in ctx.checked_locations)
+    value = DIM_BOTTOM_OBJGROUP_VALUE.get_value()
+    # Clear bit then set it again to refresh Chest
+    value = clear_bit(value, 6)
+    DIM_BOTTOM_OBJGROUP_VALUE.set_value(value)
+    trigger_objgroup_load(DARKICE_BOTTOM_ID, 0, value)
+    await asyncio.sleep(0.1)
+    value = set_bit(value, 6)
+    DIM_BOTTOM_OBJGROUP_VALUE.set_value(value)
+    trigger_objgroup_load(DARKICE_BOTTOM_ID, 0, value)
+
+
+async def _leave_dim_silver_key(ctx: "SFAContext", zone_name: str) -> None:
+    item = SFAItemData.get_by_name("DIM Silver Key")
+    item.set_value(item.id in ctx.received_items_id)
+
+
 def register_default_special_hooks(ctx: "SFAContext") -> None:
     """Register all hooks."""
     ctx.hooks.add_map_transition(_sync_current_map)
@@ -460,3 +499,15 @@ def register_default_special_hooks(ctx: "SFAContext") -> None:
     ctx.hooks.add_player_coord_zone(
         PlayerCoordZone.circle("DIM_SHACKLE_CHEST", -7325, 11400, 100, DARKICE_TOP_ID, min_y=-1439, max_y=-1441)
     )  # No function, just checking in _check_location function
+    ctx.hooks.add_player_coord_zone(
+        PlayerCoordZone.square("DIM_GOLD_KEY", -10080, -9845, 19000, 19200, DARKICE_BOTTOM_ID)
+    )
+    ctx.hooks.add_player_coord_transition(_handle_dim_gold_key, "DIM_GOLD_KEY", "enter")
+    ctx.hooks.add_player_coord_transition(_leave_dim_gold_key, "DIM_GOLD_KEY", "leave")
+    ctx.hooks.add_player_coord_zone(
+        PlayerCoordZone.square(
+            "DIM_SILVER_KEY", -10180, -9600, 17080, 17600, DARKICE_BOTTOM_ID, min_y=-1900, max_y=-1800
+        )
+    )
+    ctx.hooks.add_player_coord_transition(_handle_dim_silver_key, "DIM_SILVER_KEY", "enter")
+    ctx.hooks.add_player_coord_transition(_leave_dim_silver_key, "DIM_SILVER_KEY", "leave")

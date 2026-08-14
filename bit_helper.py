@@ -220,10 +220,10 @@ def set_value_bytes(
         return
     cache_byte = dme.read_bytes(byte_address, nb_bytes)
     cache_byte = int.from_bytes(cache_byte, byteorder=endian)
-    updated_byte = update_bits(cache_byte, bit_position, value, value_size)
+    # updated_byte = update_bits(cache_byte, bit_position, value, value_size)
     # logger.debug(f"Writing byte: {updated_byte:b}")
-    # TODO: refactor bit manipulations
-    # updated_byte = set_bits(cache_byte, bit_position + value_size - 1, bit_position, value)
+    # TODO: check bit manipulations for previous zones
+    updated_byte = set_bits(cache_byte, bit_position + value_size - 1, bit_position, value)
     dme.write_bytes(byte_address, updated_byte.to_bytes(nb_bytes, endian))
 
 
