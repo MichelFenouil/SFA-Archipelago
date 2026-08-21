@@ -1,7 +1,5 @@
 from collections.abc import Mapping
-from typing import TYPE_CHECKING, Any
-
-from rule_builder.rules import Has
+from typing import TYPE_CHECKING, Any, ClassVar
 
 from worlds.AutoWorld import World
 
@@ -16,6 +14,7 @@ from .items import (
 from .locations import create_all_locations, locations_name_to_id_dict
 from .options import SFAOptions
 from .regions import connect_regions, create_all_regions
+from .rules import Victory
 from .web_world import SFAWebWorld
 
 if TYPE_CHECKING:
@@ -47,6 +46,25 @@ class SFAWorld(World):
 
     progress_locations: set[str] = set()  # noqa: RUF012
 
+    item_name_groups: ClassVar = {
+        "Tricky": {"Tricky (Progressive)"},
+        "Spellstone": {
+            "Fire SpellStone 1",
+            "Water SpellStone 1",
+        },
+        "Spirit": {
+            "Krazoa Spirit 2",
+            "Krazoa Spirit 3",
+        },
+    }
+
+    location_name_groups: ClassVar = {
+        "Boss": {
+            "DIM: Defeat Boss Galdon",
+            "CRF: Defeat Boss SharpClaw Race",
+        },
+    }
+
     def create_regions(self) -> None:
         """Create regions and entrances for this world player."""
         create_all_regions(self)
@@ -55,7 +73,7 @@ class SFAWorld(World):
 
     def set_rules(self) -> None:
         """Create rules for this world player."""
-        self.set_completion_rule(Has("Victory"))
+        self.set_completion_rule(Victory())
 
     def create_items(self) -> None:
         """Create items for this world player."""
@@ -98,6 +116,10 @@ class SFAWorld(World):
                 "lightfoot_quests",
                 "infinite_consumables",
                 "infinite_tricky_food",
+                "goal_completion",
+                "required_boss",
+                "required_spellstones",
+                "required_spirits",
             ),
         }
 

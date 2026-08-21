@@ -32,6 +32,8 @@ class SFAItemTags(Enum):
     SKIP_ITEMPOOL = auto()
     SEED = auto()
     DARK_ROOM = auto()
+    SPELLSTONE = auto()
+    SPIRIT = auto()
 
 
 @dataclass
@@ -249,10 +251,6 @@ def give_item_in_game(ctx: SFAContext, item: SFAItemData | None) -> bool:
     if item is None or item.id == 0:
         return False
 
-    if item.id == SFAItemData.get_by_name("Victory").id:  # Victory
-        ctx.victory = True
-        return True
-
     if ctx.stored_map == SHOP_ID and (SFAItemTags.SHOP in item.tags):
         # Don't send shop items if inside shop
         return True
@@ -381,13 +379,19 @@ ITEM_INVENTORY: dict[str, SFAItemData] = {
     "Dinosaur Horn": SFAItemData(110, "Dinosaur Horn", GameBit(0x03A0), ItemClassification.progression),
     "DIM Silver Key": SFAItemData(111, "DIM Silver Key", GameBit(0x03DC), ItemClassification.progression),
     "DIM Gold Key": SFAItemData(112, "DIM Gold Key", GameBit(0x03DA), ItemClassification.progression),
-    "Fire SpellStone 1": SFAItemData(113, "Fire SpellStone 1", GameBit(0x039E), ItemClassification.progression),
+    "Fire SpellStone 1": SFAItemData(
+        113, "Fire SpellStone 1", GameBit(0x039E), ItemClassification.progression, tags=[SFAItemTags.SPELLSTONE]
+    ),
     "Moon Pass Key": SFAItemData(114, "Moon Pass Key", GameBit(0x017B), ItemClassification.progression),
     "Moon Seed": SFALockedConsumableItemData(
         115, "Moon Seed", GameBit(0x01FE, bit_size=3), ItemClassification.progression, [SFAItemTags.SEED], max_amount=7
     ),
-    "Krazoa Spirit 2": SFAItemData(116, "Krazoa Spirit 2", GameBit(0x0537), ItemClassification.progression),
-    "Krazoa Spirit 3": SFAItemData(129, "Krazoa Spirit 3", GameBit(0x053A), ItemClassification.progression),
+    "Krazoa Spirit 2": SFAItemData(
+        116, "Krazoa Spirit 2", GameBit(0x0537), ItemClassification.progression, tags=[SFAItemTags.SPIRIT]
+    ),
+    "Krazoa Spirit 3": SFAItemData(
+        129, "Krazoa Spirit 3", GameBit(0x053A), ItemClassification.progression, tags=[SFAItemTags.SPIRIT]
+    ),
     "Gold Bars": SFAQuestItemData(
         117,
         "Gold Bars",
@@ -411,7 +415,9 @@ ITEM_INVENTORY: dict[str, SFAItemData] = {
         progressive_data=[GameBit(0x02A4), GameBit(0x02A5), GameBit(0x02A6)],
     ),  # Used bits are 0x02AD, 0x02AE, 0x02AF
     "CloudRunner Flute": SFAItemData(122, "CloudRunner Flute", GameBit(0x02DE), ItemClassification.progression),
-    "Water SpellStone 1": SFAItemData(123, "Water SpellStone 1", GameBit(0x01C3), ItemClassification.progression),
+    "Water SpellStone 1": SFAItemData(
+        123, "Water SpellStone 1", GameBit(0x01C3), ItemClassification.progression, tags=[SFAItemTags.SPELLSTONE]
+    ),
     "Fire Gem": SFAQuestItemData(
         124,
         "Fire Gem",

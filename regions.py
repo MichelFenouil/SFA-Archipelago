@@ -9,8 +9,8 @@ from rule_builder.rules import CanReachLocation, Has, HasAll, HasAllCounts, HasA
 
 from worlds.sfa.items import UT_GLITCH_LOGIC
 
-from .macros import CanBuy, CanExplodeBombPlant, CanGoDarkRoom, CanGrowMoonSeed
 from .options import LightfootEntrance
+from .rules import CanBuy, CanExplodeBombPlant, CanGoDarkRoom, CanGrowMoonSeed
 
 if TYPE_CHECKING:
     from .world import SFAWorld

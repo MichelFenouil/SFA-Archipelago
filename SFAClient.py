@@ -300,10 +300,6 @@ async def locations_watcher(ctx):
         sync_player_state(ctx)
         await ctx.send_msgs([{"cmd": "LocationChecks", "locations": locations_checked}])
 
-    if ctx.victory and not ctx.finished_game:
-        await ctx.send_msgs([{"cmd": "StatusUpdate", "status": ClientStatus.CLIENT_GOAL}])
-        ctx.finished_game = True
-
 
 async def give_items(ctx: SFAContext):
     """
@@ -409,6 +405,48 @@ async def player_hooks_watcher(ctx: SFAContext) -> None:
     )
 
 
+def _check_victory(ctx: SFAContext) -> bool:
+    """
+    Check if the player has achieved victory.
+
+    :param ctx: The Star Fox Adventures context
+    :return: True if the player has achieved victory, False otherwise
+    """
+    boss_defeated = sum(
+        1
+        for location_id in ctx.checked_locations
+        if SFALocationTags.BOSS in SFALocationData.get_by_id(location_id).tags
+    )
+    boss_condition = boss_defeated >= ctx.options["required_boss"]
+
+    if ctx.options["goal_completion"] == "collect":
+        spellstone_count = sum(
+            1 for item_id in ctx.received_items_id if SFAItemTags.SPELLSTONE in SFAItemData.get_by_id(item_id).tags
+        )
+        spellstone_condition = spellstone_count >= ctx.options["required_spellstones"]
+
+        spirit_count = sum(
+            1 for item_id in ctx.received_items_id if SFAItemTags.SPIRIT in SFAItemData.get_by_id(item_id).tags
+        )
+        spirit_condition = spirit_count >= ctx.options["required_spirits"]
+    else:
+        spellstone_count = sum(
+            1
+            for location_id in ctx.checked_locations
+            if SFALocationTags.SPELLSTONE in SFALocationData.get_by_id(location_id).tags
+        )
+        spellstone_condition = spellstone_count >= ctx.options["required_spellstones"]
+
+        spirit_count = sum(
+            1
+            for location_id in ctx.checked_locations
+            if SFALocationTags.SPIRIT in SFALocationData.get_by_id(location_id).tags
+        )
+        spirit_condition = spirit_count >= ctx.options["required_spirits"]
+
+    return boss_condition and spellstone_condition and spirit_condition
+
+
 async def game_watcher(ctx: SFAContext):
     """
     Main game watcher loop.
@@ -426,7 +464,7 @@ async def game_watcher(ctx: SFAContext):
             await give_items(ctx)
             await player_hooks_watcher(ctx)
 
-            if ctx.victory and not ctx.finished_game:
+            if _check_victory(ctx) and not ctx.finished_game:
                 await ctx.send_msgs([{"cmd": "StatusUpdate", "status": ClientStatus.CLIENT_GOAL}])
                 ctx.finished_game = True
 

@@ -10,10 +10,11 @@ from rule_builder.rules import Has, HasAll, HasAllCounts, Rule, True_
 
 from .addresses import T0_ADDRESS, T1_ADDRESS
 from .bit_helper import GameBit
+from .constants import SFAEvent
 from .items import SFAItem
-from .macros import CanBuy, CanExplodeBombPlant, CanGoDarkRoom, CanGrowMoonSeed
 from .options import LightfootQuests
 from .regions import SFARegion
+from .rules import CanBuy, CanExplodeBombPlant, CanGoDarkRoom, CanGrowMoonSeed
 
 if TYPE_CHECKING:
     from .world import SFAWorld
@@ -31,7 +32,9 @@ class SFALocationTags(Enum):
     MAP = auto()
     ACTIVE_ZONE = auto()
     SIDE_QUEST = auto()
-    CUTSCENE = auto()  # Not yet used
+    BOSS = auto()
+    SPELLSTONE = auto()
+    SPIRIT = auto()
 
 
 @dataclass
@@ -43,6 +46,31 @@ class SFALocationData:
     region: SFARegion
     rule: Rule[SFAWorld]
     tags: list[SFALocationTags] = field(default_factory=lambda: [])
+
+    @classmethod
+    def get_by_id(cls, id: int) -> SFALocationData | None:
+        """
+        Return location for given id.
+
+        :param cls: SFALocationData class
+        :param id: Location id to search
+        :return: SFALocationData for given id
+        """
+        for item in LOCATION_ANY.values():
+            if item.id == id:
+                return item
+        return None
+
+    @classmethod
+    def get_by_name(cls, name: str) -> SFALocationData | None:
+        """
+        Return location for given name.
+
+        :param cls: SFALocationData class
+        :param name: Location name to search
+        :return: SFALocationData for given name
+        """
+        return LOCATION_ANY.get(name, None)
 
     def is_checked(self) -> bool:
         """Get bool value if checked in game."""
@@ -102,8 +130,6 @@ def create_regular_locations(world: SFAWorld) -> None:
 
         region = world.get_region(loc_data.region.value)
         sfa_location = SFALocation(world.player, loc_name, loc_data.id, region)
-        if loc_name == "DIM: Defeat Boss Galdon":
-            sfa_location.place_locked_item(SFAItem("Victory", ItemClassification.progression, 2000, world.player))
         region.locations.append(sfa_location)
         world.progress_locations.add(loc_name)
         world.set_rule(sfa_location, loc_data.rule)
@@ -111,14 +137,19 @@ def create_regular_locations(world: SFAWorld) -> None:
 
 def create_events(world: SFAWorld) -> None:
     """Create events for AP world."""
-    # darkice_mines = world.get_region(SFARegion.DIM_BOTTOM.value)
-    # darkice_mines.add_event(
-    #     "Defeated Boss Galdon",
-    #     "Victory",
-    #     location_type=SFALocation,
-    #     item_type=SFAItem,
-    #     rule=lambda state: Has("Fire Blaster")(state, world.player) and state.has("Tricky (Progressive)", world.player, 2)
-    # )
+
+    def _create_loc_event(loc_name: str, event_name: str) -> None:
+        """Add event for checked location."""
+        loc_data = LOCATION_TABLE[loc_name]
+        region = world.get_region(loc_data.region.value)
+        region.add_event(event_name, event_name, loc_data.rule, show_in_spoiler=False)
+
+    _create_loc_event("DIM: Defeat Boss Galdon", SFAEvent.BOSS_DIM)
+    _create_loc_event("CRF: Defeat Boss SharpClaw Race", SFAEvent.BOSS_CRF)
+    _create_loc_event("VFP: Insert Fire SpellStone 1", SFAEvent.FIRE_SPELLSTONE_1)
+    _create_loc_event("OFP: Insert Water SpellStone 1", SFAEvent.WATER_SPELLSTONE_1)
+    _create_loc_event("KP: Release Spirit 2", SFAEvent.SPIRIT_2)
+    _create_loc_event("KP: Release Spirit 3", SFAEvent.SPIRIT_3)
 
 
 def create_all_locations(world: SFAWorld) -> None:
@@ -299,13 +330,11 @@ LOCATION_ANY: dict[str, SFALocationData] = {
         GameBit(0x0120, T0_ADDRESS),
         SFARegion.DIM_BOTTOM,
         Has("Fire Blaster") & Has("Tricky (Progressive)", 2) & Has("DIM Gold Key"),
+        tags=[SFALocationTags.BOSS],
     ),
     ## Volcano Force Point
     "VFP: Insert Fire SpellStone 1": SFALocationData(
-        41,
-        GameBit(0x0573),
-        SFARegion.VFP_WARP_ROOM,
-        Has("Fire SpellStone 1"),
+        41, GameBit(0x0573), SFARegion.VFP_WARP_ROOM, Has("Fire SpellStone 1"), tags=[SFALocationTags.SPELLSTONE]
     ),
     ## Moon Mountain Pass
     "MMP: Test of Combat": SFALocationData(
@@ -321,12 +350,14 @@ LOCATION_ANY: dict[str, SFALocationData] = {
         GameBit(0x0524),
         SFARegion.KP_MAIN,
         Has("Krazoa Spirit 2"),  # & Has any other spirits
+        tags=[SFALocationTags.SPIRIT],
     ),
     "KP: Release Spirit 3": SFALocationData(
         63,
         GameBit(0x052A),
         SFARegion.KP_MAIN,
         Has("Krazoa Spirit 3") & Has("SharpClaw Disguise"),
+        tags=[SFALocationTags.SPIRIT],
     ),
     ## Cape Claw
     "CC: Give HighTop Gold Bars": SFALocationData(
@@ -401,6 +432,7 @@ LOCATION_ANY: dict[str, SFALocationData] = {
         GameBit(0x012B, T1_ADDRESS),
         SFARegion.CRF_POWERED,
         HasAll("Fire Blaster", "Staff Booster", "CloudRunner Flute") & CanGoDarkRoom(),
+        tags=[SFALocationTags.BOSS],
     ),
     ## Ocean Force Point
     "OFP: Insert Water SpellStone 1": SFALocationData(
@@ -409,6 +441,7 @@ LOCATION_ANY: dict[str, SFALocationData] = {
         SFARegion.OFP_ENTRANCE,
         HasAll("Water SpellStone 1", "Staff Booster", "SharpClaw Disguise", "Fire Blaster")
         & Has("Tricky (Progressive)", 2),
+        tags=[SFALocationTags.SPELLSTONE],
     ),
     ## LightFoot Village
     "LFV: Entrance Baby Quest": SFALocationData(

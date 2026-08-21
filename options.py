@@ -1,6 +1,58 @@
 from dataclasses import dataclass
 
-from Options import Choice, OptionGroup, PerGameCommonOptions, Toggle
+from Options import Choice, OptionGroup, PerGameCommonOptions, Range, Toggle
+
+## Goal Options
+
+
+class GoalOption(Choice):
+    """
+    Choose the goal to complete the game.
+
+    Collect: Collect all Spell Stones and Krazoa Spirits to complete the game.
+    Place: Collect and place all the Spell Stones and Krazoa Spirits to complete the game.
+    """
+
+    display_name = "Goal"
+
+    option_collect = "collect"
+    option_place = "place"
+
+    default = "collect"
+
+
+class RequiredBoss(Range):
+    """Required boss to defeat to complete the game."""
+
+    display_name = "Required Boss"
+
+    range_start = 0
+    range_end = 2
+
+    default = 2
+
+
+class RequiredSpellStones(Range):
+    """Required number of SpellStones to collect to complete the game."""
+
+    display_name = "Required SpellStones"
+
+    range_start = 0
+    range_end = 2
+
+    default = 2
+
+
+class RequiredSpirits(Range):
+    """Required number of Krazoa Spirits to collect to complete the game."""
+
+    display_name = "Required Spirits"
+
+    range_start = 0
+    range_end = 2
+
+    default = 2
+
 
 ## Logic Options
 
@@ -102,6 +154,11 @@ class InfiniteTrickyFood(Toggle):
 class SFAOptions(PerGameCommonOptions):
     """Star Fox Adventures options class."""
 
+    goal_completion: GoalOption
+    required_boss: RequiredBoss
+    required_spellstones: RequiredSpellStones
+    required_spirits: RequiredSpirits
+
     shop_locations: ShopLocations
     plant_shuffle: PlantShuffle
     dark_rooms: DarkRoomLogic
@@ -113,6 +170,10 @@ class SFAOptions(PerGameCommonOptions):
 
 
 option_groups = [
+    OptionGroup(
+        "Goal Options",
+        [GoalOption, RequiredBoss, RequiredSpellStones, RequiredSpirits],
+    ),
     OptionGroup(
         "Logic Options",
         [ShopLocations, PlantShuffle, DarkRoomLogic, LightfootEntrance, LightfootQuests],
