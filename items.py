@@ -1,13 +1,15 @@
 from __future__ import annotations
 
+from collections.abc import Callable
 from dataclasses import dataclass, field
 from enum import Enum, auto
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Literal
 
 from BaseClasses import Item, ItemClassification
 
 from .addresses import PLAYER_CUR_HP, PLAYER_CUR_MP, PLAYER_MAX_HP, PLAYER_MAX_MP, SHOP_ID
 from .bit_helper import GameBit
+from .item_hooks import lfv_enable_circle_platform, lfv_enable_square_platform, lfv_enable_triangle_platform
 
 if TYPE_CHECKING:
     from .SFAClient import SFAContext
@@ -30,6 +32,8 @@ class SFAItemTags(Enum):
     SKIP_ITEMPOOL = auto()
     SEED = auto()
     DARK_ROOM = auto()
+    SPELLSTONE = auto()
+    SPIRIT = auto()
 
 
 @dataclass
@@ -41,6 +45,7 @@ class SFAItemData:
     game_bit: GameBit
     ap_classification: ItemClassification
     tags: list[SFAItemTags] = field(default_factory=lambda: [])
+    post_hook: Callable[[SFAItemData], None] | None = None
 
     @classmethod
     def get_by_id(cls, id: int) -> SFAItemData | None:
@@ -109,22 +114,23 @@ class SFACountItemData(SFAItemData):
 class SFAQuestItemData(SFACountItemData):
     """Data class for quest items."""
 
-    max_count: int = 1
-    count_increment: int = 1
-    start_amount: int = 0
     used_count_bits: list[GameBit] = field(default_factory=lambda: [])
+    used_state: Literal["sum", "last"] = "sum"  # "sum" or "last"
 
     def set_value(self, value: int) -> None:
         """Set value for quest item."""
         if value > self.max_count:
             value = self.max_count
+
         used_count = 0
-        # Counter values will return total count, list of bits will return last checked bit
-        for index, bit in enumerate(self.used_count_bits):
-            used_value = bit.get_value()
-            if used_value == 0:
-                break
-            used_count = used_value * (index + 1)
+        if self.used_state == "sum":
+            used_count = sum(bit.get_value() for bit in self.used_count_bits)
+        if self.used_state == "last":
+            for index, bit in enumerate(self.used_count_bits):
+                used_value = bit.get_value()
+                if used_value > 0:
+                    used_count = index + 1
+
         value = self.start_amount + (value - used_count) * self.count_increment
         if value < 0:
             value = 0
@@ -209,6 +215,8 @@ def create_all_items(world: SFAWorld) -> None:
             continue
         if SFAItemTags.SEED in data.tags and not world.options.plant_shuffle:
             continue
+        if data.name == "LightFoot Village Gate" and world.options.lightfoot_entrance == "always_open":
+            continue
         if SFAItemTags.STARTING_ITEM in data.tags:
             world.push_precollected(world.create_item(name))
         elif isinstance(data, SFACountItemData):
@@ -243,10 +251,6 @@ def give_item_in_game(ctx: SFAContext, item: SFAItemData | None) -> bool:
     if item is None or item.id == 0:
         return False
 
-    if item.id == SFAItemData.get_by_name("Victory").id:  # Victory
-        ctx.victory = True
-        return True
-
     if ctx.stored_map == SHOP_ID and (SFAItemTags.SHOP in item.tags):
         # Don't send shop items if inside shop
         return True
@@ -267,6 +271,9 @@ def give_item_in_game(ctx: SFAContext, item: SFAItemData | None) -> bool:
 
     # All other items
     item.set_value(item.id in ctx.received_items_id)
+
+    if item.post_hook is not None:
+        item.post_hook(item)
     return True
 
 
@@ -316,6 +323,14 @@ ITEM_PLANET: dict[str, SFAItemData] = {
 }
 
 ITEM_INVENTORY: dict[str, SFAItemData] = {
+    "FireFly": SFALockedConsumableItemData(
+        0,
+        "FireFly",
+        GameBit(0x071D, bit_size=5),
+        ItemClassification.progression,
+        [SFAItemTags.SKIP_ITEMPOOL],
+        max_amount=31,
+    ),  # Fake item to handle infinite consumables
     "Scarab Bag (Progressive)": SFAProgressiveItemData(
         100,
         "Scarab Bag (Progressive)",
@@ -351,6 +366,7 @@ ITEM_INVENTORY: dict[str, SFAItemData] = {
         ItemClassification.progression,
         max_count=2,
         used_count_bits=[GameBit(0x036C), GameBit(0x036D)],
+        used_state="last",
     ),
     "SharpClaw Fort Bridge Cogs": SFAProgressiveItemData(
         107,
@@ -359,15 +375,23 @@ ITEM_INVENTORY: dict[str, SFAItemData] = {
         ItemClassification.progression,
         progressive_data=[GameBit(0x0371), GameBit(0x0373), GameBit(0x0375)],
     ),
+    "DIM Shackle Key": SFAItemData(108, "DIM Shackle Key", GameBit(0x0365), ItemClassification.progression),
     "Dinosaur Horn": SFAItemData(110, "Dinosaur Horn", GameBit(0x03A0), ItemClassification.progression),
-    # "Cell Silver Key": SFAItemData(111, 0x03DC, SFAItemType.INVENTORY, ItemClassification.progression),
-    # "DIM Gold Key": 112
-    "Fire SpellStone 1": SFAItemData(113, "Fire SpellStone 1", GameBit(0x039E), ItemClassification.progression),
+    "DIM Silver Key": SFAItemData(111, "DIM Silver Key", GameBit(0x03DC), ItemClassification.progression),
+    "DIM Gold Key": SFAItemData(112, "DIM Gold Key", GameBit(0x03DA), ItemClassification.progression),
+    "Fire SpellStone 1": SFAItemData(
+        113, "Fire SpellStone 1", GameBit(0x039E), ItemClassification.progression, tags=[SFAItemTags.SPELLSTONE]
+    ),
     "Moon Pass Key": SFAItemData(114, "Moon Pass Key", GameBit(0x017B), ItemClassification.progression),
     "Moon Seed": SFALockedConsumableItemData(
         115, "Moon Seed", GameBit(0x01FE, bit_size=3), ItemClassification.progression, [SFAItemTags.SEED], max_amount=7
     ),
-    "Krazoa Spirit 2": SFAItemData(116, "Krazoa Spirit 2", GameBit(0x0537), ItemClassification.progression),
+    "Krazoa Spirit 2": SFAItemData(
+        116, "Krazoa Spirit 2", GameBit(0x0537), ItemClassification.progression, tags=[SFAItemTags.SPIRIT]
+    ),
+    "Krazoa Spirit 3": SFAItemData(
+        129, "Krazoa Spirit 3", GameBit(0x053A), ItemClassification.progression, tags=[SFAItemTags.SPIRIT]
+    ),
     "Gold Bars": SFAQuestItemData(
         117,
         "Gold Bars",
@@ -383,24 +407,48 @@ ITEM_INVENTORY: dict[str, SFAItemData] = {
         ItemClassification.progression,
         used_count_bits=[GameBit(0x02BF)],
     ),
-    "Red Crystal": SFAQuestItemData(
-        119, "Red Crystal", GameBit(0x02A4), ItemClassification.progression, used_count_bits=[GameBit(0x02AD)]
-    ),
-    "Green Crystal": SFAQuestItemData(
-        120, "Green Crystal", GameBit(0x02A5), ItemClassification.progression, used_count_bits=[GameBit(0x02AE)]
-    ),
-    "Blue Crystal": SFAQuestItemData(
-        121, "Blue Crystal", GameBit(0x02A6), ItemClassification.progression, used_count_bits=[GameBit(0x02AF)]
-    ),
-    "CloudRunner Flute": SFAItemData(122, "CloudRunner Flute", GameBit(0x02DE), ItemClassification.progression),
-    "FireFly": SFALockedConsumableItemData(
-        0,
-        "FireFly",
-        GameBit(0x071D, bit_size=5),
+    "CRF Light Gems": SFAProgressiveItemData(
+        119,
+        "CRF Light Gems",
+        None,
         ItemClassification.progression,
-        [SFAItemTags.SKIP_ITEMPOOL],
-        max_amount=31,
-    ),  # Fake item to handle infinite consumables
+        progressive_data=[GameBit(0x02A4), GameBit(0x02A5), GameBit(0x02A6)],
+    ),  # Used bits are 0x02AD, 0x02AE, 0x02AF
+    "CloudRunner Flute": SFAItemData(122, "CloudRunner Flute", GameBit(0x02DE), ItemClassification.progression),
+    "Water SpellStone 1": SFAItemData(
+        123, "Water SpellStone 1", GameBit(0x01C3), ItemClassification.progression, tags=[SFAItemTags.SPELLSTONE]
+    ),
+    "Fire Gem": SFAQuestItemData(
+        124,
+        "Fire Gem",
+        GameBit(0x025A, bit_size=2),
+        ItemClassification.progression,
+        max_count=2,
+        used_count_bits=[GameBit(0x269), GameBit(0x267)],
+        used_state="sum",
+    ),
+    "LightFoot Village Gate": SFAItemData(125, "LightFoot Village Gate", GameBit(0x0), ItemClassification.progression),
+    "Triangle Block Platforms": SFAItemData(
+        126,
+        "Triangle Block Platforms",
+        GameBit(0x0),
+        ItemClassification.progression,
+        post_hook=lfv_enable_triangle_platform,
+    ),
+    "Square Block Platforms": SFAItemData(
+        127,
+        "Square Block Platforms",
+        GameBit(0x0),
+        ItemClassification.progression,
+        post_hook=lfv_enable_square_platform,
+    ),
+    "Circle Block Platforms": SFAItemData(
+        128,
+        "Circle Block Platforms",
+        GameBit(0x0),
+        ItemClassification.progression,
+        post_hook=lfv_enable_circle_platform,
+    ),
 }
 
 ITEM_SHOP: dict[str, SFAItemData] = {

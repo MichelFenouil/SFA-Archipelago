@@ -4,9 +4,13 @@ from enum import Enum
 from typing import TYPE_CHECKING
 
 from BaseClasses import Region
-from rule_builder.rules import Has, HasAll, HasAllCounts, True_
+from rule_builder.options import OptionFilter
+from rule_builder.rules import CanReachLocation, Has, HasAll, HasAllCounts, HasAny, True_
 
-from .macros import CanBuy, CanExplodeBombPlant, CanGoDarkRoom, CanGrowMoonSeed
+from worlds.sfa.items import UT_GLITCH_LOGIC
+
+from .options import LightfootEntrance
+from .rules import CanBuy, CanExplodeBombPlant, CanGoDarkRoom, CanGrowMoonSeed
 
 if TYPE_CHECKING:
     from .world import SFAWorld
@@ -23,7 +27,8 @@ class SFARegion(Enum):
     SW_GATE = "SnowHorn Wastes - Behind Gate"
     TH_WELL = "ThornTail Hollow - Well"
     TH_WELL_BOTTOM = "ThornTail Hollow - Dark Well Bottom"
-    LFV = "LightFoot Village"
+    LFV_ENTRANCE = "LightFoot Village - Entrance"
+    LFV_MAIN = "LightFoot Village - Main Area"
     MMP = "Moon Mountain Pass"
     MMP_METEORITE = "Moon Mountain Pass - Meteorite Area"
     MMP_SHRINE = "Moon Mountain Pass - Krazoa Shrine"
@@ -37,9 +42,11 @@ class SFARegion(Enum):
     KP_MAIN = "Krazoa Palace - Main Area"  # Every other Spirit warps directly to main room
     CC_TRANSITION = "Cape Claw Transition"
     CC_OPEN = "Cape Claw Open Area"
+    CC_POST_QUEST = "Cape Claw Post Gold Bar Quest"
     CRF_LANDING = "CloudRunner Fortress - Landing Pad"
     CRF_MAIN = "CloudRunner Fortress - Central Area"
     CRF_POWERED = "CloudRunner Fortress - With Power"
+    OFP_ENTRANCE = "Ocean Force Point - Entrance"
 
 
 def create_all_regions(world: SFAWorld) -> None:
@@ -59,7 +66,8 @@ def connect_regions(world: SFAWorld) -> None:
     sh_well = world.get_region(SFARegion.TH_WELL.value)
     sh_well_bottom = world.get_region(SFARegion.TH_WELL_BOTTOM.value)
     sw_gate = world.get_region(SFARegion.SW_GATE.value)
-    lightfoot_village = world.get_region(SFARegion.LFV.value)
+    lfv_entrance = world.get_region(SFARegion.LFV_ENTRANCE.value)
+    lfv_main = world.get_region(SFARegion.LFV_MAIN.value)
     moon_mountain_pass = world.get_region(SFARegion.MMP.value)
     mmp_meteorite = world.get_region(SFARegion.MMP_METEORITE.value)
     mmp_shrine = world.get_region(SFARegion.MMP_SHRINE.value)
@@ -73,9 +81,11 @@ def connect_regions(world: SFAWorld) -> None:
     krazoa_palace_main = world.get_region(SFARegion.KP_MAIN.value)
     cc_transition = world.get_region(SFARegion.CC_TRANSITION.value)
     cc_open = world.get_region(SFARegion.CC_OPEN.value)
+    cc_post_quest = world.get_region(SFARegion.CC_POST_QUEST.value)
     cloudrunner_fortress_landing = world.get_region(SFARegion.CRF_LANDING.value)
     cloudrunner_fortress_main = world.get_region(SFARegion.CRF_MAIN.value)
     cloudrunner_fortress_powered = world.get_region(SFARegion.CRF_POWERED.value)
+    ofp_entrance = world.get_region(SFARegion.OFP_ENTRANCE.value)
 
     world_map.connect(thorntail_hollow, "Fly to Planet", Has("Dinosaur Planet Access"))
     thorntail_hollow.connect(
@@ -101,7 +111,14 @@ def connect_regions(world: SFAWorld) -> None:
         Has("Staff Booster") & CanExplodeBombPlant() & CanGoDarkRoom(),
     )
     sw_entrance.connect(sw_gate, "Pass SnowHorn Gate", Has("Gate Key"))
-    thorntail_hollow.connect(lightfoot_village, "Access to LightFoot Village", Has("Staff"))
+    thorntail_hollow.connect(lfv_entrance, "Access to LightFoot Village", Has("Staff"))
+    lfv_entrance.connect(
+        lfv_main,
+        "Enter LightFoot Village",
+        Has("LightFoot Village Gate")
+        | OptionFilter(LightfootEntrance, "always_open")
+        | Has(UT_GLITCH_LOGIC, options=[OptionFilter(LightfootEntrance, "vanilla")]),
+    )
     thorntail_hollow.connect(
         moon_mountain_pass,
         "Entrance to Moon Mountain Pass",
@@ -118,7 +135,10 @@ def connect_regions(world: SFAWorld) -> None:
     dim_fort.connect(
         dim_bottom,
         "Descend to DarkIce Mines Bottom",
-        HasAll("Dinosaur Horn", "Staff Booster"),
+        HasAll("Dinosaur Horn", "Staff Booster")
+        & HasAllCounts(
+            {"Fire Blaster": 1, "Tricky (Progressive)": 2, "DIM Gold Key": 1}
+        ),  # Additional logic to ensure player can reach Boss
     )
     moon_mountain_pass.connect(vfp, "Access Volcano Force Point", Has("Moon Pass Key"))
     moon_mountain_pass.connect(
@@ -138,6 +158,11 @@ def connect_regions(world: SFAWorld) -> None:
         "Warp to Krazoa Palace with Spirit 2",
         Has("Rock Candy") & Has("Krazoa Spirit 2"),
     )
+    thorntail_hollow.connect(
+        krazoa_palace_main,
+        "Warp to Krazoa Palace Main Room with any other Spirit",
+        Has("Rock Candy") & HasAny("Krazoa Spirit 3"),
+    )
     krazoa_palace_entrance.connect(
         krazoa_palace_main,
         "Enter Krazoa Palace Main Area",
@@ -148,8 +173,11 @@ def connect_regions(world: SFAWorld) -> None:
     #     "Warp to Krazoa Palace Main Room",
     #     Has("Rock Candy") # & Has any other spirits
     # )
-    lightfoot_village.connect(cc_transition, "Access Cape Claw Transition", CanBuy(60))
+    lfv_entrance.connect(cc_transition, "Access Cape Claw Transition", CanBuy(60))
     cc_transition.connect(cc_open, "Access Cape Claw Open Area", True_())
+    cc_open.connect(
+        cc_post_quest, "Access Cape Claw Post Gold Bar Quest", Has("Gold Bars", 4) & (CanBuy(25) | Has("Staff Booster"))
+    )
     world_map.connect(cloudrunner_fortress_landing, "Fly to CloudRunner Fortress", Has("CloudRunner Fortress Access"))
     cloudrunner_fortress_landing.connect(
         cloudrunner_fortress_main, "Enter CloudRunner Fortress Main Area", Has("Fire Blaster")
@@ -157,5 +185,18 @@ def connect_regions(world: SFAWorld) -> None:
     cloudrunner_fortress_main.connect(
         cloudrunner_fortress_powered,
         "Access CloudRunner Fortress Powered Area",
-        HasAll("CRF Power Key", "Red Crystal", "Green Crystal", "Blue Crystal", "SharpClaw Disguise"),
+        HasAll("CRF Power Key", "SharpClaw Disguise") & Has("CRF Light Gems", 3),
+    )
+    cc_post_quest.connect(
+        ofp_entrance,
+        "Access Ocean Force Point",
+        CanReachLocation("CC: Fire Gem behind Waterfall")
+        & HasAllCounts(
+            {
+                "Tricky (Progressive)": 2,
+                "Fire Gem": 2,
+                "Fire Blaster": 1,
+                "Water SpellStone 1": 1,
+            }
+        ),
     )

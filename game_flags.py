@@ -6,6 +6,16 @@ from .bit_helper import GameBit, GameFlag
 MAGIC_CAVE_ACT_GAMEBIT = GameBit(0x2, 0x803A3871, bit_size=4)
 MAGIC_CAVE_FLAG_ADDRESS = 0x803A3905
 
+CC_ACT_GAMEBIT = GameBit(0x072A, bit_size=4)
+CC_OBJGROUP_VALUE = GameBit(0x00E8, T3_ADDRESS, bit_size=32)
+
+OFP_ACT_GAMEBIT = GameBit(0x0326, T1_ADDRESS, bit_size=4)
+LFV_ACT_GAMEBIT = GameBit(0x02E6, T1_ADDRESS, bit_size=4)
+KP_ACT_GAMEBIT = GameBit(0x02DA, T1_ADDRESS, bit_size=4)
+KP_OBJGROUP_VALUE = GameBit(0x0148, T3_ADDRESS, bit_size=32)
+DIM_OBJGROUP_VALUE = GameBit(0x00A8, T3_ADDRESS, bit_size=32)
+DIM_BOTTOM_OBJGROUP_VALUE = GameBit(0x0088, T3_ADDRESS, bit_size=32)
+
 KRAZOA_SPIRIT_1 = GameFlag(0x053C)
 DIM_OPEN_BLIZZARD = [
     GameFlag(0x03B3),  # Allow horn interaction
@@ -34,6 +44,7 @@ CRF_OPEN_POST_BOSS = [
     GameFlag(0x0130, T1_ADDRESS, False),
     GameFlag(0x012D, T1_ADDRESS, False),
 ]
+LFV_GATE = GameFlag(0x017F)  # LFV Gate open
 
 TRICKY_FOOD_COUNT = GameBit(0x0, 0x803A32C0, bit_size=8, max_value=20)
 
@@ -126,6 +137,19 @@ CRF_STATE_FLAGS: list[GameFlag] = [
     GameFlag(0x0093, T1_ADDRESS),  # Guard Cutscene post Power Key
 ]
 
+LFV_STATE_FLAGS: list[GameFlag] = [
+    GameFlag(0x0178),  # Tests done skip cutscene
+    GameFlag(0x0177),  # Tests done trigger
+    GameFlag(0x01A7),  # Tricky cutscene skip
+    GameFlag(0x010E),  # Chief tests cutscene skip
+    GameFlag(0x0181),  # Underground door open
+    GameFlag(0x01BD),  # Hut Door open
+    GameFlag(0x01B3),  # Booster enabled
+    GameFlag(0x019B),  # Triangle block used
+    GameFlag(0x018D),  # Square block used
+    GameFlag(0x0194),  # Circle block used
+]
+
 CUTSCENE_SKIP_FLAGS: list[GameFlag] = [
     GameFlag(0x0106),  # SH Warpstone explanation
     GameFlag(0x0096),  # SH Entered Well
@@ -151,6 +175,7 @@ STARTING_FLAGS: list[GameFlag] = [
     *CC_STATE_FLAGS,
     *CRF_STATE_FLAGS,
     *TTH_WELL_OPEN,
+    *LFV_STATE_FLAGS,
 ]
 
 CONSTANT_FLAGS: list[GameFlag] = [

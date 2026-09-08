@@ -6,7 +6,6 @@ from typing import ClassVar
 import dolphin_memory_engine as dme
 import Utils
 from CommonClient import (
-    ClientCommandProcessor,
     ClientStatus,
     get_base_parser,
     gui_enabled,
@@ -55,10 +54,16 @@ from .player_hooks import register_default_special_hooks
 
 TRACKER_LOADED = False
 try:
-    from worlds.tracker.TrackerClient import TrackerGameContext as SuperContext
+    from worlds.tracker.TrackerClient import (
+        TrackerCommandProcessor as SuperCommandProcessor,
+    )
+    from worlds.tracker.TrackerClient import (
+        TrackerGameContext as SuperContext,
+    )
 
     TRACKER_LOADED = True
 except ModuleNotFoundError:
+    from CommonClient import ClientCommandProcessor as SuperCommandProcessor
     from CommonClient import CommonContext as SuperContext
 
 CONNECTION_REFUSED_GAME_STATUS = (
@@ -74,7 +79,7 @@ CONNECTION_CONNECTED_STATUS = "Dolphin connected successfully."
 CONNECTION_INITIAL_STATUS = "Dolphin connection has not been initiated."
 
 
-class SFACommandProcessor(ClientCommandProcessor):
+class SFACommandProcessor(SuperCommandProcessor):
     """
     Command Processor for The Wind Waker client commands.
 
@@ -209,12 +214,12 @@ def sync_player_state(ctx: SFAContext):
     give_item_in_game(ctx, ITEM_INVENTORY["DIM Alpine Root"])
     give_item_in_game(ctx, ITEM_TRICKY["Tricky (Progressive)"])
     give_item_in_game(ctx, ITEM_INVENTORY["Krazoa Spirit 2"])
+    give_item_in_game(ctx, ITEM_INVENTORY["Krazoa Spirit 3"])
     give_item_in_game(ctx, ITEM_INVENTORY["Gold Bars"])
     give_item_in_game(ctx, ITEM_INVENTORY["CRF Power Key"])
-    give_item_in_game(ctx, ITEM_INVENTORY["Red Crystal"])
-    give_item_in_game(ctx, ITEM_INVENTORY["Green Crystal"])
-    give_item_in_game(ctx, ITEM_INVENTORY["Blue Crystal"])
+    give_item_in_game(ctx, ITEM_INVENTORY["CRF Light Gems"])
     give_item_in_game(ctx, ITEM_INVENTORY["CloudRunner Flute"])
+    give_item_in_game(ctx, ITEM_INVENTORY["Fire Gem"])
 
 
 async def sync_full_player_state(ctx: SFAContext):
@@ -279,16 +284,21 @@ async def locations_watcher(ctx):
 
     if ctx.stored_map == COMBAT_SHRINE_ID:
         _check_location_flag(ctx, LOCATION_ANY["MMP: Test of Combat"])
+    if ctx.stored_map == FEAR_SHRINE_ID:
+        _check_location_flag(ctx, LOCATION_ANY["LFV: Test of Fear"])
+
+    if "DIM_SHACKLE_CHEST" in ctx.hooks.list_active_zones:
+        _check_location_flag(ctx, LOCATION_ANY["DIM: Shackle Key Chest"])
+    if "DIM_SILVER_KEY" in ctx.hooks.list_active_zones:
+        _check_location_flag(ctx, LOCATION_ANY["DIM: Silver Key Chest"])
+    if "DIM_GOLD_KEY" in ctx.hooks.list_active_zones:
+        _check_location_flag(ctx, LOCATION_ANY["DIM: Gold Key Chest"])
 
     locations_checked = ctx.locations_checked.difference(ctx.checked_locations)
     if locations_checked:
         await _wait_cutscene_end()
         sync_player_state(ctx)
         await ctx.send_msgs([{"cmd": "LocationChecks", "locations": locations_checked}])
-
-    if ctx.victory and not ctx.finished_game:
-        await ctx.send_msgs([{"cmd": "StatusUpdate", "status": ClientStatus.CLIENT_GOAL}])
-        ctx.finished_game = True
 
 
 async def give_items(ctx: SFAContext):
@@ -395,6 +405,48 @@ async def player_hooks_watcher(ctx: SFAContext) -> None:
     )
 
 
+def _check_victory(ctx: SFAContext) -> bool:
+    """
+    Check if the player has achieved victory.
+
+    :param ctx: The Star Fox Adventures context
+    :return: True if the player has achieved victory, False otherwise
+    """
+    boss_defeated = sum(
+        1
+        for location_id in ctx.checked_locations
+        if SFALocationTags.BOSS in SFALocationData.get_by_id(location_id).tags
+    )
+    boss_condition = boss_defeated >= ctx.options["required_boss"]
+
+    if ctx.options["goal_completion"] == "collect":
+        spellstone_count = sum(
+            1 for item_id in ctx.received_items_id if SFAItemTags.SPELLSTONE in SFAItemData.get_by_id(item_id).tags
+        )
+        spellstone_condition = spellstone_count >= ctx.options["required_spellstones"]
+
+        spirit_count = sum(
+            1 for item_id in ctx.received_items_id if SFAItemTags.SPIRIT in SFAItemData.get_by_id(item_id).tags
+        )
+        spirit_condition = spirit_count >= ctx.options["required_spirits"]
+    else:
+        spellstone_count = sum(
+            1
+            for location_id in ctx.checked_locations
+            if SFALocationTags.SPELLSTONE in SFALocationData.get_by_id(location_id).tags
+        )
+        spellstone_condition = spellstone_count >= ctx.options["required_spellstones"]
+
+        spirit_count = sum(
+            1
+            for location_id in ctx.checked_locations
+            if SFALocationTags.SPIRIT in SFALocationData.get_by_id(location_id).tags
+        )
+        spirit_condition = spirit_count >= ctx.options["required_spirits"]
+
+    return boss_condition and spellstone_condition and spirit_condition
+
+
 async def game_watcher(ctx: SFAContext):
     """
     Main game watcher loop.
@@ -412,7 +464,7 @@ async def game_watcher(ctx: SFAContext):
             await give_items(ctx)
             await player_hooks_watcher(ctx)
 
-            if ctx.victory and not ctx.finished_game:
+            if _check_victory(ctx) and not ctx.finished_game:
                 await ctx.send_msgs([{"cmd": "StatusUpdate", "status": ClientStatus.CLIENT_GOAL}])
                 ctx.finished_game = True
 

@@ -5,13 +5,16 @@ from enum import Enum, auto
 from typing import TYPE_CHECKING
 
 from BaseClasses import ItemClassification, Location
+from rule_builder.options import OptionFilter
 from rule_builder.rules import Has, HasAll, HasAllCounts, Rule, True_
 
 from .addresses import T0_ADDRESS, T1_ADDRESS
 from .bit_helper import GameBit
+from .constants import SFAEvent
 from .items import SFAItem
-from .macros import CanBuy, CanExplodeBombPlant, CanGoDarkRoom, CanGrowMoonSeed
+from .options import LightfootQuests
 from .regions import SFARegion
+from .rules import CanBuy, CanExplodeBombPlant, CanGoDarkRoom, CanGrowMoonSeed
 
 if TYPE_CHECKING:
     from .world import SFAWorld
@@ -28,7 +31,10 @@ class SFALocationTags(Enum):
 
     MAP = auto()
     ACTIVE_ZONE = auto()
-    CUTSCENE = auto()  # Not yet used
+    SIDE_QUEST = auto()
+    BOSS = auto()
+    SPELLSTONE = auto()
+    SPIRIT = auto()
 
 
 @dataclass
@@ -40,6 +46,31 @@ class SFALocationData:
     region: SFARegion
     rule: Rule[SFAWorld]
     tags: list[SFALocationTags] = field(default_factory=lambda: [])
+
+    @classmethod
+    def get_by_id(cls, id: int) -> SFALocationData | None:
+        """
+        Return location for given id.
+
+        :param cls: SFALocationData class
+        :param id: Location id to search
+        :return: SFALocationData for given id
+        """
+        for item in LOCATION_ANY.values():
+            if item.id == id:
+                return item
+        return None
+
+    @classmethod
+    def get_by_name(cls, name: str) -> SFALocationData | None:
+        """
+        Return location for given name.
+
+        :param cls: SFALocationData class
+        :param name: Location name to search
+        :return: SFALocationData for given name
+        """
+        return LOCATION_ANY.get(name, None)
 
     def is_checked(self) -> bool:
         """Get bool value if checked in game."""
@@ -94,11 +125,11 @@ def create_regular_locations(world: SFAWorld) -> None:
             continue
         if world.options.shop_locations == "no_map" and SFALocationTags.MAP in loc_data.tags:
             continue
+        if world.options.lightfoot_quests == 0 and SFALocationTags.SIDE_QUEST in loc_data.tags:
+            continue
 
         region = world.get_region(loc_data.region.value)
         sfa_location = SFALocation(world.player, loc_name, loc_data.id, region)
-        if loc_name == "DIM: Defeat Boss Galdon":
-            sfa_location.place_locked_item(SFAItem("Victory", ItemClassification.progression, 2000, world.player))
         region.locations.append(sfa_location)
         world.progress_locations.add(loc_name)
         world.set_rule(sfa_location, loc_data.rule)
@@ -106,14 +137,19 @@ def create_regular_locations(world: SFAWorld) -> None:
 
 def create_events(world: SFAWorld) -> None:
     """Create events for AP world."""
-    # darkice_mines = world.get_region(SFARegion.DIM_BOTTOM.value)
-    # darkice_mines.add_event(
-    #     "Defeated Boss Galdon",
-    #     "Victory",
-    #     location_type=SFALocation,
-    #     item_type=SFAItem,
-    #     rule=lambda state: Has("Fire Blaster")(state, world.player) and state.has("Tricky (Progressive)", world.player, 2)
-    # )
+
+    def _create_loc_event(loc_name: str, event_name: str) -> None:
+        """Add event for checked location."""
+        loc_data = LOCATION_TABLE[loc_name]
+        region = world.get_region(loc_data.region.value)
+        region.add_event(event_name, event_name, loc_data.rule, show_in_spoiler=False)
+
+    _create_loc_event("DIM: Defeat Boss Galdon", SFAEvent.BOSS_DIM)
+    _create_loc_event("CRF: Defeat Boss SharpClaw Race", SFAEvent.BOSS_CRF)
+    _create_loc_event("VFP: Insert Fire SpellStone 1", SFAEvent.FIRE_SPELLSTONE_1)
+    _create_loc_event("OFP: Insert Water SpellStone 1", SFAEvent.WATER_SPELLSTONE_1)
+    _create_loc_event("KP: Release Spirit 2", SFAEvent.SPIRIT_2)
+    _create_loc_event("KP: Release Spirit 3", SFAEvent.SPIRIT_3)
 
 
 def create_all_locations(world: SFAWorld) -> None:
@@ -242,7 +278,7 @@ LOCATION_ANY: dict[str, SFALocationData] = {
     ),
     ## DarkIce Mines
     "DIM: Release Entrance SnowHorn": SFALocationData(
-        32, GameBit(0x0366), SFARegion.DIM_ENTRANCE, Has("Tricky (Progressive)")
+        32, GameBit(0x0366), SFARegion.DIM_ENTRANCE, Has("Tricky (Progressive)") & Has("DIM Shackle Key")
     ),
     "DIM: Rescue Injured SnowHorn": SFALocationData(
         33, GameBit(0x036B), SFARegion.DIM_ENTRANCE, Has("Entrance Bridge Cog")
@@ -267,30 +303,38 @@ LOCATION_ANY: dict[str, SFALocationData] = {
         SFARegion.DIM_FORT,
         Has("Fire Blaster") & HasAllCounts({"SharpClaw Fort Bridge Cogs": 3, "Tricky (Progressive)": 2}),
     ),
-    # "DIM: Get Silver Key": SFALinkedLocationData(
-    #     39,
-    #     0x03DC,
-    #     T2_ADDRESS,
-    #     SFALocationType.FLAG,
-    #     SFARegion.DIM_BOTTOM,
-    #     linked_item=111,
-    #     map_address=0x803A3891,
-    #     map_bit_size=4,
-    #     map_value=0x40042,
-    #     Has("Staff Booster")(state, world.player) and Has("Fire Blaster")(state, world.player),
-    # ),
+    "DIM: Shackle Key Chest": SFALocationData(
+        39,
+        GameBit(0x0365),
+        SFARegion.DIM_ENTRANCE,
+        Has("Tricky (Progressive)"),
+        tags=[SFALocationTags.ACTIVE_ZONE],
+    ),
+    "DIM: Silver Key Chest": SFALocationData(
+        64,
+        GameBit(0x03DC),
+        SFARegion.DIM_BOTTOM,
+        Has("Fire Blaster") & Has("Staff Booster"),
+        tags=[SFALocationTags.ACTIVE_ZONE],
+    ),
+    "DIM: Gold Key Chest": SFALocationData(
+        65,
+        GameBit(0x03DA),
+        SFARegion.DIM_BOTTOM,
+        Has("Tricky (Progressive)", 2),
+        tags=[SFALocationTags.ACTIVE_ZONE],
+    ),
+    "DIM: Open Silver Cell": SFALocationData(66, GameBit(0x03E3), SFARegion.DIM_BOTTOM, Has("DIM Silver Key")),
     "DIM: Defeat Boss Galdon": SFALocationData(
         40,
         GameBit(0x0120, T0_ADDRESS),
         SFARegion.DIM_BOTTOM,
-        Has("Fire Blaster") & Has("Tricky (Progressive)", 2),
+        Has("Fire Blaster") & Has("Tricky (Progressive)", 2) & Has("DIM Gold Key"),
+        tags=[SFALocationTags.BOSS],
     ),
     ## Volcano Force Point
     "VFP: Insert Fire SpellStone 1": SFALocationData(
-        41,
-        GameBit(0x0573),
-        SFARegion.VFP_WARP_ROOM,
-        Has("Fire SpellStone 1"),
+        41, GameBit(0x0573), SFARegion.VFP_WARP_ROOM, Has("Fire SpellStone 1"), tags=[SFALocationTags.SPELLSTONE]
     ),
     ## Moon Mountain Pass
     "MMP: Test of Combat": SFALocationData(
@@ -306,19 +350,39 @@ LOCATION_ANY: dict[str, SFALocationData] = {
         GameBit(0x0524),
         SFARegion.KP_MAIN,
         Has("Krazoa Spirit 2"),  # & Has any other spirits
+        tags=[SFALocationTags.SPIRIT],
+    ),
+    "KP: Release Spirit 3": SFALocationData(
+        63,
+        GameBit(0x052A),
+        SFARegion.KP_MAIN,
+        Has("Krazoa Spirit 3") & Has("SharpClaw Disguise"),
+        tags=[SFALocationTags.SPIRIT],
     ),
     ## Cape Claw
     "CC: Give HighTop Gold Bars": SFALocationData(
         44,
         GameBit(0x0242),
-        SFARegion.CC_OPEN,
-        Has("Gold Bars", 4) & (CanBuy(25) | Has("Staff Booster")),
+        SFARegion.CC_POST_QUEST,
+        True_(),
     ),
     "CC: Rescue CloudRunner": SFALocationData(
         45,
         GameBit(0x024A),
+        SFARegion.CC_POST_QUEST,
+        True_(),
+    ),
+    "CC: Fire Gem behind Waterfall": SFALocationData(
+        54,
+        GameBit(0x025F),
+        SFARegion.CC_POST_QUEST,
+        Has("SharpClaw Disguise") & Has("Tricky (Progressive)") & Has("Freeze Blast"),
+    ),
+    "CC: Fire Gem from LightFoot": SFALocationData(
+        55,
+        GameBit(0x0259),
         SFARegion.CC_OPEN,
-        Has("Gold Bars", 4) & (CanBuy(25) | Has("Staff Booster")),  # Requires quest to open door
+        True_(),
     ),
     ## CloudRunner Fortress
     "CRF: Entrance Platform Race": SFALocationData(
@@ -368,6 +432,64 @@ LOCATION_ANY: dict[str, SFALocationData] = {
         GameBit(0x012B, T1_ADDRESS),
         SFARegion.CRF_POWERED,
         HasAll("Fire Blaster", "Staff Booster", "CloudRunner Flute") & CanGoDarkRoom(),
+        tags=[SFALocationTags.BOSS],
+    ),
+    ## Ocean Force Point
+    "OFP: Insert Water SpellStone 1": SFALocationData(
+        56,
+        GameBit(0x05E9),
+        SFARegion.OFP_ENTRANCE,
+        HasAll("Water SpellStone 1", "Staff Booster", "SharpClaw Disguise", "Fire Blaster")
+        & Has("Tricky (Progressive)", 2),
+        tags=[SFALocationTags.SPELLSTONE],
+    ),
+    ## LightFoot Village
+    "LFV: Entrance Baby Quest": SFALocationData(
+        57,
+        GameBit(0x01AB),
+        SFARegion.LFV_MAIN,
+        HasAll("Circle Block Platforms", "Staff Booster", options=[OptionFilter(LightfootQuests, True)]),
+        [SFALocationTags.SIDE_QUEST],
+    ),
+    "LFV: Forest Baby Quest": SFALocationData(
+        58,
+        GameBit(0x01AC),
+        SFARegion.LFV_MAIN,
+        Has("Staff Booster", options=[OptionFilter(LightfootQuests, True)]) & Has("Tricky (Progressive)", 2),
+        [SFALocationTags.SIDE_QUEST],
+    ),
+    "LFV: Underground Baby Quest": SFALocationData(
+        59,
+        GameBit(0x01AD),
+        SFARegion.LFV_MAIN,
+        True_(options=[OptionFilter(LightfootQuests, True)]),
+        [SFALocationTags.SIDE_QUEST],
+    ),
+    "LFV: Tracking Test": SFALocationData(
+        60,
+        GameBit(0x0143, bit_size=16),
+        SFARegion.LFV_MAIN,
+        HasAll(
+            "Staff Booster",
+            "Circle Block Platforms",
+            "Square Block Platforms",
+            options=[OptionFilter(LightfootQuests, True)],
+        ),
+        [SFALocationTags.SIDE_QUEST],
+    ),
+    "LFV: Test of Strength": SFALocationData(
+        61,
+        GameBit(0x010F, bit_size=16),
+        SFARegion.LFV_MAIN,
+        HasAll("Staff Booster", "Circle Block Platforms", options=[OptionFilter(LightfootQuests, True)]),
+        [SFALocationTags.SIDE_QUEST],
+    ),
+    "LFV: Test of Fear": SFALocationData(
+        62,
+        GameBit(0x053A),
+        SFARegion.LFV_MAIN,
+        HasAll("Fire Blaster", "Staff Booster"),
+        [SFALocationTags.ACTIVE_ZONE],
     ),
 }
 
@@ -431,10 +553,24 @@ LOCATION_FUEL_CELL: dict[str, SFALocationData] = {
         138, GameBit(0x095C), SFARegion.SW_GATE, Has("Fire Blaster")
     ),
     ## LightFoot Village
-    "TTH: Entrance to LFV Fuel Cell Right": SFALocationData(124, GameBit(0x094A), SFARegion.LFV, Has("Staff")),
-    "TTH: Entrance to LFV Fuel Cell Left": SFALocationData(125, GameBit(0x094B), SFARegion.LFV, Has("Staff")),
-    "LFV: Entrance Booster Ledge Right": SFALocationData(126, GameBit(0x096B), SFARegion.LFV, Has("Staff Booster")),
-    "LFV: Entrance Booster Ledge Left": SFALocationData(127, GameBit(0x096C), SFARegion.LFV, Has("Staff Booster")),
+    "TTH: Entrance to LFV Fuel Cell Right": SFALocationData(124, GameBit(0x094A), SFARegion.LFV_ENTRANCE, Has("Staff")),
+    "TTH: Entrance to LFV Fuel Cell Left": SFALocationData(125, GameBit(0x094B), SFARegion.LFV_ENTRANCE, Has("Staff")),
+    "LFV: Entrance Booster Ledge Right": SFALocationData(
+        126, GameBit(0x096B), SFARegion.LFV_ENTRANCE, Has("Staff Booster")
+    ),
+    "LFV: Entrance Booster Ledge Left": SFALocationData(
+        127, GameBit(0x096C), SFARegion.LFV_ENTRANCE, Has("Staff Booster")
+    ),
+    "LFV: Forest near Chief Fuel Cell": SFALocationData(
+        166, GameBit(0x0969), SFARegion.LFV_MAIN, Has("Tricky (Progressive)", 2) & Has("Staff Booster")
+    ),
+    "LFV: Forest Cheat Well Fuel Cell": SFALocationData(167, GameBit(0x096A), SFARegion.LFV_MAIN, Has("Staff Booster")),
+    "LFV: Lone Hut Fuel Cell Left": SFALocationData(
+        168, GameBit(0x098C), SFARegion.LFV_MAIN, Has("Triangle Block Platforms")
+    ),
+    "LFV: Lone Hut Fuel Cell Right": SFALocationData(
+        169, GameBit(0x098B), SFARegion.LFV_MAIN, Has("Triangle Block Platforms")
+    ),
     ## Moon Mountain Pass
     "MMP: Entrance Wind Draft North Fuel Cell": SFALocationData(130, GameBit(0x0985), SFARegion.MMP, True_()),
     "MMP: Entrance Wind Draft South Fuel Cell": SFALocationData(131, GameBit(0x097E), SFARegion.MMP, True_()),
@@ -488,6 +624,19 @@ LOCATION_FUEL_CELL: dict[str, SFALocationData] = {
     "CC: Dig in Back Cave Fuel Cell": SFALocationData(
         157, GameBit(0x0965), SFARegion.CC_OPEN, Has("Tricky (Progressive)")
     ),
+    "CC: Poison Room Fuel Cell Left": SFALocationData(158, GameBit(0x0972), SFARegion.CC_POST_QUEST, True_()),
+    "CC: Poison Room Fuel Cell Right": SFALocationData(159, GameBit(0x0971), SFARegion.CC_POST_QUEST, True_()),
+    ## Ocean Force Point
+    "OFP: Small Platform Fuel Cell Left": SFALocationData(160, GameBit(0x096D), SFARegion.OFP_ENTRANCE, True_()),
+    "OFP: Small Platform Fuel Cell Right": SFALocationData(161, GameBit(0x096E), SFARegion.OFP_ENTRANCE, True_()),
+    "OFP: Warp Platform Fuel Cell Left": SFALocationData(162, GameBit(0x0988), SFARegion.OFP_ENTRANCE, True_()),
+    "OFP: Warp Platform Fuel Cell Right": SFALocationData(163, GameBit(0x0987), SFARegion.OFP_ENTRANCE, True_()),
+    "OFP: Booster Ledge Fuel Cell Left": SFALocationData(
+        164, GameBit(0x0975), SFARegion.OFP_ENTRANCE, Has("Staff Booster")
+    ),
+    "OFP: Booster Ledge Fuel Cell Right": SFALocationData(
+        165, GameBit(0x0976), SFARegion.OFP_ENTRANCE, Has("Staff Booster")
+    ),
 }
 
 # Last id = 318
@@ -516,14 +665,14 @@ LOCATION_DIG_AND_BAFOMDAD: dict[str, SFALocationData] = {
         305, GameBit(0x08BA), SFARegion.TH, Has("Tricky (Progressive)")
     ),
     "TTH: Dig BafomDad in Entrance to LFV": SFALocationData(
-        306, GameBit(0x08BC), SFARegion.LFV, Has("Tricky (Progressive)")
+        306, GameBit(0x08BC), SFARegion.LFV_ENTRANCE, Has("Tricky (Progressive)")
     ),
     ## DarkIce Mines
     "DIM: Dig Alpine Root in Entrance Hut": SFALocationData(
-        308, GameBit(0x037C), SFARegion.DIM_ENTRANCE, Has("Tricky (Progressive)")
+        308, GameBit(0x037C), SFARegion.DIM_ENTRANCE, Has("Tricky (Progressive)", 2)
     ),
     "DIM: Dig Alpine Root in Boulder Path": SFALocationData(
-        309, GameBit(0x037D), SFARegion.DIM_ENTRANCE, Has("Tricky (Progressive)")
+        309, GameBit(0x037D), SFARegion.DIM_ENTRANCE, Has("Tricky (Progressive)", 2) & Has("Entrance Bridge Cog")
     ),
     ## Volcano Force Point
     "VFP: BafomDad Cell": SFALocationData(312, GameBit(0x08C9), SFARegion.VFP, Has("Staff Booster")),
@@ -541,7 +690,13 @@ LOCATION_DIG_AND_BAFOMDAD: dict[str, SFALocationData] = {
         319, GameBit(0x08C7), SFARegion.KP_ENTRANCE, CanGoDarkRoom()
     ),  # dark option
     ## LightFoot Village
-    "LFV: BafomDad Entrance Booster Ledge": SFALocationData(320, GameBit(0x08C5), SFARegion.LFV, Has("Staff Booster")),
+    "LFV: BafomDad Entrance Booster Ledge": SFALocationData(
+        320, GameBit(0x08C5), SFARegion.LFV_ENTRANCE, Has("Staff Booster")
+    ),
+    "LFV: Forest Cheat Well BafomDad": SFALocationData(332, GameBit(0x08C6), SFARegion.LFV_MAIN, Has("Staff Booster")),
+    "LFV: Dig Triangle Block": SFALocationData(333, GameBit(0x019C), SFARegion.LFV_MAIN, Has("Tricky (Progressive)")),
+    "LFV: Dig Square Block": SFALocationData(334, GameBit(0x019D), SFARegion.LFV_MAIN, Has("Tricky (Progressive)", 2)),
+    "LFV: Dig Circle Block": SFALocationData(335, GameBit(0x019E), SFARegion.LFV_MAIN, Has("Tricky (Progressive)")),
     ## Cape Claw
     "CC: Dig BafomDad middle of Water": SFALocationData(
         321, GameBit(0x08CF), SFARegion.CC_OPEN, Has("Tricky (Progressive)")
@@ -558,6 +713,7 @@ LOCATION_DIG_AND_BAFOMDAD: dict[str, SFALocationData] = {
     "CC: Dig Gold Bar near CloudRunner Cell": SFALocationData(
         325, GameBit(0x0235), SFARegion.CC_OPEN, Has("Tricky (Progressive)")
     ),
+    "CC: Poison Room BafomDad": SFALocationData(331, GameBit(0x08CC), SFARegion.CC_POST_QUEST, True_()),
     ## ClouRunner Fortress
     "CRF: Cage BafomDad": SFALocationData(326, GameBit(0x08C0), SFARegion.CRF_MAIN, True_()),
     "CRF: Cell BafomDad": SFALocationData(327, GameBit(0x08C4), SFARegion.CRF_MAIN, True_()),
