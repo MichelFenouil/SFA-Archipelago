@@ -1,5 +1,10 @@
+
+
+
 from .game_memory.code_edit import edit_platform_gamebit
 from .game_memory.loaded_objects import get_all_loaded_objects
+
+
 
 lfv_triangle_platforms = [(0x4942F, 0x0BDF), (0x49430, 0x0BE1), (0x49431, 0x0BE3)]
 lfv_square_platforms = [(0x45CE9, 0x0612), (0x45CEA, 0x090B), (0x45CEB, 0x0087)]
@@ -15,7 +20,7 @@ def lfv_disable_triangle_platform():
         edit_platform_gamebit(object_list, platform_id, 0x0096)
 
 
-def lfv_enable_triangle_platform(_item) -> None:
+def lfv_enable_triangle_platform(_ctx, _item) -> None:
     """Enable the LFV triangle block platform by putting the real gamebit."""
     # Get all loaded objects
     object_list = get_all_loaded_objects()
@@ -34,7 +39,7 @@ def lfv_disable_square_platform():
         edit_platform_gamebit(object_list, platform_id, 0x0096)
 
 
-def lfv_enable_square_platform(_item) -> None:
+def lfv_enable_square_platform(_ctx, _item) -> None:
     """Enable the LFV square block platform by putting the real gamebit."""
     # Get all loaded objects
     object_list = get_all_loaded_objects()
@@ -53,7 +58,7 @@ def lfv_disable_circle_platform():
         edit_platform_gamebit(object_list, platform_id, 0x0096)
 
 
-def lfv_enable_circle_platform(_item) -> None:
+def lfv_enable_circle_platform(_ctx, _item) -> None:
     """Enable the LFV circle block platform by putting the real gamebit."""
     # Get all loaded objects
     object_list = get_all_loaded_objects()
@@ -61,3 +66,8 @@ def lfv_enable_circle_platform(_item) -> None:
     # Toggle the LFV circle block platform
     for platform_id, platform_gamebit in lfv_circle_platforms:
         edit_platform_gamebit(object_list, platform_id, platform_gamebit)
+
+
+
+
+

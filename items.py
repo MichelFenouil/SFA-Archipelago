@@ -3,7 +3,7 @@ from __future__ import annotations
 from collections.abc import Callable
 from dataclasses import dataclass, field
 from enum import Enum, auto
-from typing import TYPE_CHECKING, Literal
+from typing import TYPE_CHECKING, Literal, Self
 
 from BaseClasses import Item, ItemClassification
 
@@ -45,7 +45,7 @@ class SFAItemData:
     game_bit: GameBit
     ap_classification: ItemClassification
     tags: list[SFAItemTags] = field(default_factory=lambda: [])
-    post_hook: Callable[[SFAItemData], None] | None = None
+    post_hook: Callable[[SFAContext, Self], None] | None = None
 
     @classmethod
     def get_by_id(cls, id: int) -> SFAItemData | None:
@@ -148,9 +148,9 @@ class SFAResourceItemData(SFAItemData):
         """Set value for consumable item."""
         current_value = self.game_bit.get_value()
         value = current_value + self.increment_amount
-        max_value = self.max_amount_bit.get_value() if isinstance(self.max_amount_bit, GameBit) else 0
-        if value > max_value:
-            value = max_value
+        if self.max_amount_bit is not None:
+            max_value = self.max_amount_bit.get_value()
+            value = min(value, max_value)
         self.game_bit.set_value(value)
 
 
@@ -188,12 +188,11 @@ def items_name_to_id_dict() -> dict[str, int]:
 
 def get_random_filler_item_name(world: SFAWorld) -> str:
     """Generate filler items."""
-    # Add filler percent in class?
-    if world.random.randint(0, 99) < 20:
-        return "Health Refill"
-    if world.random.randint(0, 99) < 20:
-        return "Magic Refill"
-    return "Fuel Cell"
+    
+    return world.random.choices(
+        list(FILLER_ITEMS.keys()),
+        weights=[20, 10, 10, 10, 5, 1],
+    )[0]
 
 
 def create_item_classification(world: SFAWorld, name: str) -> SFAItem:
@@ -235,7 +234,12 @@ def create_all_items(world: SFAWorld) -> None:
     # Fill with filler items
     needed_number_of_filler_items = len(world.multiworld.get_unfilled_locations(world.player)) - len(itempool)
 
-    itempool += [world.create_filler() for _ in range(needed_number_of_filler_items)]
+    itempool += [world.create_item(item) 
+                 for item in world.random.choices(
+                    ["Fuel Cell", "Health Refill", "Magic Refill", "1 Scarab", "10 Scarabs", "50 Scarabs"],
+                    weights=[20, 10, 10, 10, 5, 1],
+                    k=needed_number_of_filler_items
+                )]
 
     world.multiworld.itempool += itempool
 
@@ -250,32 +254,39 @@ def give_item_in_game(ctx: SFAContext, item: SFAItemData | None) -> bool:
     """
     if item is None or item.id == 0:
         return False
-
-    if ctx.stored_map == SHOP_ID and (SFAItemTags.SHOP in item.tags):
+    elif ctx.stored_map == SHOP_ID and (SFAItemTags.SHOP in item.tags):
         # Don't send shop items if inside shop
-        return True
-
-    if isinstance(item, (SFAProgressiveItemData, SFACountItemData, SFAQuestItemData)):
+        pass
+    elif isinstance(item, (SFAProgressiveItemData, SFACountItemData, SFAQuestItemData)):
         count = ctx.received_items_id.count(item.id)
         item.set_value(count)
-        return True
-
-    if isinstance(item, SFAResourceItemData):
+    elif isinstance(item, SFAResourceItemData):
         item.set_value()
-        return True
-
-    if isinstance(item, SFAPlanetItemData):
+    elif isinstance(item, SFAPlanetItemData):
         item.game_bit.set_bit(item.id in ctx.received_items_id)
         item.gate_bit.set_bit(item.id in ctx.received_items_id)
-        return True
-
+    else:
     # All other items
-    item.set_value(item.id in ctx.received_items_id)
+     item.set_value(item.id in ctx.received_items_id)
 
     if item.post_hook is not None:
-        item.post_hook(item)
+        item.post_hook(ctx, item)
     return True
 
+def scarab_max_amount(ctx: SFAContext, item: SFAResourceItemData) -> None:
+    """Set scarab to max amount if it's too much."""
+    scarab_bags = SFAItemData.get_by_name("Scarab Bag (Progressive)")
+    bag_count = ctx.received_items_id.count(scarab_bags.id)
+    value = item.game_bit.get_value()
+    if bag_count == 0:
+        value = min(value, 10)
+    elif bag_count == 1:
+        value = min(value, 50)
+    elif bag_count == 2:
+        value = min(value, 100)
+    else:
+        value = min(value, 200)
+    item.game_bit.set_value(value)
 
 ITEM_STAFF: dict[str, SFAItemData] = {
     "Staff": SFAItemData(1, "Staff", GameBit(0x0080), ItemClassification.progression, [SFAItemTags.STARTING_ITEM]),
@@ -538,6 +549,30 @@ FILLER_ITEMS: dict[str, SFAItemData] = {
         ItemClassification.filler,
         increment_amount=25,
         max_amount_bit=GameBit(0x0, PLAYER_MAX_MP, bit_size=8),
+    ),
+    "1 Scarab": SFAResourceItemData(
+        1004,
+        "1 Scarab",
+        GameBit(0x0, 0x803A32BC, bit_size=8, max_value=255),
+        ItemClassification.filler,
+        increment_amount=1,
+        post_hook=scarab_max_amount,
+    ),
+    "10 Scarabs": SFAResourceItemData(
+        1005,
+        "10 Scarabs",
+        GameBit(0x0, 0x803A32BC, bit_size=8, max_value=255),
+        ItemClassification.filler,
+        increment_amount=10,
+        post_hook=scarab_max_amount,
+    ),
+    "50 Scarabs": SFAResourceItemData(
+        1006,
+        "50 Scarabs",
+        GameBit(0x0, 0x803A32BC, bit_size=8, max_value=255),
+        ItemClassification.filler,
+        increment_amount=50,
+        post_hook=scarab_max_amount,
     ),
 }
 

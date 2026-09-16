@@ -40,6 +40,7 @@ from .items import (
     SFAItemData,
     SFAItemTags,
     SFALockedConsumableItemData,
+    SFAResourceItemData,
     give_item_in_game,
 )
 from .locations import (
