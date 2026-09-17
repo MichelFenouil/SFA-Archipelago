@@ -56,7 +56,7 @@ class SFALocationData:
         :param id: Location id to search
         :return: SFALocationData for given id
         """
-        for item in LOCATION_ANY.values():
+        for item in LOCATION_TABLE.values():
             if item.id == id:
                 return item
         return None
@@ -70,7 +70,7 @@ class SFALocationData:
         :param name: Location name to search
         :return: SFALocationData for given name
         """
-        return LOCATION_ANY.get(name, None)
+        return LOCATION_TABLE.get(name, None)
 
     def is_checked(self) -> bool:
         """Get bool value if checked in game."""
