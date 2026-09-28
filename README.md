@@ -76,3 +76,5 @@ Randomizer starts with the flying ship sequence like normal. The client connecte
 DacoderWolf - Item and location logic</br>
 OmegaZeron - Poptracker Pack</br>
 RenaKunisaki - [Amethyst mod](https://github.com/RenaKunisaki/StarFoxAdventures) and reverse engineering of SFA
+
+Public discord channel on https://discord.com/channels/731205301247803413/1093685470459863110
