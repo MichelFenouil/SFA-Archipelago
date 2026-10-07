@@ -289,7 +289,7 @@ async def locations_watcher(ctx):
         _check_location_flag(ctx, LOCATION_ANY["LFV: Test of Fear"])
 
     if "DIM_SHACKLE_CHEST" in ctx.hooks.list_active_zones:
-        _check_location_flag(ctx, LOCATION_ANY["DIM: Shackle Key Chest"])
+        _check_location_flag(ctx, LOCATION_ANY["DIM: Shackle Key Chest"]) # TODO: slot 4 = bugged
     if "DIM_SILVER_KEY" in ctx.hooks.list_active_zones:
         _check_location_flag(ctx, LOCATION_ANY["DIM: Silver Key Chest"])
     if "DIM_GOLD_KEY" in ctx.hooks.list_active_zones:
@@ -419,6 +419,7 @@ def _check_victory(ctx: SFAContext) -> bool:
         if SFALocationTags.BOSS in SFALocationData.get_by_id(location_id).tags
     )
     boss_condition = boss_defeated >= ctx.options["required_boss"]
+    # TODO: Use slot_data to check for bosses to avoid conflict with 'collect on'
 
     if ctx.options["goal_completion"] == "collect":
         spellstone_count = sum(

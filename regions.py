@@ -122,7 +122,7 @@ def connect_regions(world: SFAWorld) -> None:
     thorntail_hollow.connect(
         moon_mountain_pass,
         "Entrance to Moon Mountain Pass",
-        CanExplodeBombPlant(),
+        CanExplodeBombPlant(), # AND KEY
     )
 
     world_map.connect(dim_entrance, "Fly to DarkIce Mines", Has("DarkIce Mines Access"))
@@ -161,7 +161,7 @@ def connect_regions(world: SFAWorld) -> None:
     thorntail_hollow.connect(
         krazoa_palace_main,
         "Warp to Krazoa Palace Main Room with any other Spirit",
-        Has("Rock Candy") & HasAny("Krazoa Spirit 3"),
+        Has("Rock Candy") & HasAny("Krazoa Spirit 3"), # Absolutely fix this to require fireblaster instead because can't TP with KP2
     )
     krazoa_palace_entrance.connect(
         krazoa_palace_main,

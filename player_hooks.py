@@ -160,6 +160,8 @@ async def _handle_map_entry_state(ctx: "SFAContext", entered_map: int, from_map:
 
     if entered_map == CAPE_CLAW_ID:
         CC_ACT_GAMEBIT.set_value(2)
+        objgroup_value = CC_OBJGROUP_VALUE.get_value()
+        trigger_objgroup_load(CAPE_CLAW_ID, 2, objgroup_value)
 
     if entered_map == OCEAN_FORCE_POINT_BEACH_ID:
         OFP_ACT_GAMEBIT.set_value(1)
@@ -349,21 +351,21 @@ async def _handle_circle_platform(ctx: "SFAContext", zone_name: str) -> None:
     if SFAItemData.get_by_name("Circle Block Platforms").id not in ctx.received_items_id:
         lfv_disable_circle_platform()
     else:
-        lfv_enable_circle_platform(None)
+        lfv_enable_circle_platform(ctx, None)
 
 
 async def _handle_square_platform(ctx: "SFAContext", zone_name: str) -> None:
     if SFAItemData.get_by_name("Square Block Platforms").id not in ctx.received_items_id:
         lfv_disable_square_platform()
     else:
-        lfv_enable_square_platform(None)
+        lfv_enable_square_platform(ctx, None)
 
 
 async def _handle_triangle_platform(ctx: "SFAContext", zone_name: str) -> None:
     if SFAItemData.get_by_name("Triangle Block Platforms").id not in ctx.received_items_id:
         lfv_disable_triangle_platform()
     else:
-        lfv_enable_triangle_platform(None)
+        lfv_enable_triangle_platform(ctx, None)
 
 
 async def _handle_dim_shackle_key(ctx: "SFAContext", zone_name: str) -> None:
