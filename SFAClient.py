@@ -6,7 +6,6 @@ from typing import ClassVar
 import dolphin_memory_engine as dme
 import Utils
 from CommonClient import (
-    ClientCommandProcessor,
     ClientStatus,
     get_base_parser,
     gui_enabled,
@@ -21,38 +20,28 @@ from .bit_helper import (
     read_value_bytes,
     set_flag_bit,
     set_on_or_bytes,
-    set_value_bytes,
     swap_endian,
 )
 from .game_flags import (
     CONSTANT_FLAGS,
-    DIM_OPEN_BIKE,
-    DIM_OPEN_BLIZZARD,
     DINO_CAVE,
-    KRAZOA_SPIRIT_1,
     MAGIC_CAVE_ACT_GAMEBIT,
     STARTING_FLAGS,
+    TRICKY_FOOD_COUNT,
 )
 from .game_memory.code_edit import remove_max_bafomdad_check
-from .game_memory.loaded_objects import get_all_loaded_objects, get_player, search_objects
-from .game_memory.memory_struct import ObjState
-from .hook_handlers import (
-    PlayerCoordZone,
-    SFAHookHandlers,
-)
+from .game_memory.hook_handlers import SFAHookHandlers
+from .game_memory.loaded_objects import get_player
 from .items import (
     FILLER_ITEMS,
     ITEM_INVENTORY,
     ITEM_TRICKY,
     USEFUL_ITEMS,
-    SFAConsumableItemData,
-    SFACountItemData,
     SFAItemData,
     SFAItemTags,
     SFALockedConsumableItemData,
-    SFAPlanetItemData,
-    SFAProgressiveItemData,
-    SFAQuestItemData,
+    SFAResourceItemData,
+    give_item_in_game,
 )
 from .locations import (
     LOCATION_ANY,
@@ -61,16 +50,21 @@ from .locations import (
     NORMAL_TABLES,
     SFALocationData,
     SFALocationTags,
-    SFAShopLocationData,
-    SFAUpgradeLocationData,
 )
+from .player_hooks import register_default_special_hooks
 
 TRACKER_LOADED = False
 try:
-    from worlds.tracker.TrackerClient import TrackerGameContext as SuperContext
+    from worlds.tracker.TrackerClient import (
+        TrackerCommandProcessor as SuperCommandProcessor,
+    )
+    from worlds.tracker.TrackerClient import (
+        TrackerGameContext as SuperContext,
+    )
 
     TRACKER_LOADED = True
 except ModuleNotFoundError:
+    from CommonClient import ClientCommandProcessor as SuperCommandProcessor
     from CommonClient import CommonContext as SuperContext
 
 CONNECTION_REFUSED_GAME_STATUS = (
@@ -86,7 +80,7 @@ CONNECTION_CONNECTED_STATUS = "Dolphin connected successfully."
 CONNECTION_INITIAL_STATUS = "Dolphin connection has not been initiated."
 
 
-class SFACommandProcessor(ClientCommandProcessor):
+class SFACommandProcessor(SuperCommandProcessor):
     """
     Command Processor for The Wind Waker client commands.
 
@@ -112,7 +106,7 @@ class SFACommandProcessor(ClientCommandProcessor):
             self.ctx.sync_task = asyncio.create_task(sync_full_player_state(self.ctx))
             logger.info("Player state synchronized with server state.")
         else:
-            return _give_item_in_game(self.ctx, SFAItemData.get_by_name(name))
+            return give_item_in_game(self.ctx, SFAItemData.get_by_name(name))
         return True
 
     def _cmd_export_json(self) -> bool:
@@ -163,7 +157,7 @@ class SFAContext(SuperContext):
         """
         super().__init__(server_address, password)
         self.send_index: int = 0
-        self.syncing = False
+        self.syncing = True
         self.awaiting_bridge = False
         self.dolphin_sync_task: asyncio.Task[None] | None = None
         self.dolphin_status: str = CONNECTION_INITIAL_STATUS
@@ -171,7 +165,7 @@ class SFAContext(SuperContext):
         self.tags = {"AP"}
         self.sync_task: asyncio.Task[None] | None = None
         self.hooks = SFAHookHandlers(self)
-        _register_default_special_hooks(self)
+        register_default_special_hooks(self)
 
     async def server_auth(self, password_requested: bool = False):
         """
@@ -200,152 +194,8 @@ class SFAContext(SuperContext):
 
         if cmd == "Connected":
             self.slot_data = args["slot_data"]
+            self.options = self.slot_data["options"]
         return
-
-
-async def _sync_current_map(ctx: SFAContext, entered_map: int, _from_map: int) -> None:
-    await ctx.send_msgs(
-        [
-            {
-                "cmd": "Set",
-                "key": f"SFA_current_map_{ctx.team}_{ctx.slot}",
-                "default": {},
-                "operations": [{"operation": "replace", "value": entered_map}],
-            }
-        ]
-    )
-
-
-def _set_special_location_state(
-    ctx: SFAContext,
-    location: SFAUpgradeLocationData | SFAShopLocationData,
-    entered_map: int,
-    from_map: int,
-    expected_map: int,
-) -> None:
-    if entered_map == expected_map:
-        location.set_bit(location.id in ctx.checked_locations or location.id not in ctx.server_locations)
-    if from_map == expected_map:
-        location.set_bit(SFALocationTags.MAP in location.tags or location.linked_item in ctx.received_items_id)
-
-
-async def _handle_magic_cave_transition(ctx: SFAContext, entered_map: int, from_map: int) -> None:
-    if entered_map != MAGIC_CAVE_ID and from_map != MAGIC_CAVE_ID:
-        return
-    mc_act = MAGIC_CAVE_ACT_GAMEBIT.get_value()
-    mc_flags_bytes = dme.read_word(MAGIC_CAVE_FLAG_ADDRESS)
-    mc_flags = extract_bitflag_list(swap_endian(mc_flags_bytes))
-    for loc_data in LOCATION_UPGRADE.values():
-        if mc_act == MAGIC_CAVE_UPGRADE_ACT and loc_data.mc_bitflag in mc_flags:
-            _set_special_location_state(ctx, loc_data, entered_map, from_map, MAGIC_CAVE_ID)
-
-
-async def _handle_shop_transition(ctx: SFAContext, entered_map: int, from_map: int) -> None:
-    if entered_map != SHOP_ID and from_map != SHOP_ID:
-        return
-
-    if entered_map == SHOP_ID and not ctx.shop_visited:
-        await ctx.send_msgs(
-            [
-                {
-                    "cmd": "LocationScouts",
-                    "locations": [loc.id for loc in LOCATION_SHOP.values() if loc.id in ctx.server_locations],
-                    "create_as_hint": 2,
-                }
-            ]
-        )
-        ctx.shop_visited = True
-
-    for loc_data in LOCATION_SHOP.values():
-        _set_special_location_state(ctx, loc_data, entered_map, from_map, SHOP_ID)
-
-
-async def _handle_map_entry_state(ctx: SFAContext, entered_map: int, from_map: int) -> None:
-    if entered_map == THORNTAIL_HOLLOW_ID:
-        set_value_bytes(T2_ADDRESS, THORNTAIL_HOLLOW_ACT_OFFSET, 0x2, value_size=4)
-
-    if entered_map == MOON_MOUNTAIN_PASS_ID:
-        set_value_bytes(T1_ADDRESS, MOON_MOUNTAIN_PASS_ACT_OFFSET, 0x2, value_size=4)
-
-    if entered_map == WORLD_MAP_ID:
-        SFAItemData.get_by_name("Fire Blaster").set_value(False)
-    elif from_map == WORLD_MAP_ID:
-        item = SFAItemData.get_by_name("Fire Blaster")
-        item.set_value(item.id in ctx.received_items_id)
-
-    if entered_map == KRAZOA_PALACE_ID:
-        KRAZOA_SPIRIT_1.set_bit(True)
-
-    if entered_map == COMBAT_SHRINE_ID:
-        LOCATION_ANY["MMP: Test of Combat"].set_bit(False)
-
-
-async def _handle_dim_zone_transition(ctx: SFAContext, entered_zone: int, from_zone: int) -> None:
-    logger.debug(f"Entering dim zone {entered_zone:x}")
-    # 0000 0000 0100 0100 1000 0011 1000 0000
-    # 0000 0000 0101 0100 1000 0011 1000 0000
-    if entered_zone == DIM_COGS_ZONE_VALUE or entered_zone == DIM_COGS_ZONE_VALUE2:
-        item = ITEM_INVENTORY.get("SharpClaw Fort Bridge Cogs")
-        assert isinstance(item, SFAProgressiveItemData)
-        count = ctx.received_items_id.count(item.id)
-        for index, progress in enumerate(item.progressive_data):
-            set_flag_bit(progress.address, progress.offset, count > index)
-            set_flag_bit(progress.address, progress.offset - 1, False)
-    elif (
-        entered_zone - from_zone == DIM_BLIZZARD_ZONE_TRANSITION
-        or from_zone - entered_zone == DIM_BLIZZARD_ZONE_TRANSITION
-    ):
-        logger.debug("Entering Blizzard zone")
-        for flag in DIM_OPEN_BLIZZARD:
-            flag.set_bit(False)
-    elif from_zone - entered_zone == DIM_BIKE_ZONE_TRANSITION:
-        logger.debug("Bike zone transition")
-        for flag in DIM_OPEN_BIKE:
-            flag.set_bit(False)
-    else:
-        item = ITEM_INVENTORY.get("SharpClaw Fort Bridge Cogs")
-        locations = [
-            LOCATION_ANY["DIM: Enemy Gate Cog Chest"],
-            LOCATION_ANY["DIM: Hut Cog Chest"],
-            LOCATION_ANY["DIM: Ice Cog Chest"],
-        ]
-        assert isinstance(item, SFAProgressiveItemData)
-        for progress in item.progressive_data:
-            progress.set_bit(True)
-        for location in locations:
-            location.set_bit(location.id in ctx.checked_locations)
-
-
-async def _handle_test_of_combat_warppad(ctx: SFAContext, zone_name: str) -> None:
-    if zone_name != "MMP_TEST_OF_COMBAT_WARPPAD":
-        return
-    object_list = get_all_loaded_objects()
-    warppad = search_objects(object_list, 0xEC)
-    if warppad is None:
-        return
-    flag_e_offset = ObjState.flagE.offset
-    if LOCATION_ANY["MMP: Test of Combat"].id in ctx.checked_locations:
-        dme.write_bytes(warppad.state_ptr + flag_e_offset, bytes.fromhex("20"))
-    else:
-        dme.write_bytes(warppad.state_ptr + flag_e_offset, bytes.fromhex("01"))
-
-
-async def _handle_spellstone_door(ctx: SFAContext, zone_name: str) -> None:
-    if zone_name != "VFP_SPELLSTONE_DOOR_ZONE":
-        return
-    ITEM_INVENTORY["Fire SpellStone 1"].set_value(True)
-
-
-def _register_default_special_hooks(ctx: SFAContext) -> None:
-    ctx.hooks.add_map_transition(_sync_current_map)
-    ctx.hooks.add_map_transition(_handle_magic_cave_transition)
-    ctx.hooks.add_map_transition(_handle_shop_transition)
-    ctx.hooks.add_map_transition(_handle_map_entry_state)
-    ctx.hooks.add_zone_transition(_handle_dim_zone_transition, map_id=DARKICE_TOP_ID)
-    ctx.hooks.add_player_coord_zone(PlayerCoordZone.square("MMP_TEST_OF_COMBAT_WARPPAD", -11900, -11780, -4650, -4550))
-    ctx.hooks.add_player_coord_transition(_handle_test_of_combat_warppad, "enter")
-    ctx.hooks.add_player_coord_zone(PlayerCoordZone.square("VFP_SPELLSTONE_DOOR_ZONE", -17350, -17000, -420, -230))
-    ctx.hooks.add_player_coord_transition(_handle_spellstone_door, "enter")
 
 
 def sync_player_state(ctx: SFAContext):
@@ -354,17 +204,23 @@ def sync_player_state(ctx: SFAContext):
 
     :param ctx: The Star Fox Adventures context
     """
-    _give_item_in_game(ctx, FILLER_ITEMS["Fuel Cell"])
-    _give_item_in_game(ctx, ITEM_INVENTORY["SHW Alpine Root"])
-    _give_item_in_game(ctx, ITEM_INVENTORY["Scarab Bag (Progressive)"])
-    _give_item_in_game(ctx, USEFUL_ITEMS["HP Upgrade"])
-    _give_item_in_game(ctx, USEFUL_ITEMS["MP Upgrade"])
-    _give_item_in_game(ctx, ITEM_INVENTORY["White GrubTub"])
-    _give_item_in_game(ctx, ITEM_INVENTORY["Gate Key"])
-    _give_item_in_game(ctx, ITEM_INVENTORY["Entrance Bridge Cog"])
-    _give_item_in_game(ctx, ITEM_INVENTORY["DIM Alpine Root"])
-    _give_item_in_game(ctx, ITEM_TRICKY["Tricky (Progressive)"])
-    _give_item_in_game(ctx, ITEM_INVENTORY["Krazoa Spirit 2"])
+    give_item_in_game(ctx, FILLER_ITEMS["Fuel Cell"])
+    give_item_in_game(ctx, ITEM_INVENTORY["SHW Alpine Root"])
+    give_item_in_game(ctx, ITEM_INVENTORY["Scarab Bag (Progressive)"])
+    give_item_in_game(ctx, USEFUL_ITEMS["HP Upgrade"])
+    give_item_in_game(ctx, USEFUL_ITEMS["MP Upgrade"])
+    give_item_in_game(ctx, ITEM_INVENTORY["White GrubTub"])
+    give_item_in_game(ctx, ITEM_INVENTORY["Gate Key"])
+    give_item_in_game(ctx, ITEM_INVENTORY["Entrance Bridge Cog"])
+    give_item_in_game(ctx, ITEM_INVENTORY["DIM Alpine Root"])
+    give_item_in_game(ctx, ITEM_TRICKY["Tricky (Progressive)"])
+    give_item_in_game(ctx, ITEM_INVENTORY["Krazoa Spirit 2"])
+    give_item_in_game(ctx, ITEM_INVENTORY["Krazoa Spirit 3"])
+    give_item_in_game(ctx, ITEM_INVENTORY["Gold Bars"])
+    give_item_in_game(ctx, ITEM_INVENTORY["CRF Power Key"])
+    give_item_in_game(ctx, ITEM_INVENTORY["CRF Light Gems"])
+    give_item_in_game(ctx, ITEM_INVENTORY["CloudRunner Flute"])
+    give_item_in_game(ctx, ITEM_INVENTORY["Fire Gem"])
 
 
 async def sync_full_player_state(ctx: SFAContext):
@@ -376,7 +232,7 @@ async def sync_full_player_state(ctx: SFAContext):
     logger.debug("Syncing full player state")
     received_items = ctx.items_received
     for _, item in enumerate(received_items):
-        while not _give_item_in_game(ctx, SFAItemData.get_by_id(item.item)):
+        while not give_item_in_game(ctx, SFAItemData.get_by_id(item.item)):
             await asyncio.sleep(0.01)
     sync_player_state(ctx)
 
@@ -429,16 +285,21 @@ async def locations_watcher(ctx):
 
     if ctx.stored_map == COMBAT_SHRINE_ID:
         _check_location_flag(ctx, LOCATION_ANY["MMP: Test of Combat"])
+    if ctx.stored_map == FEAR_SHRINE_ID:
+        _check_location_flag(ctx, LOCATION_ANY["LFV: Test of Fear"])
+
+    if "DIM_SHACKLE_CHEST" in ctx.hooks.list_active_zones:
+        _check_location_flag(ctx, LOCATION_ANY["DIM: Shackle Key Chest"]) # TODO: slot 4 = bugged
+    if "DIM_SILVER_KEY" in ctx.hooks.list_active_zones:
+        _check_location_flag(ctx, LOCATION_ANY["DIM: Silver Key Chest"])
+    if "DIM_GOLD_KEY" in ctx.hooks.list_active_zones:
+        _check_location_flag(ctx, LOCATION_ANY["DIM: Gold Key Chest"])
 
     locations_checked = ctx.locations_checked.difference(ctx.checked_locations)
     if locations_checked:
         await _wait_cutscene_end()
         sync_player_state(ctx)
         await ctx.send_msgs([{"cmd": "LocationChecks", "locations": locations_checked}])
-
-    if ctx.victory and not ctx.finished_game:
-        await ctx.send_msgs([{"cmd": "StatusUpdate", "status": ClientStatus.CLIENT_GOAL}])
-        ctx.finished_game = True
 
 
 async def give_items(ctx: SFAContext):
@@ -453,6 +314,7 @@ async def give_items(ctx: SFAContext):
     received_items = ctx.items_received
     if len(received_items) <= expected_idx:
         # There are no new items.
+        ctx.syncing = False
         return
 
     # Loop through items to give.
@@ -461,49 +323,9 @@ async def give_items(ctx: SFAContext):
         # Attempt to give the item and increment the expected index.
         logger.debug(f"Received item: {item}")
         ctx.received_items_id.append(item.item)
-        while not _give_item_in_game(ctx, SFAItemData.get_by_id(item.item)):
+        while not give_item_in_game(ctx, SFAItemData.get_by_id(item.item)):
             await asyncio.sleep(0.01)
         ctx.expected_idx = idx + 1
-
-
-def _give_item_in_game(ctx: SFAContext, item: SFAItemData | None) -> bool:
-    """
-    Give an item to the player in the game.
-
-    :param ctx: The Star Fox Adventures context
-    :param item: The item data to give
-    :return: True if the item was given successfully, False otherwise
-    """
-    if item is None or item.id == 0:
-        logger.error("Item not found in data.")
-        return False
-
-    if item.id == SFAItemData.get_by_name("Victory").id:  # Victory
-        ctx.victory = True
-        return True
-
-    if ctx.stored_map == SHOP_ID and (SFAItemTags.SHOP in item.tags):
-        # Don't send shop items if inside shop
-        return True
-
-    if isinstance(item, (SFAProgressiveItemData, SFACountItemData, SFAQuestItemData)):
-        count = ctx.received_items_id.count(item.id)
-        item.set_value(count)
-        logger.debug(f"Received {count} of counted object: {item.name}")
-        return True
-
-    if isinstance(item, SFAConsumableItemData):
-        item.set_value()
-        return True
-
-    if isinstance(item, SFAPlanetItemData):
-        item.game_bit.set_bit(item.id in ctx.received_items_id)
-        item.gate_bit.set_bit(item.id in ctx.received_items_id)
-        return True
-
-    # All other items
-    item.set_value(item.id in ctx.received_items_id)
-    return True
 
 
 async def force_gameflags(ctx: SFAContext) -> None:
@@ -512,21 +334,13 @@ async def force_gameflags(ctx: SFAContext) -> None:
 
     :param ctx: The Star Fox Adventures context
     """
-    # Set bitflags when starting save
-    map_value = dme.read_byte(MAP_ID_ADDRESS)
-    if ctx.stored_map != map_value and ctx.stored_map == MAIN_MENU_ID:
-        logger.debug("Set starting flags")
-        set_on_or_bytes(ITEM_MAP_ADDRESS, ITEM_MAP_INIT_VALUE, 3)
-        set_on_or_bytes(SKIP_TUTO_ADDRESS, SKIP_TUTO_VALUE, 2)
-        for item in STARTING_FLAGS:
-            set_flag_bit(item.address, item.offset, item.state)
-        remove_max_bafomdad_check()
-        await sync_full_player_state(ctx)
+    if ctx.syncing:
+        return
 
     for item in CONSTANT_FLAGS:
         set_flag_bit(item.address, item.offset, item.state)
 
-    if map_value == ICE_MOUNTAIN_BOTTOM_ID:
+    if ctx.stored_map == ICE_MOUNTAIN_BOTTOM_ID:
         tricky_item = SFAItemData.get_by_name("Tricky (Progressive)")
         tricky_commands_flag = tricky_item.progressive_data[0]  # type: ignore
         tricky_commands_flag.set_bit(tricky_item.id in ctx.received_items_id)
@@ -535,10 +349,31 @@ async def force_gameflags(ctx: SFAContext) -> None:
         dino_horn = SFAItemData.get_by_name("Dinosaur Horn")
         dino_horn.set_value(dino_horn.id in ctx.received_items_id)
 
-    if ctx.slot_data["plant_shuffle"]:
-        for item in ITEM_INVENTORY.values():
-            if isinstance(item, SFALockedConsumableItemData):
-                item.set_value(item.id in ctx.received_items_id)
+    if ctx.options["infinite_tricky_food"]:
+        TRICKY_FOOD_COUNT.set_value(TRICKY_FOOD_COUNT.max_value)
+
+    # Lock plants
+    # 0 = off, 1 = any, -1 = max
+    for item in ITEM_INVENTORY.values():
+        if isinstance(item, SFALockedConsumableItemData):
+            plant_value = 1
+            if ctx.options["infinite_consumables"]:
+                plant_value = -1
+            if ctx.options["plant_shuffle"] and SFAItemTags.SEED in item.tags:
+                if item.id not in ctx.received_items_id:
+                    plant_value = 0
+            item.set_value(plant_value)
+
+
+async def set_starting_flags(ctx: SFAContext) -> None:
+    """Set all GameFlags when starting the game."""
+    logger.debug("Set starting flags")
+    set_on_or_bytes(ITEM_MAP_ADDRESS, ITEM_MAP_INIT_VALUE, 3)
+    set_on_or_bytes(SKIP_TUTO_ADDRESS, SKIP_TUTO_VALUE, 2)
+    for item in STARTING_FLAGS:
+        item.set_bit(item.state)
+    remove_max_bafomdad_check()
+    await sync_full_player_state(ctx)
 
 
 async def player_hooks_watcher(ctx: SFAContext) -> None:
@@ -549,6 +384,8 @@ async def player_hooks_watcher(ctx: SFAContext) -> None:
     """
     map_value = dme.read_byte(MAP_ID_ADDRESS)
     if ctx.stored_map != map_value:
+        if ctx.stored_map == MAIN_MENU_ID:
+            await set_starting_flags(ctx)
         logger.debug(f"Entering map {map_value:x}")
         await ctx.hooks.run_map_transition(map_value, ctx.stored_map)
         ctx.stored_map = map_value
@@ -569,6 +406,49 @@ async def player_hooks_watcher(ctx: SFAContext) -> None:
     )
 
 
+def _check_victory(ctx: SFAContext) -> bool:
+    """
+    Check if the player has achieved victory.
+
+    :param ctx: The Star Fox Adventures context
+    :return: True if the player has achieved victory, False otherwise
+    """
+    boss_defeated = sum(
+        1
+        for location_id in ctx.checked_locations
+        if SFALocationTags.BOSS in SFALocationData.get_by_id(location_id).tags
+    )
+    boss_condition = boss_defeated >= ctx.options["required_boss"]
+    # TODO: Use slot_data to check for bosses to avoid conflict with 'collect on'
+
+    if ctx.options["goal_completion"] == "collect":
+        spellstone_count = sum(
+            1 for item_id in ctx.received_items_id if SFAItemTags.SPELLSTONE in SFAItemData.get_by_id(item_id).tags
+        )
+        spellstone_condition = spellstone_count >= ctx.options["required_spellstones"]
+
+        spirit_count = sum(
+            1 for item_id in ctx.received_items_id if SFAItemTags.SPIRIT in SFAItemData.get_by_id(item_id).tags
+        )
+        spirit_condition = spirit_count >= ctx.options["required_spirits"]
+    else:
+        spellstone_count = sum(
+            1
+            for location_id in ctx.checked_locations
+            if SFALocationTags.SPELLSTONE in SFALocationData.get_by_id(location_id).tags
+        )
+        spellstone_condition = spellstone_count >= ctx.options["required_spellstones"]
+
+        spirit_count = sum(
+            1
+            for location_id in ctx.checked_locations
+            if SFALocationTags.SPIRIT in SFALocationData.get_by_id(location_id).tags
+        )
+        spirit_condition = spirit_count >= ctx.options["required_spirits"]
+
+    return boss_condition and spellstone_condition and spirit_condition
+
+
 async def game_watcher(ctx: SFAContext):
     """
     Main game watcher loop.
@@ -586,7 +466,7 @@ async def game_watcher(ctx: SFAContext):
             await give_items(ctx)
             await player_hooks_watcher(ctx)
 
-            if ctx.victory and not ctx.finished_game:
+            if _check_victory(ctx) and not ctx.finished_game:
                 await ctx.send_msgs([{"cmd": "StatusUpdate", "status": ClientStatus.CLIENT_GOAL}])
                 ctx.finished_game = True
 

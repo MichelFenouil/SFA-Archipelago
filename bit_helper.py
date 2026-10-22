@@ -14,12 +14,14 @@ class GameBit:
     offset: int
     address: int
     bit_size: int
+    max_value: int
 
-    def __init__(self, offset: int, address: int = T2_ADDRESS, bit_size=1) -> None:
+    def __init__(self, offset: int, address: int = T2_ADDRESS, bit_size=1, max_value=1) -> None:
         """Initialize GameBit with address and offset."""
         self.offset = offset
         self.address = address
         self.bit_size = bit_size
+        self.max_value = max_value
 
     def get_bit(self) -> bool:
         """Read bit value from memory."""
@@ -47,6 +49,36 @@ class GameFlag(GameBit):
     offset: int
     address: int = T2_ADDRESS
     state: bool = True
+
+
+def get_bit(value, n):
+    """Return value of n-th bit."""
+    return (value >> n & 1) != 0
+
+
+def set_bit(value, n):
+    """Set n-th bit of value to 1."""
+    return value | (1 << n)
+
+
+def clear_bit(value, n):
+    """Set n-th bit of value to 0."""
+    return value & ~(1 << n)
+
+
+def n_lsb(x):
+    """Return a number with exactly x bits of 1."""
+    return (1 << x) - 1
+
+
+def n_to_m(n, m):
+    """Set bits from n to m to 1, where n > m."""
+    return n_lsb(n) & ~n_lsb(m)
+
+
+def set_bits(input, n, m, value):
+    """Set bits from n to m in x to pat."""
+    return (input & ~n_to_m(n, m)) | (value << m)
 
 
 def extract_bitflag_list(input_bytes: int) -> list[int]:
@@ -188,8 +220,10 @@ def set_value_bytes(
         return
     cache_byte = dme.read_bytes(byte_address, nb_bytes)
     cache_byte = int.from_bytes(cache_byte, byteorder=endian)
-    updated_byte = update_bits(cache_byte, bit_position, value, value_size)
+    # updated_byte = update_bits(cache_byte, bit_position, value, value_size)
     # logger.debug(f"Writing byte: {updated_byte:b}")
+    # TODO: check bit manipulations for previous zones
+    updated_byte = set_bits(cache_byte, bit_position + value_size - 1, bit_position, value)
     dme.write_bytes(byte_address, updated_byte.to_bytes(nb_bytes, endian))
 
 

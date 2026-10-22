@@ -1,11 +1,10 @@
 from collections.abc import Mapping
-from typing import TYPE_CHECKING, Any
-
-from rule_builder.rules import Has
+from typing import TYPE_CHECKING, Any, ClassVar
 
 from worlds.AutoWorld import World
 
 from .items import (
+    UT_GLITCH_LOGIC,
     SFAItem,
     create_all_items,
     create_item_classification,
@@ -15,6 +14,8 @@ from .items import (
 from .locations import create_all_locations, locations_name_to_id_dict
 from .options import SFAOptions
 from .regions import connect_regions, create_all_regions
+from .rules import Victory
+from .web_world import SFAWebWorld
 
 if TYPE_CHECKING:
     from Options import Option
@@ -30,10 +31,13 @@ class SFAWorld(World):
 
     data_version = 1
 
+    web = SFAWebWorld()
+
     options_dataclass = SFAOptions
     options: SFAOptions  # Common mistake: This has to be a colon (:), not an equals sign (=).
 
     ut_can_gen_without_yaml = True
+    glitches_item_name = UT_GLITCH_LOGIC
 
     item_name_to_id = items_name_to_id_dict()
     location_name_to_id = locations_name_to_id_dict()
@@ -42,15 +46,34 @@ class SFAWorld(World):
 
     progress_locations: set[str] = set()  # noqa: RUF012
 
+    item_name_groups: ClassVar = {
+        "Tricky": {"Tricky (Progressive)"},
+        "Spellstone": {
+            "Fire SpellStone 1",
+            "Water SpellStone 1",
+        },
+        "Spirit": {
+            "Krazoa Spirit 2",
+            "Krazoa Spirit 3",
+        },
+    }
+
+    location_name_groups: ClassVar = {
+        "Boss": {
+            "DIM: Defeat Boss Galdon",
+            "CRF: Defeat Boss SharpClaw Race",
+        },
+    }
+
     def create_regions(self) -> None:
         """Create regions and entrances for this world player."""
         create_all_regions(self)
-        connect_regions(self)
         create_all_locations(self)
+        connect_regions(self)
 
     def set_rules(self) -> None:
         """Create rules for this world player."""
-        self.set_completion_rule(Has("Victory"))
+        self.set_completion_rule(Victory())
 
     def create_items(self) -> None:
         """Create items for this world player."""
@@ -85,13 +108,18 @@ class SFAWorld(World):
         """
         # If you need access to the player's chosen options on the client side, there is a helper for that.
         return {
-            **self.options.as_dict(
-                "shop_locations",
-                "plant_shuffle",
-            ),
             "options": self.options.as_dict(
                 "shop_locations",
                 "plant_shuffle",
+                "dark_rooms",
+                "lightfoot_entrance",
+                "lightfoot_quests",
+                "infinite_consumables",
+                "infinite_tricky_food",
+                "goal_completion",
+                "required_boss",
+                "required_spellstones",
+                "required_spirits",
             ),
         }
 
