@@ -103,3 +103,30 @@ class ObjState(BigEndianStructure):
         ("flagD", c_uint8),
         ("flagE", c_uint8),
     ]
+
+
+class ObjDef(BigEndianStructure):
+    _fields_ = [
+        ("objType", c_int16),  # 0x00 ObjDefEnum
+        ("allocatedSize", c_uint8),  # 0x02
+        ("mapActs1", c_uint8),  # 0x03
+        ("loadFlags", c_uint8),  # 0x04 RomListObjLoadFlags
+        ("mapActs2", c_uint8),  # 0x05
+        ("bound", c_uint8),  # 0x06
+        ("unk7", c_uint8),  # 0x07
+        ("pos", Vector3f),  # 0x08
+        ("id", c_uint32),  # 0x14 ObjUniqueId
+        ("unk18", c_uint16),  # 0x18
+        ("unk1A", c_uint16),  # 0x1A
+        ("defNoPlus4", c_int16),  # 0x1C ObjDefEnum
+        ("unk1E", c_uint8),  # 0x1E
+        ("seqNo", c_uint8),  # 0x1F
+        ("unk20", c_uint8),  # 0x20
+        ("unk21", c_uint8),  # 0x21
+        ("unk22", c_uint8),  # 0x22
+        ("unk23", c_uint8),  # 0x23
+        ("camFocusIdx", c_uint8),  # 0x24
+        ("unk25", c_uint8),  # 0x25
+        ("unk26", c_uint8),  # 0x26
+        ("unk27", c_uint8),  # 0x27
+    ]
